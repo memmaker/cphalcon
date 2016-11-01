@@ -581,13 +581,14 @@ class View extends Injectable implements ViewInterface
 	 */
 	protected function _engineRender(engines, string viewPath, boolean silence, boolean mustClean, <BackendInterface> cache = null)
 	{
-		boolean notExists;
+		boolean notExists, hasBeenRendered;
 		int renderLevel, cacheLevel;
 		var key, lifetime, viewsDir, basePath, viewsDirPath,
 			viewOptions, cacheOptions, cachedView, viewParams, eventsManager,
 			extension, engine, viewEnginePath, viewEnginePaths;
 
 		let notExists = true,
+		    hasBeenRendered = false,
 			basePath = this->_basePath,
 			viewParams = this->_viewParams,
 			eventsManager = <ManagerInterface> this->_eventsManager,
@@ -663,7 +664,7 @@ class View extends Injectable implements ViewInterface
 			for extension, engine in engines {
 
 				let viewEnginePath = viewsDirPath . extension;
-				if file_exists(viewEnginePath) {
+				if !hasBeenRendered && file_exists(viewEnginePath) {
 
 					/**
 					 * Call beforeRenderView if there is an events manager available
@@ -681,6 +682,7 @@ class View extends Injectable implements ViewInterface
 					 * Call afterRenderView if there is an events manager available
 					 */
 					let notExists = false;
+					let hasBeenRendered = true;
 					if typeof eventsManager == "object" {
 						eventsManager->fire("view:afterRenderView", this);
 					}
