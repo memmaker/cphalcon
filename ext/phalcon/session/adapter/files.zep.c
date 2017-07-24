@@ -19,17 +19,21 @@
  *
  * This adapter store sessions in plain files
  *
- *<code>
+ * <code>
  * use Phalcon\Session\Adapter\Files;
  *
- * $session = new Files(['uniqueId' => 'my-private-app']);
+ * $session = new Files(
+ *     [
+ *         "uniqueId" => "my-private-app",
+ *     ]
+ * );
  *
  * $session->start();
  *
- * $session->set('var', 'some-value');
+ * $session->set("var", "some-value");
  *
- * echo $session->get('var');
- *</code>
+ * echo $session->get("var");
+ * </code>
  */
 ZEPHIR_INIT_CLASS(Phalcon_Session_Adapter_Files) {
 

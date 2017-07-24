@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -22,7 +22,6 @@ namespace Phalcon\Cache\Backend;
 use Phalcon\Cache\Exception;
 use Phalcon\Cache\Backend;
 use Phalcon\Cache\FrontendInterface;
-use Phalcon\Cache\BackendInterface;
 
 /**
  * Phalcon\Cache\Backend\File
@@ -35,7 +34,7 @@ use Phalcon\Cache\BackendInterface;
  *
  * // Cache the file for 2 days
  * $frontendOptions = [
- *     'lifetime' => 172800
+ *     "lifetime" => 172800,
  * ];
  *
  * // Create an output cache
@@ -43,22 +42,24 @@ use Phalcon\Cache\BackendInterface;
  *
  * // Set the cache directory
  * $backendOptions = [
- *     'cacheDir' => '../app/cache/'
+ *     "cacheDir" => "../app/cache/",
  * ];
  *
  * // Create the File backend
  * $cache = new File($frontCache, $backendOptions);
  *
- * $content = $cache->start('my-cache');
+ * $content = $cache->start("my-cache");
+ *
  * if ($content === null) {
- *     echo '<h1>', time(), '</h1>';
+ *     echo "<h1>", time(), "</h1>";
+ *
  *     $cache->save();
  * } else {
  *     echo $content;
  * }
  *</code>
  */
-class File extends Backend implements BackendInterface
+class File extends Backend
 {
 	/**
 	 * Default to false for backwards compatibility
@@ -226,14 +227,13 @@ class File extends Backend implements BackendInterface
 
 		let this->_started = false;
 
-		return status;
+		return status !== false;
 	}
 
 	/**
 	 * Deletes a value from the cache by its key
 	 *
 	 * @param int|string keyName
-	 * @return boolean
 	 */
 	public function delete(var keyName) -> boolean
 	{
@@ -252,29 +252,36 @@ class File extends Backend implements BackendInterface
 	}
 
 	/**
-	 * Query the existing cached keys
+	 * Query the existing cached keys.
 	 *
-	 * @param string|int prefix
-	 * @return array
+	 * <code>
+	 * $cache->save("users-ids", [1, 2, 3]);
+	 * $cache->save("projects-ids", [4, 5, 6]);
+	 *
+	 * var_dump($cache->queryKeys("users")); // ["users-ids"]
+	 * </code>
 	 */
-	public function queryKeys(var prefix = null) -> array
+	public function queryKeys(string prefix = null) -> array
 	{
-		var item, key, cacheDir;
+		var item, key, cacheDir, prefixedKey;
 		array keys = [];
 
 		if !fetch cacheDir, this->_options["cacheDir"] {
 			throw new Exception("Unexpected inconsistency in options");
 		}
 
+		if !empty prefix {
+			let prefixedKey = this->_prefix . this->getKey(prefix);
+		}
+
 		/**
 		 * We use a directory iterator to traverse the cache dir directory
 		 */
 		for item in iterator(new \DirectoryIterator(cacheDir)) {
-
 			if likely item->isDir() === false {
 				let key = item->getFileName();
-				if prefix !== null {
-					if starts_with(key, prefix) {
+				if !empty prefix {
+					if starts_with(key, prefixedKey) {
 						let keys[] = key;
 					}
 				} else {
@@ -290,8 +297,7 @@ class File extends Backend implements BackendInterface
 	 * Checks if cache exists and it isn't expired
 	 *
 	 * @param string|int keyName
-	 * @param   int lifetime
-	 * @return boolean
+	 * @param int lifetime
 	 */
 	public function exists(var keyName = null, int lifetime = null) -> boolean
 	{
@@ -335,10 +341,8 @@ class File extends Backend implements BackendInterface
 	 * Increment of a given key, by number $value
 	 *
 	 * @param  string|int keyName
-	 * @param  int value
-	 * @return mixed
 	 */
-	public function increment(var keyName = null, int value = 1)
+	public function increment(var keyName = null, int value = 1) -> int | null
 	{
 		var prefixedKey, cacheFile, frontend, lifetime, ttl,
 			cachedContent, result, modifiedTime;
@@ -390,16 +394,16 @@ class File extends Backend implements BackendInterface
 				}
 			}
 		}
+
+		return null;
 	}
 
 	/**
 	 * Decrement of a given key, by number $value
 	 *
-	 * @param  string|int keyName
-	 * @param  int value
-	 * @return mixed
+	 * @param string|int keyName
 	 */
-	public function decrement(var keyName = null, int value = 1)
+	public function decrement(var keyName = null, int value = 1) -> int | null
 	{
 		var prefixedKey, cacheFile, lifetime, ttl, cachedContent, result, modifiedTime;
 
@@ -448,6 +452,8 @@ class File extends Backend implements BackendInterface
 				}
 			}
 		}
+
+		return null;
 	}
 
 	/**

@@ -13,14 +13,14 @@ use Phalcon\Di\FactoryDefault;
  * \Phalcon\Test\Integration\Mvc\ApplicationCest
  * Tests the Phalcon\Mvc\Application component
  *
- * @copyright (c) 2011-2016 Phalcon Team
+ * @copyright (c) 2011-2017 Phalcon Team
  * @link      http://www.phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Serghei Iakovlev <serghei@phalconphp.com>
  * @package   Phalcon\Test\Integration\Mvc
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -33,7 +33,7 @@ class ApplicationCest
         $I->wantTo('handle request and get content by using single modules strategy');
 
         $di = new FactoryDefault();
-        $di->set('view', function() {
+        $di->set('view', function () {
             $view = new View();
             $view->setViewsDir(PATH_DATA . 'views/');
 
@@ -55,7 +55,7 @@ class ApplicationCest
         $_GET['_url'] = '/index';
 
         $di = new FactoryDefault();
-        $di->set('router', function() {
+        $di->set('router', function () {
             $router = new Router(false);
 
             $router->add('/index', [
@@ -92,7 +92,7 @@ class ApplicationCest
         $_GET['_url'] = '/login';
 
         $di = new FactoryDefault();
-        $di->set('router', function() {
+        $di->set('router', function () {
             $router = new Router(false);
 
             $router->add('/index', [
@@ -114,16 +114,16 @@ class ApplicationCest
         $view = new View();
 
         $application->registerModules([
-            'frontend' => function($di) use ($view) {
+            'frontend' => function ($di) use ($view) {
                 /** @var \Phalcon\DiInterface $di */
-                $di->set('view', function() use ($view) {
+                $di->set('view', function () use ($view) {
                     $view->setViewsDir(PATH_DATA . 'modules/frontend/views/');
                     return $view;
                 });
             },
-            'backend' => function($di) use ($view) {
+            'backend' => function ($di) use ($view) {
                 /** @var \Phalcon\DiInterface $di */
-                $di->set('view', function() use($view) {
+                $di->set('view', function () use ($view) {
                     $view->setViewsDir(PATH_DATA . 'modules/backend/views/');
                     return $view;
                 });

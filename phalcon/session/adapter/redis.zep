@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -28,26 +28,28 @@ use Phalcon\Cache\Frontend\None as FrontendNone;
  *
  * This adapter store sessions in Redis
  *
- *<code>
+ * <code>
  * use Phalcon\Session\Adapter\Redis;
  *
- * $session = new Redis([
- *     'uniqueId'   => 'my-private-app',
- *     'host'       => 'localhost',
- *     'port'       => 6379,
- *     'auth'       => 'foobared',
- *     'persistent' => false,
- *     'lifetime'   => 3600,
- *     'prefix'     => 'my_'
- *     'index'      => 1,
- * ]);
+ * $session = new Redis(
+ *     [
+ *         "uniqueId"   => "my-private-app",
+ *         "host"       => "localhost",
+ *         "port"       => 6379,
+ *         "auth"       => "foobared",
+ *         "persistent" => false,
+ *         "lifetime"   => 3600,
+ *         "prefix"     => "my",
+ *         "index"      => 1,
+ *     ]
+ * );
  *
  * $session->start();
  *
- * $session->set('var', 'some-value');
+ * $session->set("var", "some-value");
  *
- * echo $session->get('var');
- *</code>
+ * echo $session->get("var");
+ * </code>
  */
 class Redis extends Adapter
 {
@@ -114,9 +116,9 @@ class Redis extends Adapter
 	/**
 	 * {@inheritdoc}
 	 */
-	public function read(sessionId) -> var
+	public function read(sessionId) -> string
 	{
-		return this->_redis->get(sessionId, this->_lifetime);
+		return (string) this->_redis->get(sessionId, this->_lifetime);
 	}
 
 	/**
@@ -140,7 +142,9 @@ class Redis extends Adapter
 			let id = sessionId;
 		}
 
-		return this->_redis->delete(id);
+		this->removeSessionData();
+
+		return this->_redis->exists(id) ? this->_redis->delete(id) : true;
 	}
 
 	/**

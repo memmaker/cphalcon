@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -32,27 +32,36 @@ use Phalcon\Cache\FrontendInterface;
 * use Phalcon\Cache\Frontend\Output;
 *
 * // Create an Output frontend. Cache the files for 2 days
-* $frontCache = new Output(['lifetime' => 172800]));
+* $frontCache = new Output(
+*     [
+*         "lifetime" => 172800,
+*     ]
+* );
 *
 * // Create the component that will cache from the "Output" to a "File" backend
 * // Set the cache file directory - it's important to keep the "/" at the end of
 * // the value for the folder
-* $cache = new File($frontCache, ['cacheDir' => '../app/cache/']);
+* $cache = new File(
+*     $frontCache,
+*     [
+*         "cacheDir" => "../app/cache/",
+*     ]
+* );
 *
 * // Get/Set the cache file to ../app/cache/my-cache.html
-* $content = $cache->start('my-cache.html');
+* $content = $cache->start("my-cache.html");
 *
 * // If $content is null then the content will be generated for the cache
 * if (null === $content) {
 *     // Print date and time
-*     echo date('r');
+*     echo date("r");
 *
 *     // Generate a link to the sign-up action
 *     echo Tag::linkTo(
 *         [
-*             'user/signup',
-*             'Sign Up',
-*             'class' => 'signup-button'
+*             "user/signup",
+*             "Sign Up",
+*             "class" => "signup-button",
 *         ]
 *     );
 *
@@ -141,9 +150,6 @@ class Output implements FrontendInterface
 
 	/**
 	 * Serializes data before storing them
-	 *
-	 * @param mixed data
-	 * @return string
 	 */
 	public function beforeStore(var data) -> string
 	{
@@ -152,11 +158,8 @@ class Output implements FrontendInterface
 
 	/**
 	 * Unserializes data after retrieval
-	 *
-	 * @param mixed data
-	 * @return mixed
 	 */
-	public function afterRetrieve(var data)
+	public function afterRetrieve(var data) -> var
 	{
 		return data;
 	}

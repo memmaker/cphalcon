@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -28,19 +28,22 @@ use Phalcon\Db\ColumnInterface;
  * Allows to define columns to be used on create or alter table operations
  *
  *<code>
- *	use Phalcon\Db\Column as Column;
+ * use Phalcon\Db\Column as Column;
  *
- * //column definition
- * $column = new Column("id", array(
- *   "type" => Column::TYPE_INTEGER,
- *   "size" => 10,
- *   "unsigned" => true,
- *   "notNull" => true,
- *   "autoIncrement" => true,
- *   "first" => true
- * ));
+ * // Column definition
+ * $column = new Column(
+ *     "id",
+ *     [
+ *         "type"          => Column::TYPE_INTEGER,
+ *         "size"          => 10,
+ *         "unsigned"      => true,
+ *         "notNull"       => true,
+ *         "autoIncrement" => true,
+ *         "first"         => true,
+ *     ]
+ * );
  *
- * //add column to existing table
+ * // Add column to existing table
  * $connection->addColumn("robots", null, $column);
  *</code>
  */
@@ -94,7 +97,6 @@ class Column implements ColumnInterface
 
 	/**
 	 * Double abstract data type
-	 *
 	 */
 	const TYPE_DOUBLE = 9;
 
@@ -119,7 +121,7 @@ class Column implements ColumnInterface
 	const TYPE_LONGBLOB = 13;
 
 	/**
-	 * Big integer abstract type
+	 * Big integer abstract data type
 	 */
 	const TYPE_BIGINTEGER = 14;
 
@@ -566,6 +568,10 @@ class Column implements ColumnInterface
 	 */
 	public function hasDefault() -> boolean
 	{
+		if this->isAutoIncrement() {
+			return false;
+		}
+
 		return this->_default !== null;
 	}
 }

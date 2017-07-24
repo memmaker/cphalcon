@@ -2,23 +2,23 @@
 
 namespace Phalcon\Test\Unit\Mvc;
 
-use Phalcon\Test\Proxy\Mvc\Url;
-use Phalcon\Mvc\Router;
 use Phalcon\Di;
+use Phalcon\Mvc\Url;
+use Phalcon\Mvc\Router;
 use Phalcon\Test\Module\UnitTest;
 
 /**
  * \Phalcon\Test\Unit\Mvc\UrlTest
  * Tests the Phalcon\Mvc\Url component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit\Mvc
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -61,7 +61,6 @@ class UrlTest extends UnitTest
         $this->specify(
             "different url is not correct",
             function () {
-
                 $_SERVER['PHP_SELF'] = '/index.php';
 
                 $di       = $this->setupDI();
@@ -86,7 +85,6 @@ class UrlTest extends UnitTest
         $this->specify(
             "URL with controller/action not correct",
             function () {
-
                 $di       = $this->setupDI();
                 $url      = new Url();
                 $url->setDI($di);
@@ -115,7 +113,6 @@ class UrlTest extends UnitTest
         $this->specify(
             "URL for controller not correct",
             function () {
-
                 $di       = $this->setupDI();
                 $url      = new Url();
                 $url->setDI($di);
@@ -143,7 +140,6 @@ class UrlTest extends UnitTest
         $this->specify(
             "URL with year/month/title not correct",
             function () {
-
                 $di       = $this->setupDI();
                 $url      = new Url();
                 $url->setDI($di);
@@ -172,7 +168,6 @@ class UrlTest extends UnitTest
         $this->specify(
             "URL for a different language not correct",
             function () {
-
                 $di       = $this->setupDI();
                 $url      = new Url();
                 $url->setDI($di);
@@ -228,7 +223,6 @@ class UrlTest extends UnitTest
         $this->specify(
             "URL for a different language not correct",
             function () {
-
                 $di       = $this->setupDI();
                 $url      = new Url();
                 $url->setDI($di);
@@ -244,10 +238,10 @@ class UrlTest extends UnitTest
             }
         );
     }
-    
+
     /**
      * Test urls that contains colons in schema definition and as parameter
-     * 
+     *
      * @author Anton Melnik <melnik.anton2100@gmail.com>
      * @since 2016-05-07
      */
@@ -256,13 +250,13 @@ class UrlTest extends UnitTest
         $this->specify(
             "URL with colon is not correct",
             function () {
-                $di = $this->setupDI();
+                $this->setupDI();
                 $url = new Url();
-		$url->setBaseUri('http://www.test.com');
-                
+                $url->setBaseUri('http://www.test.com');
+
                 expect($url->get("/controller/action/param/colon:param"))
                         ->equals("http://www.test.com/controller/action/param/colon:param");
-                
+
                 expect($url->get("http://www.example.com"))->equals('http://www.example.com');
                 expect($url->get("//www.example.com"))->equals('//www.example.com');
                 expect($url->get("schema:example.com"))->equals('schema:example.com');

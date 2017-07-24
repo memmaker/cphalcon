@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -21,7 +21,6 @@ namespace Phalcon\Cache\Backend;
 
 use Phalcon\Cache\Backend;
 use Phalcon\Cache\Exception;
-use Phalcon\Cache\BackendInterface;
 use Phalcon\Cache\FrontendInterface;
 
 /**
@@ -36,27 +35,32 @@ use Phalcon\Cache\FrontendInterface;
  * use Phalcon\Cache\Frontend\Data as FrontData;
  *
  * // Cache data for 2 days
- * $frontCache = new FrontData([
- *     'lifetime' => 172800
- * ]);
+ * $frontCache = new FrontData(
+ *     [
+ *         "lifetime" => 172800,
+ *     ]
+ * );
  *
  * // Create the Cache setting redis connection options
- * $cache = new Redis($frontCache, [
- *     'host' => 'localhost',
- *     'port' => 6379,
- *     'auth' => 'foobared',
- *     'persistent' => false
- *     'index' => 0,
- * ]);
+ * $cache = new Redis(
+ *     $frontCache,
+ *     [
+ *         "host"       => "localhost",
+ *         "port"       => 6379,
+ *         "auth"       => "foobared",
+ *         "persistent" => false,
+ *         "index"      => 0,
+ *     ]
+ * );
  *
  * // Cache arbitrary data
- * $cache->save('my-data', [1, 2, 3, 4, 5]);
+ * $cache->save("my-data", [1, 2, 3, 4, 5]);
  *
  * // Get data
- * $data = $cache->get('my-data');
+ * $data = $cache->get("my-data");
  *</code>
  */
-class Redis extends Backend implements BackendInterface
+class Redis extends Backend
 {
 	protected _redis = null;
 
@@ -93,6 +97,10 @@ class Redis extends Backend implements BackendInterface
 			let options["statsKey"] = "";
 		}
 
+		if !isset options["auth"] {
+			let options["auth"] = "";
+		}
+
 		parent::__construct(frontend, options);
 	}
 
@@ -120,7 +128,7 @@ class Redis extends Backend implements BackendInterface
 			throw new Exception("Could not connect to the Redisd server ".host.":".port);
 		}
 
-		if fetch auth, options["auth"] {
+		if fetch auth, options["auth"] && !empty options["auth"] {
 			let success = redis->auth(auth);
 
 			if !success {
@@ -128,11 +136,11 @@ class Redis extends Backend implements BackendInterface
 			}
 		}
 
-		if fetch index, options["index"] {
+		if fetch index, options["index"] && index > 0 {
 			let success = redis->select(index);
 
 			if !success {
-				throw new Exception("Redisd server selected database failed");
+				throw new Exception("Redis server selected database failed");
 			}
 		}
 
@@ -158,7 +166,7 @@ class Redis extends Backend implements BackendInterface
 		let this->_lastKey = lastKey;
 		let cachedContent = redis->get(lastKey);
 
-		if !cachedContent {
+		if cachedContent === false {
 			return null;
 		}
 
@@ -172,9 +180,16 @@ class Redis extends Backend implements BackendInterface
 	/**
 	 * Stores cached content into the file backend and stops the frontend
 	 *
+	 * <code>
+	 * $cache->save("my-key", $data);
+	 *
+	 * // Save data termlessly
+	 * $cache->save("my-key", $data, -1);
+	 * </code>
+	 *
 	 * @param int|string keyName
 	 * @param string content
-	 * @param long lifetime
+	 * @param int lifetime
 	 * @param boolean stopBuffer
 	 */
 	public function save(keyName = null, content = null, lifetime = null, boolean stopBuffer = true) -> boolean
@@ -239,7 +254,10 @@ class Redis extends Backend implements BackendInterface
 			throw new Exception("Failed storing the data in redis");
 		}
 
-		redis->settimeout(lastKey, tt1);
+		// Don't set expiration for negative ttl or zero
+		if tt1 >= 1 {
+			redis->settimeout(lastKey, tt1);
+		}
 
 		let options = this->_options;
 
@@ -301,13 +319,18 @@ class Redis extends Backend implements BackendInterface
 	}
 
 	/**
-	 * Query the existing cached keys
+	 * Query the existing cached keys.
 	 *
-	 * @param string prefix
+	 * <code>
+	 * $cache->save("users-ids", [1, 2, 3]);
+	 * $cache->save("projects-ids", [4, 5, 6]);
+	 *
+	 * var_dump($cache->queryKeys("users")); // ["users-ids"]
+	 * </code>
 	 */
-	public function queryKeys(prefix = null) -> array
+	public function queryKeys(string prefix = null) -> array
 	{
-		var redis, options, keys, specialKey, key, value;
+		var redis, options, keys, specialKey, key, idx;
 
 		let redis = this->_redis;
 
@@ -323,32 +346,31 @@ class Redis extends Backend implements BackendInterface
 		}
 
 		if specialKey == "" {
-			throw new Exception("Cached keys need to be enabled to use this function (options['statsKey'] == '_PHCM')!");
+			throw new Exception("Cached keys need to be enabled to use this function (options['statsKey'] == '_PHCR')!");
 		}
 
 		/**
 		* Get the key from redis
 		*/
 		let keys = redis->sMembers(specialKey);
-		if typeof keys == "array" {
-			for key, value in keys {
-				if prefix && !starts_with(value, prefix) {
-					unset(keys[key]);
-				}
-			}
-
-			return keys;
+		if typeof keys != "array" {
+			return [];
 		}
 
-		return [];
+		for idx, key in keys {
+			if !empty prefix && !starts_with(key, prefix) {
+				unset keys[idx];
+			}
+		}
+
+		return keys;
 	}
 
 	/**
 	 * Checks if cache exists and it isn't expired
 	 *
 	 * @param string keyName
-	 * @param   long lifetime
-	 * @return boolean
+	 * @param int lifetime
 	 */
 	public function exists(keyName = null, lifetime = null) -> boolean
 	{
@@ -368,10 +390,7 @@ class Redis extends Backend implements BackendInterface
 				let redis = this->_redis;
 			}
 
-			if !redis->get(lastKey) {
-				return false;
-			}
-			return true;
+			return redis->exists(lastKey);
 		}
 
 		return false;
@@ -381,9 +400,8 @@ class Redis extends Backend implements BackendInterface
 	 * Increment of given $keyName by $value
 	 *
 	 * @param string keyName
-	 * @param long value
 	 */
-	public function increment(keyName = null, value = null) -> int
+	public function increment(keyName = null, int value = 1) -> int
 	{
 		var redis, prefix, lastKey;
 
@@ -400,10 +418,6 @@ class Redis extends Backend implements BackendInterface
 			let prefix = this->_prefix;
 			let lastKey = "_PHCR" . prefix . keyName;
 			let this->_lastKey = lastKey;
-		}
-
-		if !value {
-			let value = 1;
 		}
 
 		return redis->incrBy(lastKey, value);
@@ -413,9 +427,8 @@ class Redis extends Backend implements BackendInterface
 	 * Decrement of $keyName by given $value
 	 *
 	 * @param string keyName
-	 * @param long value
 	 */
-	public function decrement(keyName = null, value = null) -> int
+	public function decrement(keyName = null, int value = 1) -> int
 	{
 		var redis, prefix, lastKey;
 
@@ -432,10 +445,6 @@ class Redis extends Backend implements BackendInterface
 			let prefix = this->_prefix;
 			let lastKey = "_PHCR" . prefix . keyName;
 			let this->_lastKey = lastKey;
-		}
-
-		if !value {
-			let value = 1;
 		}
 
 		return redis->decrBy(lastKey, value);
@@ -462,7 +471,7 @@ class Redis extends Backend implements BackendInterface
 		}
 
 		if specialKey == "" {
-			throw new Exception("Cached keys need to be enabled to use this function (options['statsKey'] == '_PHCM')!");
+			throw new Exception("Cached keys need to be enabled to use this function (options['statsKey'] == '_PHCR')!");
 		}
 
 		let keys = redis->sMembers(specialKey);

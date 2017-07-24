@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit\Text;
 
+use Phalcon\Text;
 use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Text;
 
 /**
  * \Phalcon\Test\Unit\Text\TextIncrementTest
  * Tests the \Phalcon\Text component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -35,7 +35,6 @@ class TextIncrementTest extends UnitTest
         $this->specify(
             "increment does not increment a simple string",
             function () {
-
                 $source   = 'file';
                 $expected = 'file_1';
                 $actual   = Text::increment($source);
@@ -55,7 +54,6 @@ class TextIncrementTest extends UnitTest
         $this->specify(
             "increment does not increment an incremented string",
             function () {
-
                 $source   = 'file_1';
                 $expected = 'file_2';
                 $actual   = Text::increment($source);
@@ -75,7 +73,6 @@ class TextIncrementTest extends UnitTest
         $this->specify(
             "increment does not increment a second incremented string",
             function () {
-
                 $source   = 'file_2';
                 $expected = 'file_3';
                 $actual   = Text::increment($source);
@@ -95,7 +92,6 @@ class TextIncrementTest extends UnitTest
         $this->specify(
             "increment does not increment a string with an underscore",
             function () {
-
                 $source   = 'file_';
                 $expected = 'file_1';
                 $actual   = Text::increment($source);
@@ -115,7 +111,6 @@ class TextIncrementTest extends UnitTest
         $this->specify(
             "increment does not increment a string with a space at the end",
             function () {
-
                 $source   = 'file ';
                 $expected = 'file _1';
                 $actual   = Text::increment($source);
@@ -135,7 +130,6 @@ class TextIncrementTest extends UnitTest
         $this->specify(
             "increment does not increment a string with a different separator",
             function () {
-
                 $source   = 'file';
                 $expected = 'file-1';
                 $actual   = Text::increment($source, '-');

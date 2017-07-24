@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit;
 
+use Phalcon\Crypt;
 use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Crypt;
 
 /**
  * \Phalcon\Test\Unit\CryptTest
  * Tests the \Phalcon\Crypt component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -66,7 +66,6 @@ class CryptTest extends UnitTest
         $this->specify(
             "encryption does not return correct results",
             function () {
-
                 $tests = [
                     md5(uniqid())            => str_repeat('x', mt_rand(1, 255)),
                     time().time()            => str_shuffle('abcdefeghijklmnopqrst'),
@@ -77,32 +76,28 @@ class CryptTest extends UnitTest
                     'AES-128-CBC',
                     'AES-128-CFB',
                     'AES-128-OFB',
+                    'AES128',
                 ];
 
                 $crypt = new Crypt();
 
                 foreach ($ciphers as $cipher) {
-
                     $crypt->setCipher($cipher);
 
                     foreach ($tests as $key => $test) {
-
                         $crypt->setKey(substr($key, 0, 16));
                         $encryption = $crypt->encrypt($test);
                         $actual     = rtrim($crypt->decrypt($encryption), "\0");
 
                         expect($actual)->equals($test);
-
                     }
 
                     foreach ($tests as $key => $test) {
-
                         $encryption = $crypt->encrypt($test, substr($key, 0, 16));
 
                         $actual = rtrim($crypt->decrypt($encryption, substr($key, 0, 16)), "\0");
 
                         expect($actual)->equals($test);
-
                     }
                 }
             }
@@ -120,7 +115,6 @@ class CryptTest extends UnitTest
         $this->specify(
             "padding not return correct results",
             function () {
-
                 $texts = [''];
                 $key   = '0123456789ABCDEF0123456789ABCDEF';
                 $ciphers = [
@@ -145,15 +139,12 @@ class CryptTest extends UnitTest
                 $crypt->setKey(substr($key, 0, 32));
 
                 foreach ($pads as $padding) {
-
                     $crypt->setPadding($padding);
 
                     foreach ($ciphers as $cipher) {
-
                         $crypt->setCipher($cipher);
 
                         foreach ($texts as $text) {
-
                             $encrypted = $crypt->encrypt($text);
                             $actual    = $crypt->decrypt($encrypted);
 
@@ -176,7 +167,6 @@ class CryptTest extends UnitTest
         $this->specify(
             "encryption base 64does not return correct results",
             function () {
-
                 $crypt = new Crypt();
                 $crypt->setPadding(Crypt::PADDING_ANSI_X_923);
 

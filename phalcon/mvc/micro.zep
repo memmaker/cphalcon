@@ -3,17 +3,14 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
  | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
  +------------------------------------------------------------------------+
  */
 
@@ -21,12 +18,14 @@ namespace Phalcon\Mvc;
 
 use Phalcon\DiInterface;
 use Phalcon\Di\Injectable;
+use Phalcon\Mvc\Controller;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\Micro\Exception;
 use Phalcon\Di\ServiceInterface;
 use Phalcon\Mvc\Micro\Collection;
 use Phalcon\Mvc\Micro\LazyLoader;
 use Phalcon\Http\ResponseInterface;
+use Phalcon\Mvc\Model\BinderInterface;
 use Phalcon\Mvc\Router\RouteInterface;
 use Phalcon\Mvc\Micro\MiddlewareInterface;
 use Phalcon\Mvc\Micro\CollectionInterface;
@@ -39,15 +38,16 @@ use Phalcon\Mvc\Micro\CollectionInterface;
  * to small applications, APIs and prototypes in a practical way.
  *
  *<code>
- *
  * $app = new \Phalcon\Mvc\Micro();
  *
- * $app->get('/say/welcome/{name}', function ($name) {
- *    echo "<h1>Welcome $name!</h1>";
- * });
+ * $app->get(
+ *     "/say/welcome/{name}",
+ *     function ($name) {
+ *         echo "<h1>Welcome $name!</h1>";
+ *     }
+ * );
  *
  * $app->handle();
- *
  *</code>
  */
 class Micro extends Injectable implements \ArrayAccess
@@ -55,7 +55,7 @@ class Micro extends Injectable implements \ArrayAccess
 
 	protected _dependencyInjector;
 
-	protected _handlers;
+	protected _handlers = [];
 
 	protected _router;
 
@@ -74,6 +74,10 @@ class Micro extends Injectable implements \ArrayAccess
 	protected _finishHandlers;
 
 	protected _returnedValue;
+
+	protected _modelBinder;
+
+	protected _afterBindingHandlers;
 
 	/**
 	 * Phalcon\Mvc\Micro constructor
@@ -580,7 +584,8 @@ class Micro extends Injectable implements \ArrayAccess
 		var dependencyInjector, eventsManager, status = null, router, matchedRoute,
 			handler, beforeHandlers, params, returnedValue, e, errorHandler,
 			afterHandlers, notFoundHandler, finishHandlers, finish, before, after,
-			response;
+			response, modelBinder, bindCacheKey, routeName, realHandler = null, methodName, lazyReturned,
+			afterBindingHandlers, afterBinding;
 
 		let dependencyInjector = this->_dependencyInjector;
 		if typeof dependencyInjector != "object" {
@@ -672,34 +677,133 @@ class Micro extends Injectable implements \ArrayAccess
 						}
 
 						/**
-						 * Call the before handler, if it returns false exit
+						 * Call the before handler
 						 */
-						if call_user_func(before) === false {
-							return false;
-						}
+						let status = call_user_func(before);
 
 						/**
-						 * Reload the 'stopped' status
+						 * break the execution if the middleware was stopped
 						 */
-						if this->_stopped {
-							return status;
+						if  this->_stopped {
+							break;
 						}
+					}
+					/**
+					 * Reload the 'stopped' status
+					 */
+					if this->_stopped {
+						return status;
 					}
 				}
 
 				let params = router->getParams();
+
+				let modelBinder = this->_modelBinder;
 
 				/**
 				 * Bound the app to the handler
 				 */
 				if typeof handler == "object" && handler instanceof \Closure {
 					let handler = \Closure::bind(handler, this);
+					if modelBinder != null {
+						let routeName = matchedRoute->getName();
+						if routeName != null {
+							let bindCacheKey = "_PHMB_" . routeName;
+						} else {
+							let bindCacheKey = "_PHMB_" . matchedRoute->getPattern();
+						}
+						let params = modelBinder->bindToHandler(handler, params, bindCacheKey);
+					}
 				}
 
 				/**
 				 * Calling the Handler in the PHP userland
 				 */
-				let returnedValue = call_user_func_array(handler, params);
+
+				 if typeof handler == "array" {
+
+					let realHandler = handler[0];
+
+					if realHandler instanceof Controller && modelBinder != null {
+						let methodName = handler[1];
+						let bindCacheKey = "_PHMB_" . get_class(realHandler) . "_" . methodName;
+						let params = modelBinder->bindToHandler(realHandler, params, bindCacheKey, methodName);
+					}
+				}
+
+				/**
+				 * Instead of double call_user_func_array when lazy loading we will just call method
+				 */
+				if realHandler != null && realHandler instanceof LazyLoader {
+					let methodName = handler[1];
+					/**
+					 * There is seg fault if we try set directly value of method to returnedValue
+					 */
+					let lazyReturned = realHandler->callMethod(methodName, params, modelBinder);
+					let returnedValue = lazyReturned;
+				} else {
+					let returnedValue = call_user_func_array(handler, params);
+				}
+
+				/**
+				 * Calling afterBinding event
+				 */
+				if typeof eventsManager == "object" {
+					if eventsManager->fire("micro:afterBinding", this) === false {
+						return false;
+					}
+				}
+
+				let afterBindingHandlers = this->_afterBindingHandlers;
+				if typeof afterBindingHandlers == "array" {
+					let this->_stopped = false;
+
+					/**
+					 * Calls the after binding handlers
+					 */
+					for afterBinding in afterBindingHandlers {
+
+						if typeof afterBinding == "object" && afterBinding instanceof MiddlewareInterface {
+
+							/**
+							 * Call the middleware
+							 */
+							let status = afterBinding->call(this);
+
+							/**
+							 * Reload the status
+							 * break the execution if the middleware was stopped
+							 */
+							if this->_stopped {
+								break;
+							}
+
+							continue;
+						}
+
+						if !is_callable(afterBinding) {
+							throw new Exception("'afterBinding' handler is not callable");
+						}
+
+						/**
+						 * Call the afterBinding handler
+						 */
+						let status = call_user_func(afterBinding);
+
+						/**
+						 * break the execution if the middleware was stopped
+						 */
+						if this->_stopped {
+						    break;
+						}
+					}
+					/**
+					* Reload the 'stopped' status
+					 */
+					if this->_stopped {
+						return status;
+					}
+				}
 
 				/**
 				 * Update the returned value
@@ -747,6 +851,13 @@ class Micro extends Injectable implements \ArrayAccess
 						}
 
 						let status = call_user_func(after);
+
+						/**
+						 * break the execution if the middleware was stopped
+						 */
+						if this->_stopped {
+							break;
+						}
 					}
 				}
 
@@ -886,8 +997,10 @@ class Micro extends Injectable implements \ArrayAccess
 		 */
 		if typeof returnedValue == "string" {
 			let response = <ResponseInterface> dependencyInjector->getShared("response");
-			response->setContent(returnedValue);
-			response->send();
+			if !response->isSent() {
+				response->setContent(returnedValue);
+				response->send();
+			}
 		}
 
 		/**
@@ -898,7 +1011,9 @@ class Micro extends Injectable implements \ArrayAccess
 				/**
 				 * Automatically send the response
 				 */
-				returnedValue->send();
+				 if !returnedValue->isSent() {
+				 	returnedValue->send();
+				 }
 			}
 		}
 
@@ -958,7 +1073,7 @@ class Micro extends Injectable implements \ArrayAccess
 	 * Allows to register a shared service in the internal services container using the array syntax
 	 *
 	 *<code>
-	 *	$app['request'] = new \Phalcon\Http\Request();
+	 *	$app["request"] = new \Phalcon\Http\Request();
 	 *</code>
 	 *
 	 * @param string alias
@@ -973,7 +1088,9 @@ class Micro extends Injectable implements \ArrayAccess
 	 * Allows to obtain a shared service in the internal services container using the array syntax
 	 *
 	 *<code>
-	 *	var_dump($di['request']);
+	 * var_dump(
+	 *     $app["request"]
+	 * );
 	 *</code>
 	 *
 	 * @param string alias
@@ -1007,6 +1124,18 @@ class Micro extends Injectable implements \ArrayAccess
 	}
 
 	/**
+	 * Appends a afterBinding middleware to be called after model binding
+	 *
+	 * @param callable handler
+	 * @return \Phalcon\Mvc\Micro
+	 */
+	public function afterBinding(handler) -> <Micro>
+	{
+		let this->_afterBindingHandlers[] = handler;
+		return this;
+	}
+
+	/**
 	 * Appends an 'after' middleware to be called after execute the route
 	 *
 	 * @param callable handler
@@ -1032,11 +1161,59 @@ class Micro extends Injectable implements \ArrayAccess
 
 	/**
 	 * Returns the internal handlers attached to the application
-	 *
-	 * @return array
 	 */
-	public function getHandlers()
+	public function getHandlers() -> array
 	{
 		return this->_handlers;
+	}
+
+	/**
+	 * Gets model binder
+	 */
+	public function getModelBinder() -> <BinderInterface>|null
+	{
+		return this->_modelBinder;
+	}
+
+	/**
+	 * Sets model binder
+	 *
+	 * <code>
+	 * $micro = new Micro($di);
+	 * $micro->setModelBinder(new Binder(), 'cache');
+	 * </code>
+	 */
+	public function setModelBinder(<BinderInterface> modelBinder, var cache = null) -> <Micro>
+	{
+		var dependencyInjector;
+
+		if typeof cache == "string" {
+			let dependencyInjector = this->_dependencyInjector;
+			let cache = dependencyInjector->get(cache);
+		}
+
+		if cache != null {
+			modelBinder->setCache(cache);
+		}
+
+		let this->_modelBinder = modelBinder;
+
+		return this;
+	}
+
+	/**
+	 * Returns bound models from binder instance
+	 */
+	public function getBoundModels() -> array
+	{
+		var modelBinder;
+
+		let modelBinder = this->_modelBinder;
+
+		if modelBinder != null {
+			return modelBinder->getBoundModels();
+		}
+
+		return [];
 	}
 }

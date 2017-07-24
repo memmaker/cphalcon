@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -21,7 +21,6 @@ namespace Phalcon\Cache\Backend;
 
 use Phalcon\Cache\Backend;
 use Phalcon\Cache\Exception;
-use Phalcon\Cache\BackendInterface;
 use Phalcon\Cache\FrontendInterface;
 
 /**
@@ -34,22 +33,27 @@ use Phalcon\Cache\FrontendInterface;
  * use Phalcon\Cache\Frontend\Data as FrontData;
  *
  * // Cache data for 2 days
- * $frontCache = new FrontData([
- *     'lifetime' => 172800
- * ]);
+ * $frontCache = new FrontData(
+ *     [
+ *        "lifetime" => 172800,
+ *     ]
+ * );
  *
- * $cache = new Xcache($frontCache, [
- *     'prefix' => 'app-data'
- * ]);
+ * $cache = new Xcache(
+ *     $frontCache,
+ *     [
+ *         "prefix" => "app-data",
+ *     ]
+ * );
  *
  * // Cache arbitrary data
- * $cache->save('my-data', [1, 2, 3, 4, 5]);
+ * $cache->save("my-data", [1, 2, 3, 4, 5]);
  *
  * // Get data
- * $data = $cache->get('my-data');
+ * $data = $cache->get("my-data");
  *</code>
  */
-class Xcache extends Backend implements BackendInterface
+class Xcache extends Backend
 {
 
 	/**
@@ -100,7 +104,7 @@ class Xcache extends Backend implements BackendInterface
 	 *
 	 * @param int|string keyName
 	 * @param string content
-	 * @param long lifetime
+	 * @param int lifetime
 	 * @param boolean stopBuffer
 	 */
 	public function save(keyName = null, content = null, lifetime = null, boolean stopBuffer = true) -> boolean
@@ -218,12 +222,16 @@ class Xcache extends Backend implements BackendInterface
 	}
 
 	/**
-	 * Query the existing cached keys
+	 * Query the existing cached keys.
 	 *
-	 * @param string prefix
-	 * @return array
+	 * <code>
+	 * $cache->save("users-ids", [1, 2, 3]);
+	 * $cache->save("projects-ids", [4, 5, 6]);
+	 *
+	 * var_dump($cache->queryKeys("users")); // ["users-ids"]
+	 * </code>
 	 */
-	public function queryKeys(prefix = null) -> array
+	public function queryKeys(string prefix = null) -> array
 	{
 		var options, prefixed, specialKey, keys, retval, key, realKey;
 
@@ -240,22 +248,24 @@ class Xcache extends Backend implements BackendInterface
 		}
 
 		if specialKey == "" {
-			throw new Exception("Cached keys need to be enabled to use this function (options['statsKey'] == '_PHCM')!");
+			throw new Exception("Cached keys need to be enabled to use this function (options['statsKey'] == '_PHCX')!");
+		}
+
+		/**
+		 * Get the key from XCache (we cannot use xcache_list() as it is available only to
+		 * the administrator)
+		 */
+		let keys = xcache_get(specialKey);
+		if typeof keys != "array" {
+			return [];
 		}
 
 		let retval = [];
 
-		/**
-		* Get the key from XCache (we cannot use xcache_list() as it is available only to
-		* the administrator)
-		*/
-		let keys = xcache_get(specialKey);
-		if typeof keys == "array" {
-			for key, _ in keys {
-				if starts_with(key, prefixed) {
-					let realKey = substr(key, 5);
-					let retval[] = realKey;
-				}
+		for key, _ in keys {
+			if starts_with(key, prefixed) {
+				let realKey = substr(key, 5);
+				let retval[] = realKey;
 			}
 		}
 
@@ -266,8 +276,7 @@ class Xcache extends Backend implements BackendInterface
 	 * Checks if cache exists and it isn't expired
 	 *
 	 * @param string keyName
-	 * @param   long lifetime
-	 * @return boolean
+	 * @param int lifetime
 	 */
 	public function exists(var keyName = null, lifetime = null) -> boolean
 	{
@@ -288,11 +297,9 @@ class Xcache extends Backend implements BackendInterface
 	/**
 	* Atomic increment of a given key, by number $value
 	*
-	* @param  string keyName
-	* @param  long value
-	* @return mixed
+	* @param string keyName
 	*/
-	public function increment(var keyName, long value = 1)
+	public function increment(var keyName, int value = 1) -> int
 	{
 		var lastKey, newVal, origVal;
 
@@ -320,11 +327,9 @@ class Xcache extends Backend implements BackendInterface
 	/**
 	 * Atomic decrement of a given key, by number $value
 	 *
-	 * @param  string keyName
-	 * @param  long value
-	 * @return mixed
+	 * @param string keyName
 	 */
-	public function decrement(keyName, long value = 1)
+	public function decrement(keyName, int value = 1) -> int
 	{
 		var lastKey, newVal, origVal, success;
 

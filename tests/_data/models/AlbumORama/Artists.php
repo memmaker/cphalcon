@@ -5,17 +5,18 @@ namespace Phalcon\Test\Models\AlbumORama;
 use Phalcon\Mvc\Model;
 
 /**
- * \Phalcon\Test\Models\AlbumORama\Artists.php
- * Artists model class
+ * \Phalcon\Test\Models\AlbumORama\Artists
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @property string $name
+ *
+ * @copyright 2011-2017 Phalcon Team
+ * @link      https://www.phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Models\AlbumORama\Albums
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -23,10 +24,13 @@ use Phalcon\Mvc\Model;
  */
 class Artists extends Model
 {
-	public function initialize()
-	{
-		$this->hasMany('id', 'AlbumORama:Albums', 'artists_id', array(
-			'alias' => 'albums'
-		));
-	}
+    public function initialize()
+    {
+        $this->hasMany(
+            'id',
+            'AlbumORama:Albums',
+            'artists_id',
+            ['alias' => 'albums']
+        );
+    }
 }

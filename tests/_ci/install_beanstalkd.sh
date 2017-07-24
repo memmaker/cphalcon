@@ -1,22 +1,30 @@
 #!/usr/bin/env bash
+#
+#  Phalcon Framework
+#
+#  Copyright (c) 2011-2017 Phalcon Team (https://www.phalconphp.com)
+#
+#  This source file is subject to the New BSD License that is bundled
+#  with this package in the file LICENSE.txt.
+#
+#  If you did not receive a copy of the license and are unable to
+#  obtain it through the world-wide-web, please send an email
+#  to license@phalconphp.com so we can send you a copy immediately.
 
 set -eufo pipefail
 
-BEANSTALKD_VERSION="1.10"
-BEANSTALKD_SRC="https://github.com/kr/beanstalkd/archive/v${BEANSTALKD_VERSION}.tar.gz"
+CURRENT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+TRAVIS_BUILD_DIR="${TRAVIS_BUILD_DIR:-$(dirname $(dirname $CURRENT_DIR))}"
 
-if [ -z "${TEST_BT_HOST}" ]; then TEST_BT_HOST="127.0.0.1"; fi
-if [ -z "${TEST_BT_PORT}" ]; then TEST_BT_PORT="11300"; fi
+src_url="https://github.com/kr/beanstalkd/archive/v${BEANSTALKD_VERSION}.tar.gz"
+BEANSTALKD_DIR=$HOME/beanstalk
 
-mkdir -p "${HOME}/bin"
+# Use Travis cache
+if [ ! -f ${BEANSTALKD_DIR}/Makefile ]; then
+	curl -sSL "$src_url" | tar xz
+	cp -a "./beanstalkd-${BEANSTALKD_VERSION}/." ${BEANSTALKD_DIR}
+fi
 
-curl -L "${BEANSTALKD_SRC}" | tar xz
-pushd "beanstalkd-${BEANSTALKD_VERSION}"
-    make --silent -j4 &> /dev/null
-    mv beanstalkd "$HOME/bin"
-popd
-rm -rf "beanstalkd-${BEANSTALKD_VERSION}"
-
-${HOME}/bin/beanstalkd -l ${TEST_BT_HOST} -p ${TEST_BT_PORT} &
-beanstalkd -v
-sleep 5
+cd ${BEANSTALKD_DIR}
+make --silent -j"$(getconf _NPROCESSORS_ONLN)" &> /dev/null
+mv beanstalkd "$HOME/bin"

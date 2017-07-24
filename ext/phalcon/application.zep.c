@@ -67,7 +67,7 @@ PHP_METHOD(Phalcon_Application, __construct) {
 
 
 	if (Z_TYPE_P(dependencyInjector) == IS_OBJECT) {
-		zephir_update_property_this(this_ptr, SL("_dependencyInjector"), dependencyInjector TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_dependencyInjector"), dependencyInjector TSRMLS_CC);
 	}
 
 }
@@ -83,7 +83,7 @@ PHP_METHOD(Phalcon_Application, setEventsManager) {
 
 
 
-	zephir_update_property_this(this_ptr, SL("_eventsManager"), eventsManager TSRMLS_CC);
+	zephir_update_property_this(getThis(), SL("_eventsManager"), eventsManager TSRMLS_CC);
 	RETURN_THISW();
 
 }
@@ -95,7 +95,7 @@ PHP_METHOD(Phalcon_Application, getEventsManager) {
 
 	
 
-	RETURN_MEMBER(this_ptr, "_eventsManager");
+	RETURN_MEMBER(getThis(), "_eventsManager");
 
 }
 
@@ -104,23 +104,23 @@ PHP_METHOD(Phalcon_Application, getEventsManager) {
  *
  * <code>
  * $this->registerModules(
- * 	[
- * 		'frontend' => [
- * 			'className' => 'Multiple\Frontend\Module',
- * 			'path'      => '../apps/frontend/Module.php'
- * 		],
- * 		'backend' => [
- * 			'className' => 'Multiple\Backend\Module',
- * 			'path'      => '../apps/backend/Module.php'
- * 		]
- * 	]
+ *     [
+ *         "frontend" => [
+ *             "className" => "Multiple\\Frontend\\Module",
+ *             "path"      => "../apps/frontend/Module.php",
+ *         ],
+ *         "backend" => [
+ *             "className" => "Multiple\\Backend\\Module",
+ *             "path"      => "../apps/backend/Module.php",
+ *         ],
+ *     ]
  * );
  * </code>
  */
 PHP_METHOD(Phalcon_Application, registerModules) {
 
-	zend_bool merge, _0;
-	zval *modules_param = NULL, *merge_param = NULL, *_1, *_2$$3, *_3$$3;
+	zend_bool merge;
+	zval *modules_param = NULL, *merge_param = NULL, *_0$$3, *_1$$3;
 	zval *modules = NULL;
 
 	ZEPHIR_MM_GROW();
@@ -134,19 +134,13 @@ PHP_METHOD(Phalcon_Application, registerModules) {
 	}
 
 
-	_0 = merge == 1;
-	if (_0) {
-		ZEPHIR_OBS_VAR(_1);
-		zephir_read_property_this(&_1, this_ptr, SL("_modules"), PH_NOISY_CC);
-		_0 = Z_TYPE_P(_1) == IS_ARRAY;
-	}
-	if (_0) {
-		ZEPHIR_INIT_VAR(_2$$3);
-		_3$$3 = zephir_fetch_nproperty_this(this_ptr, SL("_modules"), PH_NOISY_CC);
-		zephir_fast_array_merge(_2$$3, &(_3$$3), &(modules) TSRMLS_CC);
-		zephir_update_property_this(this_ptr, SL("_modules"), _2$$3 TSRMLS_CC);
+	if (merge) {
+		ZEPHIR_INIT_VAR(_0$$3);
+		_1$$3 = zephir_fetch_nproperty_this(this_ptr, SL("_modules"), PH_NOISY_CC);
+		zephir_fast_array_merge(_0$$3, &(_1$$3), &(modules) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_modules"), _0$$3 TSRMLS_CC);
 	} else {
-		zephir_update_property_this(this_ptr, SL("_modules"), modules TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_modules"), modules TSRMLS_CC);
 	}
 	RETURN_THIS();
 
@@ -159,7 +153,7 @@ PHP_METHOD(Phalcon_Application, getModules) {
 
 	
 
-	RETURN_MEMBER(this_ptr, "_modules");
+	RETURN_MEMBER(getThis(), "_modules");
 
 }
 
@@ -168,18 +162,18 @@ PHP_METHOD(Phalcon_Application, getModules) {
  */
 PHP_METHOD(Phalcon_Application, getModule) {
 
-	int ZEPHIR_LAST_CALL_STATUS;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
 	zval *name_param = NULL, *module = NULL, *_0, *_1$$3;
 	zval *name = NULL, *_2$$3;
 
 	ZEPHIR_MM_GROW();
 	zephir_fetch_params(1, 1, 0, &name_param);
 
-	if (unlikely(Z_TYPE_P(name_param) != IS_STRING && Z_TYPE_P(name_param) != IS_NULL)) {
+	if (UNEXPECTED(Z_TYPE_P(name_param) != IS_STRING && Z_TYPE_P(name_param) != IS_NULL)) {
 		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'name' must be a string") TSRMLS_CC);
 		RETURN_MM_NULL();
 	}
-	if (likely(Z_TYPE_P(name_param) == IS_STRING)) {
+	if (EXPECTED(Z_TYPE_P(name_param) == IS_STRING)) {
 		zephir_get_strval(name, name_param);
 	} else {
 		ZEPHIR_INIT_VAR(name);
@@ -215,11 +209,11 @@ PHP_METHOD(Phalcon_Application, setDefaultModule) {
 	ZEPHIR_MM_GROW();
 	zephir_fetch_params(1, 1, 0, &defaultModule_param);
 
-	if (unlikely(Z_TYPE_P(defaultModule_param) != IS_STRING && Z_TYPE_P(defaultModule_param) != IS_NULL)) {
+	if (UNEXPECTED(Z_TYPE_P(defaultModule_param) != IS_STRING && Z_TYPE_P(defaultModule_param) != IS_NULL)) {
 		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'defaultModule' must be a string") TSRMLS_CC);
 		RETURN_MM_NULL();
 	}
-	if (likely(Z_TYPE_P(defaultModule_param) == IS_STRING)) {
+	if (EXPECTED(Z_TYPE_P(defaultModule_param) == IS_STRING)) {
 		zephir_get_strval(defaultModule, defaultModule_param);
 	} else {
 		ZEPHIR_INIT_VAR(defaultModule);
@@ -227,7 +221,7 @@ PHP_METHOD(Phalcon_Application, setDefaultModule) {
 	}
 
 
-	zephir_update_property_this(this_ptr, SL("_defaultModule"), defaultModule TSRMLS_CC);
+	zephir_update_property_this(getThis(), SL("_defaultModule"), defaultModule TSRMLS_CC);
 	RETURN_THIS();
 
 }
@@ -239,7 +233,7 @@ PHP_METHOD(Phalcon_Application, getDefaultModule) {
 
 	
 
-	RETURN_MEMBER(this_ptr, "_defaultModule");
+	RETURN_MEMBER(getThis(), "_defaultModule");
 
 }
 
@@ -257,16 +251,27 @@ zend_object_value zephir_init_properties_Phalcon_Application(zend_class_entry *c
 		ZEPHIR_MM_GROW();
 	
 	{
-		zval *this_ptr = NULL;
-		ZEPHIR_CREATE_OBJECT(this_ptr, class_type);
+		zval zthis       = zval_used_for_init;
+		zval *this_ptr   = &zthis;
+		zend_object* obj = ecalloc(1, sizeof(zend_object));
+		zend_object_value retval;
+
+		zend_object_std_init(obj, class_type TSRMLS_CC);
+		object_properties_init(obj, class_type);
+		retval.handle   = zend_objects_store_put(obj, (zend_objects_store_dtor_t)zend_objects_destroy_object, zephir_free_object_storage, NULL TSRMLS_CC);
+		retval.handlers = zend_get_std_object_handlers();
+
+		Z_TYPE(zthis)   = IS_OBJECT;
+		Z_OBJVAL(zthis) = retval;
+
 		_0 = zephir_fetch_nproperty_this(this_ptr, SL("_modules"), PH_NOISY_CC);
 		if (Z_TYPE_P(_0) == IS_NULL) {
 			ZEPHIR_INIT_VAR(_1$$3);
 			array_init(_1$$3);
-			zephir_update_property_this(this_ptr, SL("_modules"), _1$$3 TSRMLS_CC);
+			zephir_update_property_this(getThis(), SL("_modules"), _1$$3 TSRMLS_CC);
 		}
 		ZEPHIR_MM_RESTORE();
-		return Z_OBJVAL_P(this_ptr);
+		return retval;
 	}
 
 }

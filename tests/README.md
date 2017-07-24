@@ -13,7 +13,7 @@ The testing suite can be run on your own machine. The main dependency is  [Codec
 
 ```sh
 # run this command from project root
-$ composer install --dev --prefer-source
+composer install --dev --prefer-source
 ```
 
 You can read more about installing and configuring Codeception from the following resources:
@@ -21,22 +21,21 @@ You can read more about installing and configuring Codeception from the followin
 - [Codeception Introduction][2]
 - [Codeception Console Commands][3]
 
-## Run tests
+A MySQL/PostgreSQL databases is also bundled in this suite. You can create a databases as follows:
 
-First you need to re-generate base classes for all suites:
-
+*MySQL*
 ```sh
-$ vendor/bin/codecept build
+echo 'create database phalcon_test charset=utf8mb4 collate=utf8mb4_unicode_ci;' | mysql -u root
+mysql -uroot phalcon_test < tests/_data/schemas/mysql/phalcon_test.sql
 ```
 
-A MySQL database is also bundled in this suite.
-The SQL file is required for several tests. You can create a database as follows:
-
+*PostgreSQL*
 ```sh
-$ echo 'create database phalcon_test charset=utf8mb4 collate=utf8mb4_unicode_ci;' | mysql -u root
+psql -c 'create database phalcon_test;' -U postgres
+psql -U postgres phalcon_test -q -f tests/_data/schemas/postgresql/phalcon_test.sql
 ```
 
-**Note:** For these tests we use the user `root` without a password.
+**Note:** For these MySQL-related we use the user `root` without a password.
 You may need to change this in `codeception.yml` file.
 
 Obviously, Beanstalk-tests use Beanstalk, Memcached-tests use Memcached, etc.
@@ -53,6 +52,10 @@ We use the following settings of these services:
 * Host: `127.0.0.1`
 * Port: `11211`
 
+**SQLite**
+
+* DB Name: `tests/_output/tests/phalcon_test.sqlite`
+
 **MySQL**
 
 * Host: `127.0.0.1`
@@ -61,6 +64,14 @@ We use the following settings of these services:
 * Password: `''` (empty string)
 * DB Name: `phalcon_test`
 * Charset: `utf8`
+
+**PostgreSQL**
+
+* Host: `127.0.0.1`
+* Port: `5432`
+* Username: `postgres`
+* Password: `''` (empty string)
+* DB Name: `phalcon_test`
 
 **Mongo**
 
@@ -74,6 +85,7 @@ We use the following settings of these services:
 
 * Host: `127.0.0.1`
 * Port: `6379`
+* DB Index `0`
 
 You can change the connection settings of these services **before** running tests by using [environment variables][8]:
 
@@ -85,6 +97,10 @@ export TEST_BT_PORT="11300"
 # Memcached
 export TEST_MC_HOST="127.0.0.1"
 export TEST_MC_PORT="11211"
+export TEST_MC_WEIGHT="1"
+
+# SQLite
+export TEST_DB_SQLITE_NAME="/tmp/phalcon_test.sqlite"
 
 # MySQL
 export TEST_DB_MYSQL_DSN="mysql:host=localhost;dbname=phalcon_test"
@@ -94,6 +110,13 @@ export TEST_DB_MYSQL_USER="root"
 export TEST_DB_MYSQL_PASSWD=""
 export TEST_DB_MYSQL_NAME="phalcon_test"
 export TEST_DB_MYSQL_CHARSET="utf8"
+
+# Postgresql
+export TEST_DB_POSTGRESQL_HOST="127.0.0.1"
+export TEST_DB_POSTGRESQL_PORT="5432"
+export TEST_DB_POSTGRESQL_USER="postgres"
+export TEST_DB_POSTGRESQL_PASSWD=""
+export TEST_DB_POSTGRESQL_NAME="phalcon_test"
 
 # Mongo
 export TEST_DB_MONGO_HOST="127.0.0.1"
@@ -105,52 +128,42 @@ export TEST_DB_MONGO_NAME="phalcon_test"
 # Redis
 export TEST_RS_HOST="127.0.0.1"
 export TEST_RS_PORT="6379"
+export TEST_RS_DB="0"
+```
+
+## Run tests
+
+First you need to re-generate base classes for all suites:
+
+```sh
+vendor/bin/codecept build
 ```
 
 Once the database is created, run the tests on a terminal:
 
 ```sh
-$ vendor/bin/codecept run
+vendor/bin/codecept run
 # OR
-$ vendor/bin/codecept run --debug # Detailed output
+vendor/bin/codecept run --debug # Detailed output
 ```
 
 Execute `unit` test with `run unit` command:
 
 ```sh
-$ vendor/bin/codecept run unit
+vendor/bin/codecept run unit
 ```
 
 Execute all tests from a folder:
 
 ```sh
-$ vendor/bin/codecept run test/unit/some/folder
+vendor/bin/codecept run tests/unit/some/folder/
 ```
 
 Execute single test:
 
 ```sh
-$ vendor/bin/codecept run test/unit/some/folder/some/test/file.php
+vendor/bin/codecept run tests/unit/some/folder/some/test/file.php
 ```
-
-## CodeCoverage
-
-How can we learn of CodeCoverage?
-
-Actually, for the reason that Phalcon is ultimately a binary file (`phalcon.so` or `phalcon.dll`),
-it is quite difficult to learn of code coverage at the moment. For example, Xdebug can apply it only to php files.
-
-We create a **Proxy Class** for each internal class and place all former ones into [a special directory][7].
-We test these proxy classes by enabling **CodeCoverage**, in doing so we get information about code coverage.
-
-Of course, it does not give us an insight into the coverage of control structures, but at least we cover the method
-execution result.
-
-**Note:** That if you create such proxy class then its method signatures must fully accord with the original.
-So only we can learn of the real code coverage and find out the missing tests.
-If you delete or change a method in the original class, you must do the same in the proxy class.
-Also, it should be noted that all of the aforesaid holds only for public methods.
-You must not create protected or private methods.
 
 ## Todo
 
@@ -163,7 +176,7 @@ You must not create protected or private methods.
 
 ## Help
 
-**Note:** Cache unit-tests are slower than others tests because they use wait states (sleep command) to expire generated caches.
+**Note:** Cache-related tests are slower than others tests because they use wait states (sleep command) to expire generated caches.
 
 The file `.travis.yml` contains full instructions to test Phalcon Framework on Ubuntu 12+
 If you cannot run the tests, please check the file `.travis.yml` for an in depth view on how test Phalcon.
@@ -172,7 +185,7 @@ Additional information regarding our testing environment can be found by looking
 <hr>
 Please report any issue if you find out bugs or memory leaks.<br>Thanks!
 
-Phalcon Framework Team<br>2016
+Phalcon Framework Team<br>2017
 
 [0]: https://travis-ci.org/
 [1]: http://codeception.com/

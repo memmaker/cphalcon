@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -423,6 +423,24 @@ class Sqlite extends Dialect
 	}
 
 	/**
+	 * Generates SQL to truncate a table
+	 */
+	public function truncateTable(string! tableName, string! schemaName) -> string
+	{
+		var sql, table;
+
+		if schemaName {
+			let table = schemaName . "\".\"" . tableName;
+		} else {
+			let table = tableName;
+		}
+
+		let sql = "DELETE FROM \"" . table . "\"";
+
+		return sql;
+	}
+
+	/**
 	 * Generates SQL to drop a table
 	 */
 	public function dropTable(string! tableName, string schemaName = null, boolean! ifExists = true) -> string
@@ -473,8 +491,9 @@ class Sqlite extends Dialect
 	 * Generates SQL checking for the existence of a schema.table
 	 *
 	 * <code>
-	 *    echo $dialect->tableExists("posts", "blog");
-	 *    echo $dialect->tableExists("posts");
+	 * echo $dialect->tableExists("posts", "blog");
+	 *
+	 * echo $dialect->tableExists("posts");
 	 * </code>
 	 */
 	public function tableExists(string! tableName, string schemaName = null) -> string
@@ -494,7 +513,9 @@ class Sqlite extends Dialect
 	 * Generates SQL describing a table
 	 *
 	 * <code>
-	 *    print_r($dialect->describeColumns("posts"));
+	 * print_r(
+	 *     $dialect->describeColumns("posts")
+	 * );
 	 * </code>
 	 */
 	public function describeColumns(string! table, string schema = null) -> string
@@ -506,7 +527,9 @@ class Sqlite extends Dialect
 	 * List all tables in database
 	 *
 	 * <code>
-	 *     print_r($dialect->listTables("blog"))
+	 * print_r(
+	 *     $dialect->listTables("blog")
+	 * );
 	 * </code>
 	 */
 	public function listTables(string schemaName = null) -> string
@@ -526,7 +549,9 @@ class Sqlite extends Dialect
 	 * Generates the SQL to get query list of indexes
 	 *
 	 * <code>
-	 *     print_r($dialect->listIndexesSql("blog"))
+	 * print_r(
+	 *     $dialect->listIndexesSql("blog")
+	 * );
 	 * </code>
 	 */
 	public function listIndexesSql(string! table, string schema = null, string keyName = null) -> string

@@ -30,9 +30,11 @@
  * Stores model meta-data in PHP files.
  *
  *<code>
- * $metaData = new \Phalcon\Mvc\Model\Metadata\Files(array(
- *    'metaDataDir' => 'app/cache/metadata/'
- * ));
+ * $metaData = new \Phalcon\Mvc\Model\Metadata\Files(
+ *     [
+ *         "metaDataDir" => "app/cache/metadata/",
+ *     ]
+ * );
  *</code>
  */
 ZEPHIR_INIT_CLASS(Phalcon_Mvc_Model_MetaData_Files) {
@@ -66,7 +68,7 @@ PHP_METHOD(Phalcon_Mvc_Model_MetaData_Files, __construct) {
 
 	if (Z_TYPE_P(options) == IS_ARRAY) {
 		if (zephir_array_isset_string_fetch(&metaDataDir, options, SS("metaDataDir"), 1 TSRMLS_CC)) {
-			zephir_update_property_this(this_ptr, SL("_metaDataDir"), metaDataDir TSRMLS_CC);
+			zephir_update_property_this(getThis(), SL("_metaDataDir"), metaDataDir TSRMLS_CC);
 		}
 	}
 
@@ -86,11 +88,11 @@ PHP_METHOD(Phalcon_Mvc_Model_MetaData_Files, read) {
 	ZEPHIR_MM_GROW();
 	zephir_fetch_params(1, 1, 0, &key_param);
 
-	if (unlikely(Z_TYPE_P(key_param) != IS_STRING && Z_TYPE_P(key_param) != IS_NULL)) {
+	if (UNEXPECTED(Z_TYPE_P(key_param) != IS_STRING && Z_TYPE_P(key_param) != IS_NULL)) {
 		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'key' must be a string") TSRMLS_CC);
 		RETURN_MM_NULL();
 	}
-	if (likely(Z_TYPE_P(key_param) == IS_STRING)) {
+	if (EXPECTED(Z_TYPE_P(key_param) == IS_STRING)) {
 		zephir_get_strval(key, key_param);
 	} else {
 		ZEPHIR_INIT_VAR(key);
@@ -130,11 +132,11 @@ PHP_METHOD(Phalcon_Mvc_Model_MetaData_Files, write) {
 	ZEPHIR_MM_GROW();
 	zephir_fetch_params(1, 2, 0, &key_param, &data);
 
-	if (unlikely(Z_TYPE_P(key_param) != IS_STRING && Z_TYPE_P(key_param) != IS_NULL)) {
+	if (UNEXPECTED(Z_TYPE_P(key_param) != IS_STRING && Z_TYPE_P(key_param) != IS_NULL)) {
 		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'key' must be a string") TSRMLS_CC);
 		RETURN_MM_NULL();
 	}
-	if (likely(Z_TYPE_P(key_param) == IS_STRING)) {
+	if (EXPECTED(Z_TYPE_P(key_param) == IS_STRING)) {
 		zephir_get_strval(key, key_param);
 	} else {
 		ZEPHIR_INIT_VAR(key);
@@ -157,7 +159,7 @@ PHP_METHOD(Phalcon_Mvc_Model_MetaData_Files, write) {
 	ZEPHIR_CONCAT_SVS(_5, "<?php return ", _4, "; ");
 	zephir_file_put_contents(_3, path, _5 TSRMLS_CC);
 	if (ZEPHIR_IS_FALSE_IDENTICAL(_3)) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_model_exception_ce, "Meta-Data directory cannot be written", "phalcon/mvc/model/metadata/files.zep", 86);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_model_exception_ce, "Meta-Data directory cannot be written", "phalcon/mvc/model/metadata/files.zep", 88);
 		return;
 	}
 	ZEPHIR_MM_RESTORE();
@@ -171,16 +173,27 @@ zend_object_value zephir_init_properties_Phalcon_Mvc_Model_MetaData_Files(zend_c
 		ZEPHIR_MM_GROW();
 	
 	{
-		zval *this_ptr = NULL;
-		ZEPHIR_CREATE_OBJECT(this_ptr, class_type);
+		zval zthis       = zval_used_for_init;
+		zval *this_ptr   = &zthis;
+		zend_object* obj = ecalloc(1, sizeof(zend_object));
+		zend_object_value retval;
+
+		zend_object_std_init(obj, class_type TSRMLS_CC);
+		object_properties_init(obj, class_type);
+		retval.handle   = zend_objects_store_put(obj, (zend_objects_store_dtor_t)zend_objects_destroy_object, zephir_free_object_storage, NULL TSRMLS_CC);
+		retval.handlers = zend_get_std_object_handlers();
+
+		Z_TYPE(zthis)   = IS_OBJECT;
+		Z_OBJVAL(zthis) = retval;
+
 		_0 = zephir_fetch_nproperty_this(this_ptr, SL("_metaData"), PH_NOISY_CC);
 		if (Z_TYPE_P(_0) == IS_NULL) {
 			ZEPHIR_INIT_VAR(_1$$3);
 			array_init(_1$$3);
-			zephir_update_property_this(this_ptr, SL("_metaData"), _1$$3 TSRMLS_CC);
+			zephir_update_property_this(getThis(), SL("_metaData"), _1$$3 TSRMLS_CC);
 		}
 		ZEPHIR_MM_RESTORE();
-		return Z_OBJVAL_P(this_ptr);
+		return retval;
 	}
 
 }

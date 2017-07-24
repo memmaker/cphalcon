@@ -2,24 +2,24 @@
 
 namespace Phalcon\Test\Unit\Flash;
 
-use Codeception\Lib\Connector\PhalconMemorySession;
-use Phalcon\Test\Proxy\Flash\Session;
-use Phalcon\Test\Module\UnitTest;
 use Phalcon\Di;
 use Phalcon\Escaper;
+use Phalcon\Flash\Session;
+use Phalcon\Test\Module\UnitTest;
+use Codeception\Lib\Connector\Phalcon\MemorySession;
 
 /**
  * \Phalcon\Test\Unit\Flash\SessionTest
  * Tests the Phalcon\Flash\Session component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit\Flash
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -45,7 +45,7 @@ class SessionTest extends UnitTest
         $flash = new Session($this->classes);
         $di = new Di();
 
-        $di->setShared('session', new PhalconMemorySession());
+        $di->setShared('session', new MemorySession());
         $di->setShared('escaper', new Escaper());
 
         $flash->setDI($di);
@@ -94,12 +94,15 @@ class SessionTest extends UnitTest
 
                 expect($actual)
                     ->equals("<div class=\"{$function}Message\">&lt;script&gt;alert(&#039;This will execute as JavaScript!&#039;)&lt;/script&gt;</div>" . PHP_EOL);
-            }, ['examples' => [
-                ['error'],
-                ['success'],
-                ['notice'],
-                ['warning'],
-            ]]
+            },
+            [
+                'examples' => [
+                    ['error'],
+                    ['success'],
+                    ['notice'],
+                    ['warning'],
+                ]
+            ]
         );
     }
 
@@ -209,11 +212,14 @@ class SessionTest extends UnitTest
                 ob_end_clean();
 
                 expect($actual)->equals($expected);
-            }, ['examples' => [
-                'error'   => ['function' => 'error'],
-                'success' => ['function' => 'success'],
-                'notice'  => ['function' => 'notice'],
-            ]]
+            },
+            [
+                'examples' => [
+                    'error'   => ['function' => 'error'],
+                    'success' => ['function' => 'success'],
+                    'notice'  => ['function' => 'notice'],
+                ]
+            ]
         );
     }
 }

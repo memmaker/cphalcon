@@ -1,19 +1,19 @@
 
 /*
  +------------------------------------------------------------------------+
- | Phalcon Framework													  |
+ | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)	      |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled	  |
- | with this package in the file docs/LICENSE.txt.						  |
- |																		  |
- | If you did not receive a copy of the license and are unable to		  |
- | obtain it through the world-wide-web, please send an email			  |
- | to license@phalconphp.com so we can send you a copy immediately.	      |
+ | This source file is subject to the New BSD License that is bundled     |
+ | with this package in the file LICENSE.txt.                             |
+ |                                                                        |
+ | If you did not receive a copy of the license and are unable to         |
+ | obtain it through the world-wide-web, please send an email             |
+ | to license@phalconphp.com so we can send you a copy immediately.       |
  +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>					  |
- |		  Eduar Carvajal <eduar@phalconphp.com>					          |
+ | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
+ |          Eduar Carvajal <eduar@phalconphp.com>                         |
  +------------------------------------------------------------------------+
  */
 
@@ -199,11 +199,11 @@ class Simple extends Resultset
 							throw new Exception("Column '" . key . "' is not part of the column map");
 						}
 
-                        if typeof renamedKey == "array" {
+						if typeof renamedKey == "array" {
 
-		                    if !fetch renamedKey, renamedKey[0] {
-                	            throw new Exception("Column '" . key . "' is not part of the column map");
-                        	}
+							if !fetch renamedKey, renamedKey[0] {
+								throw new Exception("Column '" . key . "' is not part of the column map");
+							}
 						}
 
 						let renamed[renamedKey] = value;
@@ -231,11 +231,12 @@ class Simple extends Resultset
 		 * Serialize the cache using the serialize function
 		 */
 		return serialize([
-			"model"	   : this->_model,
-			"cache"	   : this->_cache,
-			"rows"		: this->toArray(false),
-			"columnMap"   : this->_columnMap,
-			"hydrateMode" : this->_hydrateMode
+			"model"         : this->_model,
+			"cache"         : this->_cache,
+			"rows"          : this->toArray(false),
+			"columnMap"     : this->_columnMap,
+			"hydrateMode"   : this->_hydrateMode,
+			"keepSnapshots" : this->_keepSnapshots
 		]);
 	}
 
@@ -244,7 +245,7 @@ class Simple extends Resultset
 	 */
 	public function unserialize(string! data) -> void
 	{
-		var resultset;
+		var resultset, keepSnapshots;
 
 		let resultset = unserialize(data);
 		if typeof resultset != "array" {
@@ -257,5 +258,9 @@ class Simple extends Resultset
 			this->_cache = resultset["cache"],
 			this->_columnMap = resultset["columnMap"],
 			this->_hydrateMode = resultset["hydrateMode"];
+
+		if fetch keepSnapshots, resultset["keepSnapshots"] {
+		    let this->_keepSnapshots = keepSnapshots;
+		}
 	}
 }

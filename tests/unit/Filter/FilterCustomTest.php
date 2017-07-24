@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit\Filter;
 
-use Phalcon\Test\Proxy\Filter;
+use Phalcon\Filter;
 use Phalcon\Test\Unit\Filter\Helper\IPv4;
 
 /**
  * \Phalcon\Test\Unit\Filter\FilterCustomTest
  * Tests the \Phalcon\Filter component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit\Filter
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -55,7 +55,6 @@ class FilterCustomTest extends Helper\FilterBase
         $this->specify(
             "custom filter does not return correct IP",
             function () {
-
                 $filter = new Filter();
 
                 $filter->add('ipv4', new IPv4());
@@ -78,7 +77,6 @@ class FilterCustomTest extends Helper\FilterBase
         $this->specify(
             "lambda custom filter does not return false",
             function () {
-
                 $filter = new Filter();
 
                 $filter->add(
@@ -107,7 +105,6 @@ class FilterCustomTest extends Helper\FilterBase
         $this->specify(
             "lambda custom filter does not return true",
             function () {
-
                 $filter = new Filter();
 
                 $filter->add(

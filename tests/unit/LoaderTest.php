@@ -2,22 +2,22 @@
 
 namespace Phalcon\Test\Unit;
 
-use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Loader;
+use Phalcon\Loader;
 use Phalcon\Events\Manager;
+use Phalcon\Test\Module\UnitTest;
 
 /**
  * \Phalcon\Test\Unit\LoaderTest
  * Tests the \Phalcon\Loader component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -294,10 +294,10 @@ class LoaderTest extends UnitTest
                 $eventsManager = new Manager();
                 $trace = [];
 
-                $eventsManager->attach('loader', function($event, $loader) use (&$trace) {
+                $eventsManager->attach('loader', function ($event, $loader) use (&$trace) {
                     /** @var \Phalcon\Events\Event $event */
                     /** @var Loader $loader */
-                    if(!isset($trace[$event->getType()])){
+                    if (!isset($trace[$event->getType()])) {
                         $trace[$event->getType()] = [];
                     }
                     $trace[$event->getType()][] = $loader->getCheckedPath();
@@ -309,7 +309,7 @@ class LoaderTest extends UnitTest
 
                 expect(new \VousTest())->isInstanceOf('VousTest');
                 expect($trace)->equals([
-                    'beforeCheckClass' => [0 => NULL],
+                    'beforeCheckClass' => [0 => null],
                     'beforeCheckPath'  => [0 => PATH_DATA . 'vendor/Example/Other/VousTest.php'],
                     'pathFound'        => [0 => PATH_DATA . 'vendor/Example/Other/VousTest.php'],
                 ]);

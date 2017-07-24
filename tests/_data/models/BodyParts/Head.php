@@ -7,13 +7,13 @@ use Phalcon\Mvc\Model;
 /**
  * \Phalcon\Test\Models\Head
  *
- * @copyright (c) 2011-2016 Phalcon Team
+ * @copyright 2011-2017 Phalcon Team
  * @link      http://www.phalconphp.com
  * @author    Radek Crlík <radekcrlik@gmail.com>
  * @package   Phalcon\Test\Models\BodyParts
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -21,11 +21,10 @@ use Phalcon\Mvc\Model;
  */
 class Head extends Model
 {
+    public $id;
 
-	public $id;
-
-	public function initialize()
-	{
-		$this->setSource('issue12071_head');
-	}
+    public function initialize()
+    {
+        $this->setSource('issue12071_head');
+    }
 }

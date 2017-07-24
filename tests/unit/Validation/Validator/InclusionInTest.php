@@ -10,7 +10,7 @@ use Phalcon\Validation\Validator\InclusionIn;
  * \Phalcon\Test\Unit\Validation\Validator\InclusionInTest
  * Tests the \Phalcon\Validation\Validator\InclusionIn component
  *
- * @copyright (c) 2011-2016 Phalcon Team
+ * @copyright (c) 2011-2017 Phalcon Team
  * @link      http://www.phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
@@ -18,7 +18,7 @@ use Phalcon\Validation\Validator\InclusionIn;
  * @package   Phalcon\Test\Unit\Validation\Validator
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -34,16 +34,46 @@ class InclusionInTest extends UnitTest
      */
     public function testSingleField()
     {
-        $this->specify('Test inclusion in validator with single field.', function () {
-            $validation = new Validation();
-            $validation->add('type', new InclusionIn([
-                'domain' => ['mechanical', 'cyborg'],
-            ]));
-            $messages = $validation->validate(['type' => 'cyborg']);
-            expect($messages->count())->equals(0);
-            $messages = $validation->validate(['type' => 'hydraulic']);
-            expect($messages->count())->equals(1);
-        });
+        $this->specify(
+            'Test inclusion in validator with single field.',
+            function () {
+                $validation = new Validation();
+
+                $validation->add(
+                    'status',
+                    new InclusionIn(
+                        [
+                            'domain' => ['A', 'I']
+                        ]
+                    )
+                );
+
+                $messages = $validation->validate([]);
+
+                $expectedMessages = Validation\Message\Group::__set_state(
+                    [
+                        '_messages' => [
+                            0 => Validation\Message::__set_state(
+                                [
+                                    '_type'    => 'InclusionIn',
+                                    '_message' => 'Field status must be a part of list: A, I',
+                                    '_field'   => 'status',
+                                    '_code'    => 0,
+                                ]
+                            )
+                        ]
+                    ]
+                );
+
+                expect($expectedMessages)->equals($messages);
+
+                $messages = $validation->validate(['status' => 'X']);
+                expect($expectedMessages)->equals($messages);
+
+                $messages = $validation->validate(['status' => 'A']);
+                expect($messages)->count(0);
+            }
+        );
     }
 
     /**
@@ -110,5 +140,50 @@ class InclusionInTest extends UnitTest
             expect($messages->offsetGet(0)->getMessage())->equals($validationMessages['type']);
             expect($messages->offsetGet(1)->getMessage())->equals($validationMessages['anotherType']);
         });
+    }
+
+    public function testCustomMessage()
+    {
+        $this->specify(
+            'Test Inclusion In validator works with a custom message.',
+            function () {
+                $validation = new Validation();
+
+                $validation->add(
+                    'status',
+                    new InclusionIn(
+                        [
+                            'message' => 'The status must be A=Active or I=Inactive',
+                            'domain' => ['A', 'I']
+                        ]
+                    )
+                );
+
+                $messages = $validation->validate([]);
+
+                $expectedMessages = Validation\Message\Group::__set_state(
+                    [
+                        '_messages' => [
+                            0 => Validation\Message::__set_state(
+                                [
+                                    '_type'    => 'InclusionIn',
+                                    '_message' => 'The status must be A=Active or I=Inactive',
+                                    '_field'   => 'status',
+                                    '_code'    => '0',
+                                ]
+                            )
+                        ]
+                    ]
+                );
+
+                expect($expectedMessages)->equals($messages);
+
+                $messages = $validation->validate(['status' => 'x=1']);
+                expect($expectedMessages)->equals($messages);
+
+                $messages = $validation->validate(['status' => 'A']);
+                expect($messages)->count(0);
+            }
+        );
     }
 }

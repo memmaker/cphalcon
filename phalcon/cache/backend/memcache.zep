@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -20,7 +20,6 @@
 namespace Phalcon\Cache\Backend;
 
 use Phalcon\Cache\Backend;
-use Phalcon\Cache\BackendInterface;
 use Phalcon\Cache\Exception;
 use Phalcon\Cache\FrontendInterface;
 
@@ -36,25 +35,30 @@ use Phalcon\Cache\FrontendInterface;
  * use Phalcon\Cache\Frontend\Data as FrontData;
  *
  * // Cache data for 2 days
- * $frontCache = new FrontData([
- *     'lifetime' => 172800
- * ]);
+ * $frontCache = new FrontData(
+ *     [
+ *         "lifetime" => 172800,
+ *     ]
+ * );
  *
  * // Create the Cache setting memcached connection options
- * $cache = new Memcache($frontCache, [
- *     'host' => 'localhost',
- *     'port' => 11211,
- *     'persistent' => false
- * ]);
+ * $cache = new Memcache(
+ *     $frontCache,
+ *     [
+ *         "host"       => "localhost",
+ *         "port"       => 11211,
+ *         "persistent" => false,
+ *     ]
+ * );
  *
  * // Cache arbitrary data
- * $cache->save('my-data', [1, 2, 3, 4, 5]);
+ * $cache->save("my-data", [1, 2, 3, 4, 5]);
  *
  * // Get data
- * $data = $cache->get('my-data');
+ * $data = $cache->get("my-data");
  *</code>
  */
-class Memcache extends Backend implements BackendInterface
+class Memcache extends Backend
 {
 
 	protected _memcache = null;
@@ -171,7 +175,7 @@ class Memcache extends Backend implements BackendInterface
 	 *
 	 * @param int|string keyName
 	 * @param string content
-	 * @param long lifetime
+	 * @param int lifetime
 	 * @param boolean stopBuffer
 	 */
 	public function save(var keyName = null, var content = null, var lifetime = null, boolean stopBuffer = true) -> boolean
@@ -313,14 +317,18 @@ class Memcache extends Backend implements BackendInterface
 	}
 
 	/**
-	 * Query the existing cached keys
+	 * Query the existing cached keys.
 	 *
-	 * @param string prefix
-	 * @return array
+	 * <code>
+	 * $cache->save("users-ids", [1, 2, 3]);
+	 * $cache->save("projects-ids", [4, 5, 6]);
+	 *
+	 * var_dump($cache->queryKeys("users")); // ["users-ids"]
+	 * </code>
 	 */
-	public function queryKeys(prefix = null) -> array
+	public function queryKeys(string prefix = null) -> array
 	{
-		var memcache, options, keys, specialKey, key, realKey;
+		var memcache, options, keys, specialKey, key, idx;
 
 		let memcache = this->_memcache;
 
@@ -342,25 +350,26 @@ class Memcache extends Backend implements BackendInterface
 		/**
 		 * Get the key from memcached
 		 */
-		let realKey = [];
 		let keys = memcache->get(specialKey);
-		if typeof keys == "array" {
-			for key, _ in keys {
-				if !prefix || starts_with(key, prefix) {
-					let realKey[] = key;
-				}
+		if unlikely typeof keys != "array" {
+			return [];
+		}
+
+		let keys = array_keys(keys);
+		for idx, key in keys {
+			if !empty prefix && !starts_with(key, prefix) {
+				unset keys[idx];
 			}
 		}
 
-		return realKey;
+		return keys;
 	}
 
 	/**
 	 * Checks if cache exists and it isn't expired
 	 *
 	 * @param string keyName
-	 * @param   long lifetime
-	 * @return boolean
+	 * @param int lifetime
 	 */
 	public function exists(keyName = null, lifetime = null) -> boolean
 	{
@@ -393,11 +402,9 @@ class Memcache extends Backend implements BackendInterface
 	/**
 	 * Increment of given $keyName by $value
 	 *
-	 * @param  string keyName
-	 * @param  long value
-	 * @return long
+	 * @param string keyName
 	 */
-	public function increment(keyName = null, value = null)
+	public function increment(keyName = null, int value = 1) -> int | boolean
 	{
 		var memcache, prefix, lastKey;
 
@@ -414,10 +421,6 @@ class Memcache extends Backend implements BackendInterface
 			let prefix = this->_prefix;
 			let lastKey = prefix . keyName;
 			let this->_lastKey = lastKey;
-		}
-
-		if !value {
-			let value = 1;
 		}
 
 		return memcache->increment(lastKey, value);
@@ -426,11 +429,9 @@ class Memcache extends Backend implements BackendInterface
 	/**
 	 * Decrement of $keyName by given $value
 	 *
-	 * @param  string keyName
-	 * @param  long value
-	 * @return long
+	 * @param string keyName
 	 */
-	public function decrement(keyName = null, value = null)
+	public function decrement(keyName = null, int value = 1) -> int | boolean
 	{
 		var memcache, prefix, lastKey;
 
@@ -447,10 +448,6 @@ class Memcache extends Backend implements BackendInterface
 			let prefix = this->_prefix;
 			let lastKey = prefix . keyName;
 			let this->_lastKey = lastKey;
-		}
-
-		if !value {
-			let value = 1;
 		}
 
 		return memcache->decrement(lastKey, value);
@@ -473,7 +470,7 @@ class Memcache extends Backend implements BackendInterface
 		let options = this->_options;
 
 		if !fetch specialKey, options["statsKey"] {
-			throw new \Phalcon\Cache\Exception("Unexpected inconsistency in options");
+			throw new Exception("Unexpected inconsistency in options");
 		}
 
 		if specialKey == "" {
@@ -484,12 +481,16 @@ class Memcache extends Backend implements BackendInterface
 		 * Get the key from memcached
 		 */
 		let keys = memcache->get(specialKey);
-		if typeof keys == "array" {
-			for key, _ in keys {
-				memcache->delete(key);
-			}
-			memcache->set(specialKey, keys);
+		if unlikely typeof keys != "array" {
+			return true;
 		}
+
+		for key, _ in keys {
+			memcache->delete(key);
+		}
+
+		memcache->delete(specialKey);
+
 		return true;
 	}
 

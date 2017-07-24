@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -31,9 +31,11 @@ use Phalcon\Escaper\Exception;
  * This component only works with UTF-8. The PREG extension needs to be compiled with UTF-8 support.
  *
  *<code>
- *	$escaper = new \Phalcon\Escaper();
- *	$escaped = $escaper->escapeCss("font-family: <Verdana>");
- *	echo $escaped; // font\2D family\3A \20 \3C Verdana\3E
+ * $escaper = new \Phalcon\Escaper();
+ * 
+ * $escaped = $escaper->escapeCss("font-family: <Verdana>");
+ * 
+ * echo $escaped; // font\2D family\3A \20 \3C Verdana\3E
  *</code>
  */
 class Escaper implements EscaperInterface
@@ -51,7 +53,7 @@ class Escaper implements EscaperInterface
 	 * Sets the encoding to be used by the escaper
 	 *
 	 *<code>
-	 * $escaper->setEncoding('utf-8');
+	 * $escaper->setEncoding("utf-8");
 	 *</code>
 	 */
 	public function setEncoding(string encoding) -> void

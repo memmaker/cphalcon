@@ -1,24 +1,23 @@
 <?php
 
-namespace Phalcon\Test\Unit\Mvc\Model\Metadata;
+namespace Phalcon\Test\Unit\Mvc\Model\MetaData;
 
-use Phalcon\Di;
 use UnitTester;
 use Phalcon\Test\Models\Robots;
-use Phalcon\Test\Proxy\Mvc\Model\Metadata\Libmemcached;
+use Phalcon\Mvc\Model\Metadata\Libmemcached;
 
 /**
  * \Phalcon\Test\Unit\Mvc\Model\Metadata\LibmemcachedCest
  * Tests the \Phalcon\Mvc\Model\Metadata\Libmemcached component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Serghei Iakovlev <serghei@phalconphp.com>
  * @package   Phalcon\Test\Unit\Mvc\Model\Metadata
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -36,7 +35,7 @@ class LibmemcachedCest
             );
         }
 
-        $I->haveServiceInDi('modelsMetadata', function() {
+        $I->haveServiceInDi('modelsMetadata', function () {
             return new Libmemcached([
                 'servers' => [
                     [
@@ -63,8 +62,15 @@ class LibmemcachedCest
 
         Robots::findFirst();
 
-        $I->assertEquals($this->data['meta-robots-robots'], $md->read("meta-phalcon\\test\\models\\robots-robots"));
-        $I->assertEquals($this->data['map-robots'], $md->read("map-phalcon\\test\\models\\robots"));
+        $I->assertEquals(
+            $this->data['meta-robots-robots'],
+            $md->read("meta-phalcon\\test\\models\\robots-robots")
+        );
+
+        $I->assertEquals(
+            $this->data['map-robots'],
+            $md->read("map-phalcon\\test\\models\\robots")
+        );
 
         $I->assertFalse($md->isEmpty());
 

@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -22,7 +22,6 @@ namespace Phalcon\Paginator\Adapter;
 
 use Phalcon\Paginator\Exception;
 use Phalcon\Paginator\Adapter;
-use Phalcon\Paginator\AdapterInterface;
 
 /**
  * Phalcon\Paginator\Adapter\Model
@@ -34,16 +33,16 @@ use Phalcon\Paginator\AdapterInterface;
  *
  * $paginator = new Model(
  *     [
- *         'data'  => Robots::find(),
- *         'limit' => 25,
- *         'page'  => $currentPage
+ *         "data"  => Robots::find(),
+ *         "limit" => 25,
+ *         "page"  => $currentPage,
  *     ]
  * );
  *
  * $paginate = $paginator->getPaginate();
  *</code>
  */
-class Model extends Adapter implements AdapterInterface
+class Model extends Adapter
 {
 
 	/**

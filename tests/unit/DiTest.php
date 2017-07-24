@@ -1,34 +1,38 @@
 <?php
+/*
+ +------------------------------------------------------------------------+
+ | Phalcon Framework                                                      |
+ +------------------------------------------------------------------------+
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
+ +------------------------------------------------------------------------+
+ | This source file is subject to the New BSD License that is bundled     |
+ | with this package in the file LICENSE.txt.                             |
+ |                                                                        |
+ | If you did not receive a copy of the license and are unable to         |
+ | obtain it through the world-wide-web, please send an email             |
+ | to license@phalconphp.com so we can send you a copy immediately.       |
+ +------------------------------------------------------------------------+
+ */
 
 namespace Phalcon\Test\Unit;
 
-use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Di;
+use Phalcon\Di;
+use Phalcon\Di\Service;
 use Phalcon\Http\Request;
 use Phalcon\Http\Response;
-use Phalcon\Di\Service;
+use Phalcon\Test\Module\UnitTest;
 
 /**
- * \Phalcon\Test\Unit\DiTest
+ * Phalcon\Test\Unit\DiTest
+ *
  * Tests the \Phalcon\Di component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
- * @author    Andres Gutierrez <andres@phalconphp.com>
- * @author    Serghei Iakovlev <serghei@phalconphp.com>
  * @package   Phalcon\Test\Unit
- *
- * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
- *
- * If you did not receive a copy of the license and are unable to obtain it
- * through the world-wide-web, please send an email to license@phalconphp.com
- * so that we can send you a copy immediately.
  */
 class DiTest extends UnitTest
 {
     /**
-     * @var \Phalcon\Test\Proxy\Di
+     * @var \Phalcon\DiInterface
      */
     protected $phDi;
 
@@ -40,6 +44,7 @@ class DiTest extends UnitTest
         parent::_before();
 
         require_once PATH_DATA . 'di/InjectableComponent.php';
+        require_once PATH_DATA . 'di/SomeServiceProvider.php';
         require_once PATH_DATA . 'di/SimpleComponent.php';
         require_once PATH_DATA . 'di/SomeComponent.php';
 
@@ -75,7 +80,7 @@ class DiTest extends UnitTest
         $this->specify(
             "Registering a service via anonymous function does now work correctly",
             function () {
-                $this->phDi->set('request2', function() {
+                $this->phDi->set('request2', function () {
                     return new Request();
                 });
                 expect(get_class($this->phDi->get('request2')))->equals('Phalcon\Http\Request');
@@ -113,15 +118,15 @@ class DiTest extends UnitTest
         $this->specify(
             "Registering a service in the services container via Di::attempt does now work correctly",
             function () {
-                $this->phDi->set('request4', function() {
+                $this->phDi->set('request4', function () {
                     return new Request();
                 });
 
-                $this->phDi->attempt('request4', function() {
+                $this->phDi->attempt('request4', function () {
                     return new \stdClass();
                 });
 
-                $this->phDi->attempt('request5', function() {
+                $this->phDi->attempt('request5', function () {
                     return new \stdClass();
                 });
 
@@ -142,7 +147,7 @@ class DiTest extends UnitTest
         $this->specify(
             "Check a service in the services container via Di::attempt does now work correctly",
             function () {
-                $this->phDi->set('request6', function() {
+                $this->phDi->set('request6', function () {
                     return new Request();
                 });
 
@@ -163,7 +168,7 @@ class DiTest extends UnitTest
         $this->specify(
             "Resolving shared service does now work correctly",
             function () {
-                $this->phDi->set('dateObject', function() {
+                $this->phDi->set('dateObject', function () {
                     $object = new \stdClass();
                     $object->date = microtime(true);
                     return $object;
@@ -224,7 +229,7 @@ class DiTest extends UnitTest
         $this->specify(
             "Registering a service with parameters does now work correctly",
             function () {
-                $this->phDi->set('someComponent1', function($v) {
+                $this->phDi->set('someComponent1', function ($v) {
                     return new \SomeComponent($v);
                 });
 
@@ -337,7 +342,12 @@ class DiTest extends UnitTest
             function () {
                 $this->phDi->get('nonExistentService');
             },
-            ['throws' => ['Phalcon\Di\Exception', "Service 'nonExistentService' wasn't found in the dependency injection container"]]
+            [
+                'throws' => [
+                    'Phalcon\Di\Exception',
+                    "Service 'nonExistentService' wasn't found in the dependency injection container"
+                ]
+            ]
         );
     }
 
@@ -373,24 +383,32 @@ class DiTest extends UnitTest
                 $this->phDi->set('response', $response);
 
                 // Injection of parameters in the constructor
-                $this->phDi->set('simpleConstructor',
+                $this->phDi->set(
+                    'simpleConstructor',
                     [
                         'className' => 'InjectableComponent',
                         'arguments' => [
-                            ['type' => 'parameter', 'value' => 'response'],
+                            [
+                                'type' => 'parameter',
+                                'value' => 'response'
+                            ],
                         ]
                     ]
                 );
 
                 // Injection of simple setters
-                $this->phDi->set('simpleSetters',
+                $this->phDi->set(
+                    'simpleSetters',
                     [
                         'className' => 'InjectableComponent',
                         'calls' => [
                             [
                                 'method' => 'setResponse',
                                 'arguments' => [
-                                    ['type' => 'parameter', 'value' => 'response'],
+                                    [
+                                        'type' => 'parameter',
+                                        'value' => 'response'
+                                    ],
                                 ]
                             ],
                         ]
@@ -398,36 +416,49 @@ class DiTest extends UnitTest
                 );
 
                 // Injection of properties
-                $this->phDi->set('simpleProperties',
+                $this->phDi->set(
+                    'simpleProperties',
                     [
                         'className' => 'InjectableComponent',
                         'properties' => [
                             [
-                                'name' => 'response', 'value' => ['type' => 'parameter', 'value' => 'response']
+                                'name' => 'response',
+                                'value' => [
+                                    'type' => 'parameter',
+                                    'value' => 'response'
+                                ]
                             ],
                         ]
                     ]
                 );
 
                 // Injection of parameters in the constructor resolving the service parameter
-                $this->phDi->set('complexConstructor',
+                $this->phDi->set(
+                    'complexConstructor',
                     [
                         'className' => 'InjectableComponent',
                         'arguments' => [
-                            ['type' => 'service', 'name' => 'response']
+                            [
+                                'type' => 'service',
+                                'name' => 'response'
+                            ]
                         ]
                     ]
                 );
 
                 // Injection of simple setters resolving the service parameter
-                $this->phDi->set('complexSetters',
+                $this->phDi->set(
+                    'complexSetters',
                     [
                         'className' => 'InjectableComponent',
                         'calls' => [
                             [
                                 'method' => 'setResponse',
                                 'arguments' => [
-                                    ['type' => 'service', 'name' => 'response']
+                                    [
+                                        'type' => 'service',
+                                        'name' => 'response',
+                                    ]
                                 ]
                             ],
                         ]
@@ -435,12 +466,17 @@ class DiTest extends UnitTest
                 );
 
                 // Injection of properties resolving the service parameter
-                $this->phDi->set('complexProperties',
+                $this->phDi->set(
+                    'complexProperties',
                     [
                         'className' => 'InjectableComponent',
                         'properties' => [
                             [
-                                'name' => 'response', 'value' => ['type' => 'service', 'name' => 'response']
+                                'name' => 'response',
+                                'value' => [
+                                    'type' => 'service',
+                                    'name' => 'response',
+                                ]
                             ],
                         ]
                     ]
@@ -469,6 +505,78 @@ class DiTest extends UnitTest
                 $component = $this->phDi->get('complexProperties');
                 expect(is_object($component->getResponse()))->true();
                 expect($component->getResponse())->equals($response);
+            }
+        );
+    }
+
+    /**
+     * Register services using provider.
+     *
+     * @author Caio Almeida <caio.f.r.amd@gmail.com>
+     * @since  2017-04-11
+     */
+    public function testRegistersServiceProvider()
+    {
+        $this->specify(
+            'Registering services by using service provider does not work as expected',
+            function () {
+                $this->phDi->register(new \SomeServiceProvider());
+                expect($this->phDi['foo'])->equals('bar');
+
+                $service = $this->phDi->get('fooAction');
+                expect($service)->isInstanceOf('\SomeComponent');
+            }
+        );
+    }
+
+    /**
+     * Tests loading services from yaml files.
+     *
+     * @author Gorka Guridi <gorka.guridi@gmail.com>
+     * @since  2017-04-12
+     */
+    public function testYamlLoader()
+    {
+        if (!extension_loaded('yaml')) {
+            $this->markTestSkipped('Warning: yaml extension is not loaded');
+        }
+
+        $this->specify(
+            '"Di does not load services from yaml files properly',
+            function () {
+                $this->phDi->loadFromYaml(PATH_DATA . 'di/services.yml');
+
+                expect($this->phDi->has('unit-test'))->true();
+                expect($this->phDi->getService('unit-test')->isShared())->false();
+                expect($this->phDi->has('config'))->true();
+                expect($this->phDi->getService('config')->isShared())->true();
+                expect($this->phDi->has('component'))->true();
+                expect($this->phDi->getService('component')->isShared())->false();
+                expect($this->phDi->get('component')->someProperty)->isInstanceOf('Phalcon\Config');
+            }
+        );
+    }
+
+    /**
+     * Tests loading services from php files.
+     *
+     * @author Gorka Guridi <gorka.guridi@gmail.com>
+     * @since  2017-04-12
+     */
+    public function testPhpLoader()
+    {
+        $this->specify(
+            'Di does not load services from php files properly',
+            function () {
+                $this->phDi->loadFromPhp(PATH_DATA . 'di/services.php');
+
+                expect($this->phDi->has('unit-test'))->true();
+                expect($this->phDi->getService('unit-test')->isShared())->false();
+                expect($this->phDi->has('config'))->true();
+                expect($this->phDi->getService('config')->isShared())->true();
+                expect($this->phDi->has('component'))->true();
+                expect($this->phDi->getService('component')->isShared())->false();
+                expect($this->phDi->get('component')->someProperty)->isInstanceOf('Phalcon\Config');
             }
         );
     }

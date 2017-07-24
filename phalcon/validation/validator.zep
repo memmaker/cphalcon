@@ -2,10 +2,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -69,7 +69,10 @@ abstract class Validator implements ValidatorInterface
 
 		if typeof options == "array" {
 			if fetch value, options[key] {
-				// If we have attribute it means it's Uniqueness validator, we can have here multiple fields, so we need to check it
+				/*
+				 * If we have attribute it means it's Uniqueness validator, we
+				 * can have here multiple fields, so we need to check it
+				 */
 				if key == "attribute" && typeof value == "array" {
 					if fetch fieldValue, value[key] {
 						return fieldValue;
@@ -94,4 +97,57 @@ abstract class Validator implements ValidatorInterface
 	 * Executes the validation
 	 */
 	abstract public function validate(<Validation> validation, string! attribute) -> boolean;
+
+	/**
+	 * Prepares a label for the field.
+	 */
+	protected function prepareLabel(<Validation> validation, string! field) -> var
+	{
+		var label;
+
+		let label = this->getOption("label");
+		if typeof label == "array" {
+			let label = label[field];
+		}
+
+		if empty label {
+			let label = validation->getLabel(field);
+		}
+
+		return label;
+	}
+
+	/**
+	 * Prepares a validation message.
+	 */
+	protected function prepareMessage(<Validation> validation, string! field, string! type, string! option = "message") -> var
+	{
+		var message;
+
+		let message = this->getOption(option);
+		if typeof message == "array" {
+			let message = message[field];
+		}
+
+		if empty message {
+			let message = validation->getDefaultMessage(type);
+		}
+
+		return message;
+	}
+
+	/**
+	 * Prepares a validation code.
+	 */
+	protected function prepareCode(string! field) -> int | null
+	{
+		var code;
+
+		let code = this->getOption("code");
+		if typeof code == "array" {
+			let code = code[field];
+		}
+
+		return code;
+	}
 }

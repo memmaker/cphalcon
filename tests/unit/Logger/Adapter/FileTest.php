@@ -2,25 +2,25 @@
 
 namespace Phalcon\Test\Unit\Logger\Adapter;
 
-use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Logger\Adapter\File;
-use Phalcon\Logger\Multiple;
-use Phalcon\Logger\Formatter\Line;
-use \Phalcon\Logger\Formatter\Json;
 use Phalcon\Logger;
+use Phalcon\Logger\Multiple;
+use Phalcon\Logger\Adapter\File;
+use Phalcon\Test\Module\UnitTest;
+use Phalcon\Logger\Formatter\Line;
+use Phalcon\Logger\Formatter\Json;
 
 /**
  * \Phalcon\Test\Unit\Logger\Adapter\FileTest
  * Tests the \Phalcon\Logger\Adapter\File component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit\Logger\Adapter
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -28,7 +28,7 @@ use Phalcon\Logger;
  */
 class FileTest extends UnitTest
 {
-    protected  $logPath = '';
+    protected $logPath = '';
 
     /**
      * executed before each test
@@ -291,19 +291,17 @@ class FileTest extends UnitTest
 
                 $logger->push(new File($this->logPath . $file1));
                 $logger->push(new File($this->logPath . $file2));
-                $logger->setFormatter(new Json());
-                $logger->log('This is a message');
-                $logger->log("This is an error", Logger::ERROR);
-                $logger->error("This is another error");
 
-                $expected = sprintf(
-                    '{"type":"DEBUG","message":"This is a message","timestamp":%s}' . PHP_EOL .
-                    '{"type":"ERROR","message":"This is an error","timestamp":%s}' . PHP_EOL .
-                    '{"type":"ERROR","message":"This is another error","timestamp":%s}' . PHP_EOL,
-                    time(),
-                    time(),
-                    time()
-                );
+                $logger->setFormatter(new Json());
+
+                $expected = '{"type":"DEBUG","message":"This is a message","timestamp":' . time() . '}' . PHP_EOL;
+                $logger->log('This is a message');
+
+                $expected .= '{"type":"ERROR","message":"This is an error","timestamp":' . time() . '}' . PHP_EOL;
+                $logger->log("This is an error", Logger::ERROR);
+
+                $expected .= '{"type":"ERROR","message":"This is another error","timestamp":' . time() . '}' . PHP_EOL;
+                $logger->error("This is another error");
 
                 $I->amInPath($this->logPath);
 

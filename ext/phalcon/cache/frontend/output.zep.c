@@ -30,27 +30,36 @@
 * use Phalcon\Cache\Frontend\Output;
 *
 * // Create an Output frontend. Cache the files for 2 days
-* $frontCache = new Output(['lifetime' => 172800]));
+* $frontCache = new Output(
+*     [
+*         "lifetime" => 172800,
+*     ]
+* );
 *
 * // Create the component that will cache from the "Output" to a "File" backend
 * // Set the cache file directory - it's important to keep the "/" at the end of
 * // the value for the folder
-* $cache = new File($frontCache, ['cacheDir' => '../app/cache/']);
+* $cache = new File(
+*     $frontCache,
+*     [
+*         "cacheDir" => "../app/cache/",
+*     ]
+* );
 *
 * // Get/Set the cache file to ../app/cache/my-cache.html
-* $content = $cache->start('my-cache.html');
+* $content = $cache->start("my-cache.html");
 *
 * // If $content is null then the content will be generated for the cache
 * if (null === $content) {
 *     // Print date and time
-*     echo date('r');
+*     echo date("r");
 *
 *     // Generate a link to the sign-up action
 *     echo Tag::linkTo(
 *         [
-*             'user/signup',
-*             'Sign Up',
-*             'class' => 'signup-button'
+*             "user/signup",
+*             "Sign Up",
+*             "class" => "signup-button",
 *         ]
 *     );
 *
@@ -91,7 +100,7 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, __construct) {
 	}
 
 
-	zephir_update_property_this(this_ptr, SL("_frontendOptions"), frontendOptions TSRMLS_CC);
+	zephir_update_property_this(getThis(), SL("_frontendOptions"), frontendOptions TSRMLS_CC);
 
 }
 
@@ -120,7 +129,7 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, isBuffering) {
 
 	
 
-	RETURN_MEMBER(this_ptr, "_buffering");
+	RETURN_MEMBER(getThis(), "_buffering");
 
 }
 
@@ -129,16 +138,16 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, isBuffering) {
  */
 PHP_METHOD(Phalcon_Cache_Frontend_Output, start) {
 
-	int ZEPHIR_LAST_CALL_STATUS;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
 
 	ZEPHIR_MM_GROW();
 
 	if (1) {
-		zephir_update_property_this(this_ptr, SL("_buffering"), ZEPHIR_GLOBAL(global_true) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_buffering"), ZEPHIR_GLOBAL(global_true) TSRMLS_CC);
 	} else {
-		zephir_update_property_this(this_ptr, SL("_buffering"), ZEPHIR_GLOBAL(global_false) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_buffering"), ZEPHIR_GLOBAL(global_false) TSRMLS_CC);
 	}
-	ZEPHIR_CALL_FUNCTION(NULL, "ob_start", NULL, 129);
+	ZEPHIR_CALL_FUNCTION(NULL, "ob_start", NULL, 138);
 	zephir_check_call_status();
 	ZEPHIR_MM_RESTORE();
 
@@ -152,13 +161,13 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, start) {
 PHP_METHOD(Phalcon_Cache_Frontend_Output, getContent) {
 
 	zval *_0;
-	int ZEPHIR_LAST_CALL_STATUS;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
 
 	ZEPHIR_MM_GROW();
 
 	_0 = zephir_fetch_nproperty_this(this_ptr, SL("_buffering"), PH_NOISY_CC);
 	if (zephir_is_true(_0)) {
-		ZEPHIR_RETURN_CALL_FUNCTION("ob_get_contents", NULL, 130);
+		ZEPHIR_RETURN_CALL_FUNCTION("ob_get_contents", NULL, 139);
 		zephir_check_call_status();
 		RETURN_MM();
 	}
@@ -172,19 +181,19 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, getContent) {
 PHP_METHOD(Phalcon_Cache_Frontend_Output, stop) {
 
 	zval *_0;
-	int ZEPHIR_LAST_CALL_STATUS;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
 
 	ZEPHIR_MM_GROW();
 
 	_0 = zephir_fetch_nproperty_this(this_ptr, SL("_buffering"), PH_NOISY_CC);
 	if (zephir_is_true(_0)) {
-		ZEPHIR_CALL_FUNCTION(NULL, "ob_end_clean", NULL, 131);
+		ZEPHIR_CALL_FUNCTION(NULL, "ob_end_clean", NULL, 140);
 		zephir_check_call_status();
 	}
 	if (0) {
-		zephir_update_property_this(this_ptr, SL("_buffering"), ZEPHIR_GLOBAL(global_true) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_buffering"), ZEPHIR_GLOBAL(global_true) TSRMLS_CC);
 	} else {
-		zephir_update_property_this(this_ptr, SL("_buffering"), ZEPHIR_GLOBAL(global_false) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_buffering"), ZEPHIR_GLOBAL(global_false) TSRMLS_CC);
 	}
 	ZEPHIR_MM_RESTORE();
 
@@ -192,9 +201,6 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, stop) {
 
 /**
  * Serializes data before storing them
- *
- * @param mixed data
- * @return string
  */
 PHP_METHOD(Phalcon_Cache_Frontend_Output, beforeStore) {
 
@@ -211,9 +217,6 @@ PHP_METHOD(Phalcon_Cache_Frontend_Output, beforeStore) {
 
 /**
  * Unserializes data after retrieval
- *
- * @param mixed data
- * @return mixed
  */
 PHP_METHOD(Phalcon_Cache_Frontend_Output, afterRetrieve) {
 

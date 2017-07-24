@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (http://www.phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -193,10 +193,7 @@ class Tag
 		let url = self::_urlService;
 		if typeof url != "object" {
 
-			let dependencyInjector = <DiInterface> self::_dependencyInjector;
-			if typeof dependencyInjector != "object" {
-				let dependencyInjector = Di::getDefault();
-			}
+			let dependencyInjector = self::getDI();
 
 			if typeof dependencyInjector != "object" {
 				throw new Exception("A dependency injector container is required to obtain the 'url' service");
@@ -218,10 +215,7 @@ class Tag
 		let escaper = self::_escaperService;
 		if typeof escaper != "object" {
 
-			let dependencyInjector = <DiInterface> self::_dependencyInjector;
-			if typeof dependencyInjector != "object" {
-				let dependencyInjector = Di::getDefault();
-			}
+			let dependencyInjector = self::getDI();
 
 			if typeof dependencyInjector != "object" {
 				throw new Exception("A dependency injector container is required to obtain the 'escaper' service");
@@ -249,7 +243,7 @@ class Tag
 	 * Phalcon\Tag::setDefault("name", "peter");
 	 *
 	 * // Later in the view
-	 * echo Phalcon\Tag::textField("name"); //Will have the value "peter" by default
+	 * echo Phalcon\Tag::textField("name"); // Will have the value "peter" by default
 	 * </code>
 	 *
 	 * @param string id
@@ -270,10 +264,14 @@ class Tag
 	 *
 	 * <code>
 	 * // Assigning "peter" to "name" component
-	 * Phalcon\Tag::setDefaults(array("name" => "peter"));
+	 * Phalcon\Tag::setDefaults(
+	 *     [
+	 *         "name" => "peter",
+	 *     ]
+	 * );
 	 *
 	 * // Later in the view
-	 * echo Phalcon\Tag::textField("name"); //Will have the value "peter" by default
+	 * echo Phalcon\Tag::textField("name"); // Will have the value "peter" by default
 	 * </code>
 	 */
 	public static function setDefaults(array! values, boolean merge = false) -> void
@@ -297,7 +295,7 @@ class Tag
 	}
 
 	/**
-	 * Check if a helper has a default value set using Phalcon\Tag::setDefault or value from _POST
+	 * Check if a helper has a default value set using Phalcon\Tag::setDefault or value from $_POST
 	 *
 	 * @param string name
 	 * @return boolean
@@ -312,7 +310,7 @@ class Tag
 
 	/**
 	 * Every helper calls this function to check whether a component has a predefined
-	 * value using Phalcon\Tag::setDefault or value from _POST
+	 * value using Phalcon\Tag::setDefault or value from $_POST
 	 *
 	 * @param string name
 	 * @param array params
@@ -340,15 +338,16 @@ class Tag
 	}
 
 	/**
-	 * Resets the request and internal values to avoid those fields will have any default value
+	 * Resets the request and internal values to avoid those fields will have any default value.
+	 * @deprecated Will be removed in 4.0.0
 	 */
-	public static function resetInput() -> void
+	deprecated public static function resetInput() -> void
 	{
-		let self::_displayValues = [], {"_POST"} = [];
-		let self::_documentTitle = null;
-		let self::_documentAppendTitle = null;
-		let self::_documentPrependTitle = null;
-		let self::_documentTitleSeparator = null;
+		let self::_displayValues = [],
+			self::_documentTitle = null,
+			self::_documentAppendTitle = [],
+			self::_documentPrependTitle = [],
+			self::_documentTitleSeparator = null;
 	}
 
 	/**
@@ -356,17 +355,54 @@ class Tag
 	 *
 	 *<code>
 	 * echo Phalcon\Tag::linkTo("signup/register", "Register Here!");
-	 * echo Phalcon\Tag::linkTo(array("signup/register", "Register Here!"));
-	 * echo Phalcon\Tag::linkTo(array("signup/register", "Register Here!", "class" => "btn-primary"));
-	 * echo Phalcon\Tag::linkTo("http://phalconphp.com/", "Phalcon", FALSE);
-	 * echo Phalcon\Tag::linkTo(array("http://phalconphp.com/", "Phalcon Home", FALSE));
-	 * echo Phalcon\Tag::linkTo(array("http://phalconphp.com/", "Phalcon Home", "local" =>FALSE));
+	 *
+	 * echo Phalcon\Tag::linkTo(
+	 *     [
+	 *         "signup/register",
+	 *         "Register Here!"
+	 *     ]
+	 * );
+	 *
+	 * echo Phalcon\Tag::linkTo(
+	 *     [
+	 *         "signup/register",
+	 *         "Register Here!",
+	 *         "class" => "btn-primary",
+	 *     ]
+	 * );
+	 *
+	 * echo Phalcon\Tag::linkTo("http://phalconphp.com/", "Phalcon", false);
+	 *
+	 * echo Phalcon\Tag::linkTo(
+	 *     [
+	 *         "http://phalconphp.com/",
+	 *         "Phalcon Home",
+	 *         false,
+	 *     ]
+	 * );
+	 *
+	 * echo Phalcon\Tag::linkTo(
+	 *     [
+	 *         "http://phalconphp.com/",
+	 *         "Phalcon Home",
+	 *         "local" => false,
+	 *     ]
+	 * );
+	 *
+	 * echo Phalcon\Tag::linkTo(
+	 *     [
+	 *         "action" => "http://phalconphp.com/",
+	 *         "text"   => "Phalcon Home",
+	 *         "local"  => false,
+	 *         "target" => "_new"
+	 *     ]
+	 * );
+	 *
 	 *</code>
 	 *
 	 * @param array|string parameters
 	 * @param string text
 	 * @param boolean local
-	 * @return string
 	 */
 	public static function linkTo(parameters, text = null, local = true) -> string
 	{
@@ -509,11 +545,11 @@ class Tag
 		}
 
 		let id = params[0];
-		if  !isset params["name"] {
+		if !isset params["name"] {
 			let params["name"] = id;
 		} else {
 			let name = params["name"];
-			if  empty name {
+			if empty name {
 				let params["name"] = id;
 			}
 		}
@@ -585,7 +621,12 @@ class Tag
 	 * Builds a HTML input[type="text"] tag
 	 *
 	 * <code>
-	 * echo Phalcon\Tag::textField(array("name", "size" => 30));
+	 * echo Phalcon\Tag::textField(
+	 *     [
+	 *         "name",
+	 *         "size" => 30,
+	 *     ]
+	 * );
 	 * </code>
 	 *
 	 * @param array parameters
@@ -600,7 +641,13 @@ class Tag
 	 * Builds a HTML input[type="number"] tag
 	 *
 	 * <code>
-	 * echo Phalcon\Tag::numericField(array("price", "min" => "1", "max" => "5"));
+	 * echo Phalcon\Tag::numericField(
+	 *     [
+	 *         "price",
+	 *         "min" => "1",
+	 *         "max" => "5",
+	 *     ]
+	 * );
 	 * </code>
 	 *
 	 * @param array parameters
@@ -642,7 +689,12 @@ class Tag
 	 * Builds a HTML input[type="date"] tag
 	 *
 	 * <code>
-	 * echo Phalcon\Tag::dateField(array("born", "value" => "14-12-1980"))
+	 * echo Phalcon\Tag::dateField(
+	 *     [
+	 *         "born",
+	 *         "value" => "14-12-1980",
+	 *     ]
+	 * );
 	 * </code>
 	 *
 	 * @param array parameters
@@ -712,7 +764,12 @@ class Tag
 	 * Builds a HTML input[type="password"] tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::passwordField(array("name", "size" => 30));
+	 * echo Phalcon\Tag::passwordField(
+	 *     [
+	 *         "name",
+	 *         "size" => 30,
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * @param array parameters
@@ -727,7 +784,12 @@ class Tag
 	 * Builds a HTML input[type="hidden"] tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::hiddenField(array("name", "value" => "mike"));
+	 * echo Phalcon\Tag::hiddenField(
+	 *     [
+	 *         "name",
+	 *         "value" => "mike",
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * @param array parameters
@@ -790,7 +852,12 @@ class Tag
 	 * Builds a HTML input[type="check"] tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::checkField(array("terms", "value" => "Y"));
+	 * echo Phalcon\Tag::checkField(
+	 *     [
+	 *         "terms",
+	 *         "value" => "Y",
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * Volt syntax:
@@ -810,7 +877,12 @@ class Tag
 	 * Builds a HTML input[type="radio"] tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::radioField(array("weather", "value" => "hot"))
+	 * echo Phalcon\Tag::radioField(
+	 *     [
+	 *         "weather",
+	 *         "value" => "hot",
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * Volt syntax:
@@ -830,7 +902,11 @@ class Tag
 	 * Builds a HTML input[type="image"] tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::imageInput(array("src" => "/img/button.png"));
+	 * echo Phalcon\Tag::imageInput(
+	 *     [
+	 *         "src" => "/img/button.png",
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * Volt syntax:
@@ -870,7 +946,13 @@ class Tag
 	 * Builds a HTML SELECT tag using a PHP array for options
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::selectStatic("status", array("A" => "Active", "I" => "Inactive"))
+	 * echo Phalcon\Tag::selectStatic(
+	 *     "status",
+	 *     [
+	 *         "A" => "Active",
+	 *         "I" => "Inactive",
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * @param array parameters
@@ -886,11 +968,13 @@ class Tag
 	 * Builds a HTML SELECT tag using a Phalcon\Mvc\Model resultset as options
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::select([
-	 *     "robotId",
-	 *     Robots::find("type = "mechanical""),
-	 *     "using" => ["id", "name"]
-	 * ]);
+	 * echo Phalcon\Tag::select(
+	 *     [
+	 *         "robotId",
+	 *         Robots::find("type = "mechanical""),
+	 *         "using" => ["id", "name"],
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * Volt syntax:
@@ -911,7 +995,13 @@ class Tag
 	 * Builds a HTML TEXTAREA tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::textArea(array("comments", "cols" => 10, "rows" => 4))
+	 * echo Phalcon\Tag::textArea(
+	 *     [
+	 *         "comments",
+	 *         "cols" => 10,
+	 *         "rows" => 4,
+	 *     ]
+	 * );
 	 *</code>
 	 *
 	 * Volt syntax:
@@ -970,7 +1060,13 @@ class Tag
 	 *
 	 * <code>
 	 * echo Phalcon\Tag::form("posts/save");
-	 * echo Phalcon\Tag::form(array("posts/save", "method" => "post"));
+	 *
+	 * echo Phalcon\Tag::form(
+	 *     [
+	 *         "posts/save",
+	 *         "method" => "post",
+	 *     ]
+	 * );
 	 * </code>
 	 *
 	 * Volt syntax:
@@ -1061,17 +1157,33 @@ class Tag
 	/**
 	 * Appends a text to current document title
 	 */
-	public static function appendTitle(string title) -> void
+	public static function appendTitle(var title) -> void
 	{
-		let self::_documentAppendTitle = title;
+		if typeof self::_documentAppendTitle == "null" {
+			let self::_documentAppendTitle = [];
+		}
+
+		if typeof title == "array" {
+			let self::_documentAppendTitle = title ;
+		} else {
+			let self::_documentAppendTitle[] = title ;
+		}
 	}
 
 	/**
 	 * Prepends a text to current document title
 	 */
-	public static function prependTitle(string title) -> void
+	public static function prependTitle(var title) -> void
 	{
-		let self::_documentPrependTitle = title;
+		if typeof self::_documentPrependTitle == "null" {
+			let self::_documentPrependTitle = [];
+		}
+
+		if typeof title == "array" {
+			let self::_documentPrependTitle = title ;
+		} else {
+			let self::_documentPrependTitle[] = title ;
+		}
 	}
 
 	/**
@@ -1088,18 +1200,31 @@ class Tag
 	 */
 	public static function getTitle(boolean tags = true) -> string
 	{
-		var items, output, documentTitle, documentAppendTitle, documentPrependTitle, documentTitleSeparator, escaper;
+		var items, output, title, documentTitle, documentAppendTitle, documentPrependTitle, documentTitleSeparator, escaper;
 
 		let escaper = <EscaperInterface> self::getEscaper(["escape": true]);
 		let items = [];
 		let output = "";
-		let documentPrependTitle = escaper->escapeHtml(self::_documentPrependTitle);
 		let documentTitle = escaper->escapeHtml(self::_documentTitle);
-		let documentAppendTitle = escaper->escapeHtml(self::_documentAppendTitle);
 		let documentTitleSeparator = escaper->escapeHtml(self::_documentTitleSeparator);
 
+		if typeof self::_documentAppendTitle == "null" {
+			let self::_documentAppendTitle = [];
+		}
+
+		let documentAppendTitle = self::_documentAppendTitle;
+
+		if typeof self::_documentPrependTitle == "null" {
+			let self::_documentPrependTitle = [];
+		}
+
+		let documentPrependTitle = self::_documentPrependTitle;
+
 		if !empty documentPrependTitle {
-			let items[] = documentPrependTitle;
+			var tmp = array_reverse(documentPrependTitle);
+			for title in tmp {
+				let items[] = escaper->escapeHtml(title);
+			}
 		}
 
 		if !empty documentTitle {
@@ -1107,7 +1232,9 @@ class Tag
 		}
 
 		if !empty documentAppendTitle {
-			let items[] = documentAppendTitle;
+			for title in documentAppendTitle {
+				let items[] = escaper->escapeHtml(title);
+			}
 		}
 
 		if empty documentTitleSeparator {
@@ -1282,7 +1409,13 @@ class Tag
 	 *
 	 * <code>
 	 * echo Phalcon\Tag::image("img/bg.png");
-	 * echo Phalcon\Tag::image(array("img/photo.jpg", "alt" => "Some Photo"));
+	 *
+	 * echo Phalcon\Tag::image(
+	 *     [
+	 *         "img/photo.jpg",
+	 *         "alt" => "Some Photo",
+	 *     ]
+	 * );
 	 * </code>
 	 *
 	 * Volt Syntax:
@@ -1444,10 +1577,6 @@ class Tag
 
 	/**
 	 * Builds a HTML tag
-	 *
-	 *<code>
-	 * echo Phalcon\Tag::tagHtml(name, parameters, selfClose, onlyStart, eol);
-	 *</code>
 	 */
 	public static function tagHtml(string tagName, var parameters = null, boolean selfClose = false,
 		boolean onlyStart = false, boolean useEol = false) -> string
@@ -1490,7 +1619,7 @@ class Tag
 	 * Builds a HTML tag closing tag
 	 *
 	 *<code>
-	 * echo Phalcon\Tag::tagHtmlClose("script", true)
+	 * echo Phalcon\Tag::tagHtmlClose("script", true);
 	 *</code>
 	 */
 	public static function tagHtmlClose(string tagName, boolean useEol = false) -> string

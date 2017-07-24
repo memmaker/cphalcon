@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (http://www.phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -21,7 +21,6 @@
 namespace Phalcon\Logger\Adapter;
 
 use Phalcon\Logger\Adapter;
-use Phalcon\Logger\AdapterInterface;
 use Phalcon\Logger\Exception;
 use Phalcon\Logger\FormatterInterface;
 use Phalcon\Logger\Formatter\Firephp as FirePhpFormatter;
@@ -36,11 +35,12 @@ use Phalcon\Logger\Formatter\Firephp as FirePhpFormatter;
  * use Phalcon\Logger;
  *
  * $logger = new Firephp();
- * $logger->log(Logger::ERROR, 'This is an error');
- * $logger->error('This is another error');
+ *
+ * $logger->log(Logger::ERROR, "This is an error");
+ * $logger->error("This is another error");
  *</code>
  */
-class Firephp extends Adapter implements AdapterInterface
+class Firephp extends Adapter
 {
 	private _initialized = false;
 

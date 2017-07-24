@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -28,22 +28,22 @@ use Phalcon\Mvc\Model\MessageInterface;
  * Encapsulates validation info generated before save/delete records fails
  *
  *<code>
- *	use Phalcon\Mvc\Model\Message as Message;
+ * use Phalcon\Mvc\Model\Message as Message;
  *
- *  class Robots extends \Phalcon\Mvc\Model
- *  {
+ * class Robots extends \Phalcon\Mvc\Model
+ * {
+ *     public function beforeSave()
+ *     {
+ *         if ($this->name === "Peter") {
+ *             $text  = "A robot cannot be named Peter";
+ *             $field = "name";
+ *             $type  = "InvalidValue";
  *
- *    public function beforeSave()
- *    {
- *      if ($this->name == 'Peter') {
- *        $text = "A robot cannot be named Peter";
- *        $field = "name";
- *        $type = "InvalidValue";
- *        $message = new Message($text, $field, $type);
- *        $this->appendMessage($message);
+ *             $message = new Message($text, $field, $type);
+ *
+ *             $this->appendMessage($message);
+ *         }
  *     }
- *   }
- *
  * }
  * </code>
  *

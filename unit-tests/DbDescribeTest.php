@@ -7,7 +7,7 @@
   | Copyright (c) 2011-2015 Phalcon Team (http://www.phalconphp.com)       |
   +------------------------------------------------------------------------+
   | This source file is subject to the New BSD License that is bundled     |
-  | with this package in the file docs/LICENSE.txt.                        |
+  | with this package in the file LICENSE.txt.                             |
   |                                                                        |
   | If you did not receive a copy of the license and are unable to         |
   | obtain it through the world-wide-web, please send an email             |
@@ -649,7 +649,6 @@ class DbDescribeTest extends PHPUnit_Framework_TestCase
 
 	public function testDbPostgresql()
 	{
-
 		require 'unit-tests/config.db.php';
 		if (empty($configPostgresql)) {
 			$this->markTestSkipped("Skipped");
@@ -657,31 +656,6 @@ class DbDescribeTest extends PHPUnit_Framework_TestCase
 		}
 
 		$connection = new Phalcon\Db\Adapter\Pdo\Postgresql($configPostgresql);
-
-		//List tables
-		$expectedTables = array (
-			0 => 'customers',
-			1 => 'parts',
-			2 => 'personas',
-			3 => 'personnes',
-			4 => 'prueba',
-			5 => 'robots',
-			6 => 'robots_parts',
-			7 => 'subscriptores',
-			8 => 'tipo_documento',
-		);
-
-		$tables = $connection->listTables();
-		$this->assertEquals($tables, $expectedTables);
-
-		$tables = $connection->listTables('public');
-		$this->assertEquals($tables, $expectedTables);
-
-		//Table exist
-		$this->assertEquals($connection->tableExists('personas'), 1);
-		$this->assertEquals($connection->tableExists('noexist'), 0);
-		$this->assertEquals($connection->tableExists('personas', 'public'), 1);
-		$this->assertEquals($connection->tableExists('personas', 'test'), 0);
 
 		//Columns
 		$expectedDescribe = $this->getExpectedColumnsPostgresql();

@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -31,15 +31,16 @@ use Phalcon\Session\AdapterInterface as SessionInterface;
  * This component provides a set of functions to improve the security in Phalcon applications
  *
  *<code>
- *	$login = $this->request->getPost('login');
- *	$password = $this->request->getPost('password');
+ * $login    = $this->request->getPost("login");
+ * $password = $this->request->getPost("password");
  *
- *	$user = Users::findFirstByLogin($login);
- *	if ($user) {
- *		if ($this->security->checkHash($password, $user->password)) {
- *			//The password is valid
- *		}
- *	}
+ * $user = Users::findFirstByLogin($login);
+ *
+ * if ($user) {
+ *     if ($this->security->checkHash($password, $user->password)) {
+ *         // The password is valid
+ *     }
+ * }
  *</code>
  */
 class Security implements InjectionAwareInterface
@@ -362,7 +363,7 @@ class Security implements InjectionAwareInterface
 	 */
 	public function checkToken(var tokenKey = null, var tokenValue = null, boolean destroyIfValid = true) -> boolean
 	{
-		var dependencyInjector, session, request, token, returnValue;
+		var dependencyInjector, session, request, equals, userToken, knownToken;
 
 		let dependencyInjector = <DiInterface> this->_dependencyInjector;
 
@@ -389,24 +390,25 @@ class Security implements InjectionAwareInterface
 			/**
 			 * We always check if the value is correct in post
 			 */
-			let token = request->getPost(tokenKey);
+			let userToken = request->getPost(tokenKey);
 		} else {
-			let token = tokenValue;
+			let userToken = tokenValue;
 		}
 
 		/**
 		 * The value is the same?
 		 */
-		let returnValue = (token == session->get(this->_tokenValueSessionID));
+		let knownToken = session->get(this->_tokenValueSessionID);
+		let equals = hash_equals(knownToken, userToken);
 
 		/**
 		 * Remove the key and value of the CSRF token in session
 		 */
-		if returnValue && destroyIfValid {
+		if equals && destroyIfValid {
 			this->destroyToken();
 		}
 
-		return returnValue;
+		return equals;
 	}
 
 	/**

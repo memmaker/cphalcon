@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -31,21 +31,34 @@ use Phalcon\Validation\Validator;
  * <code>
  * use Phalcon\Validation\Validator\Regex as RegexValidator;
  *
- * $validator->add('created_at', new RegexValidator([
- *     'pattern' => '/^[0-9]{4}[-\/](0[1-9]|1[12])[-\/](0[1-9]|[12][0-9]|3[01])$/',
- *     'message' => 'The creation date is invalid'
- * ]));
+ * $validator->add(
+ *     "created_at",
+ *     new RegexValidator(
+ *         [
+ *             "pattern" => "/^[0-9]{4}[-\/](0[1-9]|1[12])[-\/](0[1-9]|[12][0-9]|3[01])$/",
+ *             "message" => "The creation date is invalid",
+ *         ]
+ *     )
+ * );
  *
- * $validator->add(['created_at', 'name'], new RegexValidator([
- *     'pattern' => [
- *         'created_at' => '/^[0-9]{4}[-\/](0[1-9]|1[12])[-\/](0[1-9]|[12][0-9]|3[01])$/',
- *         'name' => '/^[a-z]$/'
+ * $validator->add(
+ *     [
+ *         "created_at",
+ *         "name",
  *     ],
- *     'message' => [
- *         'created_at' => 'The creation date is invalid',
- *         'name' => ' 'The name is invalid'
- *     ]
- * ]));
+ *     new RegexValidator(
+ *         [
+ *             "pattern" => [
+ *                 "created_at" => "/^[0-9]{4}[-\/](0[1-9]|1[12])[-\/](0[1-9]|[12][0-9]|3[01])$/",
+ *                 "name"       => "/^[a-z]$/",
+ *             ],
+ *             "message" => [
+ *                 "created_at" => "The creation date is invalid",
+ *                 "name"       => "The name is invalid",
+ *             ]
+ *         ]
+ *     )
+ * );
  * </code>
  */
 class Regex extends Validator
@@ -75,28 +88,11 @@ class Regex extends Validator
 		}
 
 		if failed === true {
+			let label = this->prepareLabel(validation, field),
+				message = this->prepareMessage(validation, field, "Regex"),
+				code = this->prepareCode(field);
 
-			let label = this->getOption("label");
-			if typeof label == "array" {
-				let label = label[field];
-			}
-			if empty label {
-				let label = validation->getLabel(field);
-			}
-
-			let message = this->getOption("message");
-			if typeof message == "array" {
-				let message = message[field];
-			}
 			let replacePairs = [":field": label];
-			if empty message {
-				let message = validation->getDefaultMessage("Regex");
-			}
-
-			let code = this->getOption("code");
-			if typeof code == "array" {
-				let code = code[field];
-			}
 
 			validation->appendMessage(
 				new Message(

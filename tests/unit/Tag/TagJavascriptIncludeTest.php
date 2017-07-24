@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit\Tag;
 
-use Phalcon\Test\Proxy\Tag;
+use Phalcon\Tag;
 use Phalcon\Test\Module\UnitTest;
 
 /**
  * \Phalcon\Test\Unit\Tag\TagJavascriptIncludeTest
  * Tests the \Phalcon\Tag component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit\Tag
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -35,7 +35,6 @@ class TagJavascriptIncludeTest extends UnitTest
         $this->specify(
             "iavascriptInclude with string parameter local link returns invalid HTML",
             function () {
-
                 Tag::resetInput();
                 $options  = 'js/phalcon.js';
                 $expected = '<script type="text/javascript" src="/js/phalcon.js"></script>' . PHP_EOL;
@@ -57,7 +56,6 @@ class TagJavascriptIncludeTest extends UnitTest
         $this->specify(
             "javascriptInclude with array parameter local link returns invalid HTML",
             function () {
-
                 Tag::resetInput();
                 $options  = ['js/phalcon.js'];
                 $expected = '<script type="text/javascript" src="/js/phalcon.js"></script>' . PHP_EOL;
@@ -79,7 +77,6 @@ class TagJavascriptIncludeTest extends UnitTest
         $this->specify(
             "javascriptInclude with a string as the second parameter local link returns invalid HTML",
             function () {
-
                 Tag::resetInput();
                 $options  = ['js/phalcon.js'];
                 $expected = '<script type="text/javascript" src="/js/phalcon.js"></script>' . PHP_EOL;
@@ -101,7 +98,6 @@ class TagJavascriptIncludeTest extends UnitTest
         $this->specify(
             "iavascriptInclude with a string parameter remote link returns invalid HTML",
             function () {
-
                 Tag::resetInput();
                 $options  = 'http://my.local.com/js/phalcon.js';
                 $expected = '<script type="text/javascript" src="http://my.local.com/js/phalcon.js"></script>' . PHP_EOL;
@@ -123,7 +119,6 @@ class TagJavascriptIncludeTest extends UnitTest
         $this->specify(
             "iavascriptInclude with array second parameter remote link returns invalid HTML",
             function () {
-
                 Tag::resetInput();
                 $options  = ['http://my.local.com/js/phalcon.js'];
                 $expected = '<script type="text/javascript" src="http://my.local.com/js/phalcon.js"></script>' . PHP_EOL;

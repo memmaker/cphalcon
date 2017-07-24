@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -41,37 +41,38 @@ use Phalcon\Mvc\ModuleDefinitionInterface;
  *
  * class MyApp extends Application
  * {
+ *     /**
+ *      * Register the services here to make them general or register
+ *      * in the ModuleDefinition to make them module-specific
+ *      *\/
+ *     protected function registerServices()
+ *     {
  *
- *		/**
- *		 * Register the services here to make them general or register
- *		 * in the ModuleDefinition to make them module-specific
- *		 *\/
- *		protected function registerServices()
- *		{
+ *     }
  *
- *		}
+ *     /**
+ *      * This method registers all the modules in the application
+ *      *\/
+ *     public function main()
+ *     {
+ *         $this->registerModules(
+ *             [
+ *                 "frontend" => [
+ *                     "className" => "Multiple\\Frontend\\Module",
+ *                     "path"      => "../apps/frontend/Module.php",
+ *                 ],
+ *                 "backend" => [
+ *                     "className" => "Multiple\\Backend\\Module",
+ *                     "path"      => "../apps/backend/Module.php",
+ *                 ],
+ *             ]
+ *         );
+ *     }
+ * }
  *
- *		/**
- *		 * This method registers all the modules in the application
- *		 *\/
- *		public function main()
- *		{
- *			$this->registerModules(array(
- *				'frontend' => array(
- *					'className' => 'Multiple\Frontend\Module',
- *					'path' => '../apps/frontend/Module.php'
- *				),
- *				'backend' => array(
- *					'className' => 'Multiple\Backend\Module',
- *					'path' => '../apps/backend/Module.php'
- *				)
- *			));
- *		}
- *	}
+ * $application = new MyApp();
  *
- *	$application = new MyApp();
- *	$application->main();
- *
+ * $application->main();
  *</code>
  */
 class Application extends BaseApplication
@@ -124,7 +125,7 @@ class Application extends BaseApplication
 
 		/**
 		 * If a 'match' callback was defined in the matched route
-		 * The whole dispatcher+view behavior can be overriden by the developer
+		 * The whole dispatcher+view behavior can be overridden by the developer
 		 */
 		let matchedRoute = router->getMatchedRoute();
 		if typeof matchedRoute == "object" {

@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (http://www.phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -32,11 +32,13 @@ use Phalcon\Queue\Beanstalk\Exception;
  * <code>
  * use Phalcon\Queue\Beanstalk;
  *
- * $queue = new Beanstalk([
- *     'host'       => '127.0.0.1',
- *     'port'       => 11300,
- *     'persistent' => true,
- * ]);
+ * $queue = new Beanstalk(
+ *     [
+ *         "host"       => "127.0.0.1",
+ *         "port"       => 11300,
+ *         "persistent" => true,
+ *     ]
+ * );
  * </code>
  *
  * @link http://www.igvita.com/2010/05/20/scalable-work-queues-with-beanstalk/
@@ -100,16 +102,8 @@ class Beanstalk
 	/**
 	 * Phalcon\Queue\Beanstalk
 	 */
-	public function __construct(array options = null)
+	public function __construct(array parameters = [])
 	{
-		var parameters;
-
-		if typeof options != "array" {
-			let parameters = [];
-		} else {
-			let parameters = options;
-		}
-
 		if !isset parameters["host"] {
 			let parameters["host"] = self::DEFAULT_HOST;
 		}
@@ -568,7 +562,7 @@ class Beanstalk
 	/**
 	 * Writes data to the socket. Performs a connection if none is available
 	 */
-	protected function write(string data) -> boolean|int
+	public function write(string data) -> boolean|int
 	{
 		var connection, packet;
 

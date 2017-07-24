@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -34,21 +34,21 @@ use Phalcon\Validation\CombinedFieldsValidator;
  */
 class Validation extends Injectable implements ValidationInterface
 {
-	protected _data;
+	protected _data { get };
 
 	protected _entity;
 
 	protected _validators = [] { set };
 
-	protected _combinedFieldsValidators;
+	protected _combinedFieldsValidators = [];
 
-	protected _filters;
+	protected _filters = [];
 
 	protected _messages;
 
 	protected _defaultMessages;
 
-	protected _labels;
+	protected _labels = [];
 
 	protected _values;
 
@@ -124,7 +124,6 @@ class Validation extends Injectable implements ValidationInterface
 			if typeof data == "array" || typeof data == "object" {
 				let this->_data = data;
 			} else {
-				var_dump(data);
 				throw new Exception("Invalid data to validate");
 			}
 		}
@@ -159,33 +158,31 @@ class Validation extends Injectable implements ValidationInterface
 			}
 		}
 
-		if !empty combinedFieldsValidators {
-			for scope in combinedFieldsValidators {
-				if typeof scope != "array" {
-					throw new Exception("The validator scope is not valid");
-				}
+		for scope in combinedFieldsValidators {
+			if typeof scope != "array" {
+				throw new Exception("The validator scope is not valid");
+			}
 
-				let field = scope[0],
-					validator = scope[1];
+			let field = scope[0],
+				validator = scope[1];
 
-				if typeof validator != "object" {
-					throw new Exception("One of the validators is not valid");
-				}
+			if typeof validator != "object" {
+				throw new Exception("One of the validators is not valid");
+			}
 
-				/**
-				 * Call internal validations, if it returns true, then skip the current validator
-				 */
-				if this->preChecking(field, validator) {
-					continue;
-				}
+			/**
+			 * Call internal validations, if it returns true, then skip the current validator
+			 */
+			if this->preChecking(field, validator) {
+				continue;
+			}
 
-				/**
-				 * Check if the validation must be canceled if this validator fails
-				 */
-				if validator->validate(this, field) === false {
-					if validator->getOption("cancelOnFail") {
-						break;
-					}
+			/**
+			 * Check if the validation must be canceled if this validator fails
+			 */
+			if validator->validate(this, field) === false {
+				if validator->getOption("cancelOnFail") {
+					break;
 				}
 			}
 		}
@@ -362,13 +359,9 @@ class Validation extends Injectable implements ValidationInterface
 			"Date": "Field :field is not a valid date"
 		];
 
-		if count(messages) {
-			let this->_defaultMessages = array_merge(defaultMessages, messages);
-			return this->_defaultMessages;
-		}
+		let this->_defaultMessages = array_merge(defaultMessages, messages);
 
-		let this->_defaultMessages = defaultMessages;
-		return defaultMessages;
+		return this->_defaultMessages;
 	}
 
 	/**
@@ -410,15 +403,17 @@ class Validation extends Injectable implements ValidationInterface
 	public function getLabel(var field)
 	{
 		var labels, value;
+
 		let labels = this->_labels;
-		if typeof labels == "array" && typeof field != "array" {
-			if fetch value, labels[field] {
-				return value;
-			}
-		}
-		elseif typeof field == "array" {
+
+		if typeof field == "array" {
 			return join(", ", field);
 		}
+
+		if fetch value, labels[field] {
+			return value;
+		}
+
 		return field;
 	}
 
@@ -475,13 +470,14 @@ class Validation extends Injectable implements ValidationInterface
 	{
 		var entity, method, value, data, values,
 			filters, fieldFilters, dependencyInjector,
-			filterService;
+			filterService, camelizedField;
 
 		let entity = this->_entity;
 
 		//  If the entity is an object use it to retrieve the values
 		if typeof entity == "object" {
-			let method = "get" . camelize(field);
+			let camelizedField = camelize(field);
+			let method = "get" . camelizedField;
 			if method_exists(entity, method) {
 				let value = entity->{method}();
 			} else {
@@ -495,30 +491,30 @@ class Validation extends Injectable implements ValidationInterface
 					}
 				}
 			}
-			return value;
 		}
+		else {
+			let data = this->_data;
 
-		let data = this->_data;
-
-		if typeof data != "array" && typeof data != "object" {
-			throw new Exception("There is no data to validate");
-		}
-
-		// Check if there is a calculated value
-		let values = this->_values;
-		if fetch value, values[field] {
-			return value;
-		}
-
-		let value = null;
-		if typeof data == "array" {
-			if isset data[field] {
-				let value = data[field];
+			if typeof data != "array" && typeof data != "object" {
+				throw new Exception("There is no data to validate");
 			}
-		} else {
-			if typeof data == "object" {
-				if isset data->{field} {
-					let value = data->{field};
+
+			// Check if there is a calculated value
+			let values = this->_values;
+			if fetch value, values[field] {
+				return value;
+			}
+
+			let value = null;
+			if typeof data == "array" {
+				if isset data[field] {
+					let value = data[field];
+				}
+			} else {
+				if typeof data == "object" {
+					if isset data->{field} {
+						let value = data->{field};
+					}
 				}
 			}
 		}
@@ -528,32 +524,52 @@ class Validation extends Injectable implements ValidationInterface
 		}
 
 		let filters = this->_filters;
-		if typeof filters == "array" {
 
-			if fetch fieldFilters, filters[field] {
+		if fetch fieldFilters, filters[field] {
 
-				if fieldFilters {
+			if fieldFilters {
 
-					let dependencyInjector = this->getDI();
+				let dependencyInjector = this->getDI();
+				if typeof dependencyInjector != "object" {
+					let dependencyInjector = Di::getDefault();
 					if typeof dependencyInjector != "object" {
-						let dependencyInjector = Di::getDefault();
-						if typeof dependencyInjector != "object" {
-							throw new Exception("A dependency injector is required to obtain the 'filter' service");
+						throw new Exception("A dependency injector is required to obtain the 'filter' service");
+					}
+				}
+
+				let filterService = dependencyInjector->getShared("filter");
+				if typeof filterService != "object" {
+					throw new Exception("Returned 'filter' service is invalid");
+				}
+
+				let value = filterService->sanitize(value, fieldFilters);
+
+				/**
+				 * Set filtered value in entity
+				 */
+				if typeof entity == "object" {
+					let method = "set" . camelizedField;
+					if method_exists(entity, method) {
+						entity->{method}(value);
+					} else {
+						if method_exists(entity, "writeAttribute") {
+							entity->writeAttribute(field, value);
+						} else {
+							if property_exists(entity, field) {
+								let entity->{field} = value;
+							}
 						}
 					}
-
-					let filterService = dependencyInjector->getShared("filter");
-					if typeof filterService != "object" {
-						throw new Exception("Returned 'filter' service is invalid");
-					}
-
-					return filterService->sanitize(value, fieldFilters);
 				}
+
+				return value;
 			}
 		}
 
-		// Cache the calculated value
-		let this->_values[field] = value;
+		// Cache the calculated value only if it's not entity
+		if typeof entity != "object" {
+			let this->_values[field] = value;
+		}
 
 		return value;
 	}
@@ -563,23 +579,31 @@ class Validation extends Injectable implements ValidationInterface
 	 */
 	protected function preChecking(var field, <ValidatorInterface> validator) -> boolean
 	{
-		var singleField;
+		var singleField, allowEmpty, emptyValue, value, result;
 		if typeof field == "array" {
 			for singleField in field {
-				if validator->getOption("allowEmpty", false) {
-					if method_exists(validator, "isAllowEmpty") {
-						return validator->isAllowEmpty(this, singleField);
-					}
-					return empty this->getValue(singleField);
+				let result = this->preChecking(singleField, validator);
+				if result {
+					return result;
 				}
 			}
 		}
 		else {
-			if validator->getOption("allowEmpty", false) {
+			let allowEmpty = validator->getOption("allowEmpty", false);
+			if allowEmpty {
 				if method_exists(validator, "isAllowEmpty") {
 					return validator->isAllowEmpty(this, field);
 				}
-				return empty this->getValue(field);
+				let value = this->getValue(field);
+				if typeof allowEmpty == "array" {
+					for emptyValue in allowEmpty {
+						if emptyValue === value {
+							return true;
+						}
+					}
+					return false;						
+				}
+				return empty value;
 			}
 		}
 

@@ -26,23 +26,19 @@
  * The Task class should at least have a "mainAction" method
  *
  *<code>
+ * class HelloTask extends \Phalcon\Cli\Task
+ * {
+ *     // This action will be executed by default
+ *     public function mainAction()
+ *     {
  *
- *class HelloTask extends \Phalcon\Cli\Task
- *{
+ *     }
  *
- *  // This action will be executed by default
- *  public function mainAction()
- *  {
+ *     public function findAction()
+ *     {
  *
- *  }
- *
- *  public function findAction()
- *  {
- *
- *  }
- *
- *}
- *
+ *     }
+ * }
  *</code>
  */
 ZEPHIR_INIT_CLASS(Phalcon_Cli_Task) {
@@ -59,7 +55,7 @@ ZEPHIR_INIT_CLASS(Phalcon_Cli_Task) {
  */
 PHP_METHOD(Phalcon_Cli_Task, __construct) {
 
-	int ZEPHIR_LAST_CALL_STATUS;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
 
 	ZEPHIR_MM_GROW();
 

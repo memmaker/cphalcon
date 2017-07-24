@@ -7,7 +7,7 @@
   | Copyright (c) 2011-2015 Phalcon Team (http://www.phalconphp.com)       |
   +------------------------------------------------------------------------+
   | This source file is subject to the New BSD License that is bundled     |
-  | with this package in the file docs/LICENSE.txt.                        |
+  | with this package in the file LICENSE.txt.                             |
   |                                                                        |
   | If you did not receive a copy of the license and are unable to         |
   | obtain it through the world-wide-web, please send an email             |
@@ -23,7 +23,7 @@ class DispatcherListener
 
 	protected $_test;
 
-	protected $_trace = '';
+	protected $_trace = [];
 
 	protected $_stop = '';
 
@@ -265,7 +265,11 @@ class DispatcherMvcEventsTest extends PHPUnit_Framework_TestCase
 		$dispatcher->dispatch();
 
 		$trace = join('-', $listener->getTrace());
-		$this->assertEquals($trace, 'beforeDispatch-beforeExecuteRoute-afterInitialize-beforeException-afterExecuteRoute-afterDispatch');
+
+		$this->assertEquals(
+			$trace,
+			'beforeDispatch-beforeExecuteRoute-afterInitialize-beforeException-afterExecuteRoute-afterDispatch'
+		);
 	}
 
 	public function testBeforeExceptionEvent()

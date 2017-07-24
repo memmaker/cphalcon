@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -32,21 +32,34 @@ use Phalcon\Validation\Message;
  * <code>
  * use Phalcon\Validation\Validator\InclusionIn;
  *
- * $validator->add('status', new InclusionIn([
- *     'message' => 'The status must be A or B',
- *     'domain' => array('A', 'B')
- * ]));
+ * $validator->add(
+ *     "status",
+ *     new InclusionIn(
+ *         [
+ *             "message" => "The status must be A or B",
+ *             "domain"  => ["A", "B"],
+ *         ]
+ *     )
+ * );
  *
- * $validator->add(['status', 'type'], new InclusionIn([
- *     'message' => [
- *         'status' => 'The status must be A or B',
- *         'type' => 'The status must be 1 or 2'
+ * $validator->add(
+ *     [
+ *         "status",
+ *         "type",
  *     ],
- *     'domain' => [
- *         'status' => ['A', 'B'],
- *         'type' => [1, 2]
- *     ]
- * ]));
+ *     new InclusionIn(
+ *         [
+ *             "message" => [
+ *                 "status" => "The status must be A or B",
+ *                 "type"   => "The status must be 1 or 2",
+ *             ],
+ *             "domain" => [
+ *                 "status" => ["A", "B"],
+ *                 "type"   => [1, 2],
+ *             ]
+ *         ]
+ *     )
+ * );
  * </code>
  */
 class InclusionIn extends Validator
@@ -91,30 +104,21 @@ class InclusionIn extends Validator
 		 * Check if the value is contained by the array
 		 */
 		if !in_array(value, domain, strict) {
+			let label = this->prepareLabel(validation, field),
+				message = this->prepareMessage(validation, field, "InclusionIn"),
+				code = this->prepareCode(field);
 
-			let label = this->getOption("label");
-			if typeof label == "array" {
-				let label = label[field];
-			}
-			if empty label {
-				let label = validation->getLabel(field);
-			}
-
-			let message = this->getOption("message");
-			if typeof message == "array" {
-				let message = message[field];
-			}
 			let replacePairs = [":field": label, ":domain":  join(", ", domain)];
-			if empty message {
-				let message = validation->getDefaultMessage("InclusionIn");
-			}
 
-			let code = this->getOption("code");
-			if typeof code == "array" {
-				let code = code[field];
-			}
+			validation->appendMessage(
+				new Message(
+					strtr(message, replacePairs),
+					field,
+					"InclusionIn",
+					code
+				)
+			);
 
-			validation->appendMessage(new Message(strtr(message, replacePairs), field, "InclusionIn", code));
 			return false;
 		}
 

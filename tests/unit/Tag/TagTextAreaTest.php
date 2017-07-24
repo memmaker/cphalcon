@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit\Tag;
 
-use Phalcon\Test\Proxy\Tag;
+use Phalcon\Tag;
 use Phalcon\Test\Module\UnitTest;
 
 /**
  * \Phalcon\Test\Unit\Tag\TagTextAreaTest
  * Tests the \Phalcon\Tag component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit\Tag
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -35,7 +35,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with string parameter returns invalid",
             function () {
-
                 $options  = 'x_name';
                 $expected = '<textarea id="x_name" name="x_name">'
                           . '</textarea';
@@ -61,7 +60,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with array parameter returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'class' => 'x_class',
@@ -90,7 +88,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with array parameter with id returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'id'    => 'x_id',
@@ -121,7 +118,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with array parameter with name no id returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'name'  => 'x_other',
@@ -152,7 +148,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with setDefault returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'name'  => 'x_other',
@@ -184,7 +179,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with displayTo returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'name'  => 'x_other',
@@ -216,7 +210,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with setDefault and element not present returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'name'  => 'x_other',
@@ -248,7 +241,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with displayTo and element not present returns invalid",
             function () {
-
                 $options = [
                     'x_name',
                     'name'  => 'x_other',
@@ -280,7 +272,6 @@ class TagTextAreaTest extends UnitTest
         $this->specify(
             "textArea with displayTo and newline in value",
             function () {
-
                 $options  = 'x_name';
                 $value    = "\r\nx_content";
                 $expected = '<textarea id="x_name" name="x_name">'

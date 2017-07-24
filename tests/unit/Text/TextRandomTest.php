@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit\Text;
 
+use Phalcon\Text;
 use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Text;
 
 /**
  * \Phalcon\Test\Unit\Text\TextRandomTest
  * Tests the \Phalcon\Text component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Nikolaos Dimopoulos <nikos@phalconphp.com>
  * @package   Phalcon\Test\Unit
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -35,12 +35,12 @@ class TextRandomTest extends UnitTest
         $this->specify(
             "random constants are not correct",
             function () {
-
                 expect(Text::RANDOM_ALNUM)->equals(0);
                 expect(Text::RANDOM_ALPHA)->equals(1);
                 expect(Text::RANDOM_HEXDEC)->equals(2);
                 expect(Text::RANDOM_NUMERIC)->equals(3);
                 expect(Text::RANDOM_NOZERO)->equals(4);
+                expect(Text::RANDOM_DISTINCT)->equals(5);
             }
         );
     }
@@ -56,9 +56,7 @@ class TextRandomTest extends UnitTest
         $this->specify(
             "random with alnum does not return correct results",
             function () {
-
                 for ($i = 1; $i < 10; $i++) {
-
                     $source = Text::random(Text::RANDOM_ALNUM, $i);
 
                     expect(preg_match('/[a-zA-Z0-9]+/', $source, $matches))->equals(1);
@@ -80,9 +78,7 @@ class TextRandomTest extends UnitTest
         $this->specify(
             "random with alpha does not return correct results",
             function () {
-
                 for ($i = 1; $i < 10; $i++) {
-
                     $source = Text::random(Text::RANDOM_ALPHA, $i);
 
                     expect(preg_match('/[a-zA-Z]+/', $source, $matches))->equals(1);
@@ -104,9 +100,7 @@ class TextRandomTest extends UnitTest
         $this->specify(
             "random with hexdec does not return correct results",
             function () {
-
                 for ($i = 1; $i < 10; $i++) {
-
                     $source = Text::random(Text::RANDOM_HEXDEC, $i);
 
                     expect(preg_match('/[a-f0-9]+/', $source, $matches))->equals(1);
@@ -128,9 +122,7 @@ class TextRandomTest extends UnitTest
         $this->specify(
             "random with numeric does not return correct results",
             function () {
-
                 for ($i = 1; $i < 10; $i++) {
-
                     $source = Text::random(Text::RANDOM_NUMERIC, $i);
 
                     expect(preg_match('/[0-9]+/', $source, $matches))->equals(1);
@@ -152,9 +144,7 @@ class TextRandomTest extends UnitTest
         $this->specify(
             "random with nonzero does not return correct results",
             function () {
-
                 for ($i = 1; $i < 10; $i++) {
-
                     $source = Text::random(Text::RANDOM_NOZERO, $i);
 
                     expect(preg_match('/[1-9]+/', $source, $matches))->equals(1);
@@ -162,6 +152,40 @@ class TextRandomTest extends UnitTest
                     expect(strlen($source))->equals($i);
                 }
             }
+        );
+    }
+
+    /**
+     * Tests the random function with distinct type
+     *
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
+     * @since  2017-06-09
+     */
+    public function testRandomDistinct()
+    {
+        $this->specify(
+            "distinct random does not return correct results",
+            function ($i) {
+                $source  = Text::random(Text::RANDOM_DISTINCT, $i);
+                $pattern = '#^[^2345679ACDEFHJKLMNPRSTUVWXYZ]+$#';
+
+                expect(preg_match($pattern, $source))->equals(0);
+                expect(strlen($source))->equals($i);
+            },
+            [
+                'examples' => [
+                    [1],
+                    [10],
+                    [100],
+                    [200],
+                    [500],
+                    [1000],
+                    [2000],
+                    [3000],
+                    [4000],
+                    [5000],
+                ],
+            ]
         );
     }
 }

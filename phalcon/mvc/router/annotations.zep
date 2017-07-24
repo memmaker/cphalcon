@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -29,18 +29,22 @@ use Phalcon\Mvc\Router\Exception;
  *
  * A router that reads routes annotations from classes/resources
  *
- *<code>
- * $di['router'] = function() {
+ * <code>
+ * use Phalcon\Mvc\Router\Annotations;
  *
- *		//Use the annotations router
- *		$router = new Annotations(false);
+ * $di->setShared(
+ *     "router",
+ *     function() {
+ *         // Use the annotations router
+ *         $router = new Annotations(false);
  *
- *		//This will do the same as above but only if the handled uri starts with /robots
- * 		$router->addResource('Robots', '/robots');
+ *         // This will do the same as above but only if the handled uri starts with /robots
+ *         $router->addResource("Robots", "/robots");
  *
- * 		return $router;
- *	};
- *</code>
+ *         return $router;
+ *     }
+ * );
+ * </code>
  */
 class Annotations extends Router
 {
@@ -88,7 +92,7 @@ class Annotations extends Router
 
 		if !uri {
 			/**
-			 * If 'uri' isn't passed as parameter it reads _GET['_url']
+			 * If 'uri' isn't passed as parameter it reads $_GET["_url"]
 			 */
 			let realUri = this->getRewriteUri();
 		} else {
@@ -247,6 +251,10 @@ class Annotations extends Router
 
 			case "Put":
 				let isRoute = true, methods = "PUT";
+				break;
+
+			case "Patch":
+				let isRoute = true, methods = "PATCH";
 				break;
 
 			case "Delete":

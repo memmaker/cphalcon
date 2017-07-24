@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -28,24 +28,26 @@ use Phalcon\Cache\Frontend\Data as FrontendData;
  *
  * This adapter store sessions in memcache
  *
- *<code>
+ * <code>
  * use Phalcon\Session\Adapter\Memcache;
  *
- * $session = new Memcache([
- *     'uniqueId'   => 'my-private-app',
- *     'host'       => '127.0.0.1',
- *     'port'       => 11211,
- *     'persistent' => true,
- *     'lifetime'   => 3600,
- *     'prefix'     => 'my_'
- * ]);
+ * $session = new Memcache(
+ *     [
+ *         "uniqueId"   => "my-private-app",
+ *         "host"       => "127.0.0.1",
+ *         "port"       => 11211,
+ *         "persistent" => true,
+ *         "lifetime"   => 3600,
+ *         "prefix"     => "my_",
+ *     ]
+ * );
  *
  * $session->start();
  *
- * $session->set('var', 'some-value');
+ * $session->set("var", "some-value");
  *
- * echo $session->get('var');
- *</code>
+ * echo $session->get("var");
+ * </code>
  */
 class Memcache extends Adapter
 {
@@ -106,9 +108,9 @@ class Memcache extends Adapter
 	/**
 	 * {@inheritdoc}
 	 */
-	public function read(string sessionId) -> var
+	public function read(string sessionId) -> string
 	{
-		return this->_memcache->get(sessionId, this->_lifetime);
+		return (string) this->_memcache->get(sessionId, this->_lifetime);
 	}
 
 	/**
@@ -132,7 +134,13 @@ class Memcache extends Adapter
 			let id = sessionId;
 		}
 
-		return this->_memcache->delete(id);
+		this->removeSessionData();
+
+		if !empty id && this->_memcache->exists(id) {
+			return (bool) this->_memcache->delete(id);
+		}
+
+		return true;
 	}
 
 	/**

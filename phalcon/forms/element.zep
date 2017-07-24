@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -227,7 +227,9 @@ abstract class Element implements ElementInterface
 		if value !== null {
 			if useChecked {
 				/**
-				 * Check if the element already has a default value, compare it with the one in the attributes, if they are the same mark the element as checked
+				 * Check if the element already has a default value, compare it
+				 * with the one in the attributes, if they are the same mark the
+				 * element as checked
 				 */
 				if fetch currentValue, mergedAttributes["value"] {
 					if currentValue == value {
@@ -397,7 +399,7 @@ abstract class Element implements ElementInterface
 		 * Use the default label or leave the same name as label
 		 */
 		let label = this->_label;
-		if label {
+		if label || is_numeric(label) {
 			let code .= ">" . label . "</label>";
 		} else {
 			let code .= ">" . name . "</label>";

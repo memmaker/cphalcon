@@ -2,21 +2,21 @@
 
 namespace Phalcon\Test\Unit\Assets\Filters;
 
-use Phalcon\Test\Proxy\Assets\Filters\Jsmin;
+use Phalcon\Assets\Filters\Jsmin;
 use Phalcon\Test\Module\UnitTest;
 
 /**
  * \Phalcon\Test\Unit\Assets\Filters\JsminTest
  * Tests the \Phalcon\Assets\Filters\Jsmin component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Serghei Iakovlev <serghei@phalconphp.com>
  * @package   Phalcon\Test\Unit\Assets\Filters
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -27,7 +27,7 @@ class JsminTest extends UnitTest
     /**
      * Tests jsmin filter with non-string param
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testFilterJsminWithNonStringParam()
@@ -45,7 +45,7 @@ class JsminTest extends UnitTest
     /**
      * Tests jsmin filter with unterminated comment
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testFilterJsminUnterminatedComment()
@@ -63,7 +63,7 @@ class JsminTest extends UnitTest
     /**
      * Tests jsmin filter with unterminated string literal
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testFilterJsminUnterminatedStringLiteral()
@@ -81,7 +81,7 @@ class JsminTest extends UnitTest
     /**
      * Tests jsmin filter with unterminated Regular Expression literal
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testFilterJsminUnterminatedRegexpLiteral()
@@ -99,7 +99,7 @@ class JsminTest extends UnitTest
     /**
      * Tests jsmin filter with empty string
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testFilterJsminEmptyString()
@@ -117,7 +117,7 @@ class JsminTest extends UnitTest
     /**
      * Tests jsmin filter with comment
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testFilterJsminComment()
@@ -135,7 +135,7 @@ class JsminTest extends UnitTest
     /**
      * Tests cssmin filter
      *
-     * @author Serghei Iakovlev <nikos@phalconphp.com>
+     * @author Serghei Iakovlev <serghei@phalconphp.com>
      * @since  2016-01-24
      */
     public function testAssetsFilterJsmin()

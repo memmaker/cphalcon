@@ -35,37 +35,38 @@
  *
  * class MyApp extends Application
  * {
+ *     /**
+ *      * Register the services here to make them general or register
+ *      * in the ModuleDefinition to make them module-specific
+ *      *\/
+ *     protected function registerServices()
+ *     {
  *
- *		/**
- *		 * Register the services here to make them general or register
- *		 * in the ModuleDefinition to make them module-specific
- *		 *\/
- *		protected function registerServices()
- *		{
+ *     }
  *
- *		}
+ *     /**
+ *      * This method registers all the modules in the application
+ *      *\/
+ *     public function main()
+ *     {
+ *         $this->registerModules(
+ *             [
+ *                 "frontend" => [
+ *                     "className" => "Multiple\\Frontend\\Module",
+ *                     "path"      => "../apps/frontend/Module.php",
+ *                 ],
+ *                 "backend" => [
+ *                     "className" => "Multiple\\Backend\\Module",
+ *                     "path"      => "../apps/backend/Module.php",
+ *                 ],
+ *             ]
+ *         );
+ *     }
+ * }
  *
- *		/**
- *		 * This method registers all the modules in the application
- *		 *\/
- *		public function main()
- *		{
- *			$this->registerModules(array(
- *				'frontend' => array(
- *					'className' => 'Multiple\Frontend\Module',
- *					'path' => '../apps/frontend/Module.php'
- *				),
- *				'backend' => array(
- *					'className' => 'Multiple\Backend\Module',
- *					'path' => '../apps/backend/Module.php'
- *				)
- *			));
- *		}
- *	}
+ * $application = new MyApp();
  *
- *	$application = new MyApp();
- *	$application->main();
- *
+ * $application->main();
  *</code>
  */
 ZEPHIR_INIT_CLASS(Phalcon_Mvc_Application) {
@@ -93,9 +94,9 @@ PHP_METHOD(Phalcon_Mvc_Application, useImplicitView) {
 
 
 	if (implicitView) {
-		zephir_update_property_this(this_ptr, SL("_implicitView"), ZEPHIR_GLOBAL(global_true) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_implicitView"), ZEPHIR_GLOBAL(global_true) TSRMLS_CC);
 	} else {
-		zephir_update_property_this(this_ptr, SL("_implicitView"), ZEPHIR_GLOBAL(global_false) TSRMLS_CC);
+		zephir_update_property_this(getThis(), SL("_implicitView"), ZEPHIR_GLOBAL(global_false) TSRMLS_CC);
 	}
 	RETURN_THISW();
 
@@ -109,7 +110,7 @@ PHP_METHOD(Phalcon_Mvc_Application, handle) {
 	zval *_16$$22;
 	zend_class_entry *_6$$8;
 	zend_bool returnedResponse = 0, _26, _12$$13, _31$$32, _33$$32;
-	int ZEPHIR_LAST_CALL_STATUS;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
 	zval *uri_param = NULL, *dependencyInjector = NULL, *eventsManager = NULL, *router = NULL, *dispatcher = NULL, *response = NULL, *view = NULL, *module = NULL, *moduleObject = NULL, *moduleName = NULL, *className = NULL, *path = NULL, *implicitView = NULL, *controller = NULL, *possibleResponse = NULL, *renderStatus = NULL, *matchedRoute = NULL, *match = NULL, *_0, *_3 = NULL, *_4 = NULL, *_20 = NULL, *_21 = NULL, *_22 = NULL, *_23 = NULL, *_1$$4 = NULL, *_2$$4, *_5$$8 = NULL, *_7$$7 = NULL, *_8$$9 = NULL, *_9$$9, *_10$$14 = NULL, *_11$$14, *_13$$21, *_14$$21, *_15$$17 = NULL, *_17$$24, *_18$$25 = NULL, *_19$$25, *_24$$27 = NULL, *_25$$27, *_27$$29 = NULL, *_28$$29, *_29$$31 = NULL, *_30$$31, *_32$$33, *_34$$36, *_35$$37 = NULL, *_36$$37 = NULL, *_37$$37 = NULL, *_38$$40 = NULL, *_39$$40, *_40$$41 = NULL, *_41$$42;
 	zval *uri = NULL;
 
@@ -127,7 +128,7 @@ PHP_METHOD(Phalcon_Mvc_Application, handle) {
 	ZEPHIR_OBS_VAR(dependencyInjector);
 	zephir_read_property_this(&dependencyInjector, this_ptr, SL("_dependencyInjector"), PH_NOISY_CC);
 	if (Z_TYPE_P(dependencyInjector) != IS_OBJECT) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_application_exception_ce, "A dependency injection object is required to access internal services", "phalcon/mvc/application.zep", 104);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_application_exception_ce, "A dependency injection object is required to access internal services", "phalcon/mvc/application.zep", 105);
 		return;
 	}
 	_0 = zephir_fetch_nproperty_this(this_ptr, SL("_eventsManager"), PH_NOISY_CC);
@@ -215,7 +216,7 @@ PHP_METHOD(Phalcon_Mvc_Application, handle) {
 			_12$$13 = Z_TYPE_P(module) != IS_OBJECT;
 		}
 		if (_12$$13) {
-			ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_application_exception_ce, "Invalid module definition", "phalcon/mvc/application.zep", 195);
+			ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_application_exception_ce, "Invalid module definition", "phalcon/mvc/application.zep", 196);
 			return;
 		}
 		if (Z_TYPE_P(module) == IS_ARRAY) {
@@ -234,7 +235,7 @@ PHP_METHOD(Phalcon_Mvc_Application, handle) {
 						ZEPHIR_CONCAT_SVS(_14$$21, "Module definition path '", path, "' doesn't exist");
 						ZEPHIR_CALL_METHOD(NULL, _13$$21, "__construct", NULL, 9, _14$$21);
 						zephir_check_call_status();
-						zephir_throw_exception_debug(_13$$21, "phalcon/mvc/application.zep", 216 TSRMLS_CC);
+						zephir_throw_exception_debug(_13$$21, "phalcon/mvc/application.zep", 217 TSRMLS_CC);
 						ZEPHIR_MM_RESTORE();
 						return;
 					}
@@ -252,7 +253,7 @@ PHP_METHOD(Phalcon_Mvc_Application, handle) {
 			zephir_check_call_status();
 		} else {
 			if (!(zephir_instance_of_ev(module, zend_ce_closure TSRMLS_CC))) {
-				ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_application_exception_ce, "Invalid module definition", "phalcon/mvc/application.zep", 237);
+				ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_mvc_application_exception_ce, "Invalid module definition", "phalcon/mvc/application.zep", 238);
 				return;
 			}
 			ZEPHIR_INIT_VAR(_16$$22);

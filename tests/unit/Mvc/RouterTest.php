@@ -3,23 +3,23 @@
 namespace Phalcon\Test\Unit\Mvc;
 
 use Phalcon\Di;
+use Phalcon\Mvc\Router;
 use Phalcon\Http\Request;
 use Phalcon\Mvc\Router\Route;
 use Phalcon\Test\Module\UnitTest;
-use Phalcon\Test\Proxy\Mvc\Router;
 
 /**
  * \Phalcon\Test\Unit\Mvc\RouterTest
  * Tests the Phalcon\Mvc\Router component
  *
- * @copyright (c) 2011-2016 Phalcon Team
- * @link      http://www.phalconphp.com
+ * @copyright (c) 2011-2017 Phalcon Team
+ * @link      https://phalconphp.com
  * @author    Andres Gutierrez <andres@phalconphp.com>
  * @author    Serghei Iakovlev <serghei@phalconphp.com>
  * @package   Phalcon\Test\Unit\Mvc
  *
  * The contents of this file are subject to the New BSD License that is
- * bundled with this package in the file docs/LICENSE.txt
+ * bundled with this package in the file LICENSE.txt
  *
  * If you did not receive a copy of the license and are unable to obtain it
  * through the world-wide-web, please send an email to license@phalconphp.com
@@ -51,10 +51,10 @@ class RouterTest extends UnitTest
                 $router= $this->getRouter();
 
                 $router->add('/{controller:[a-z\-]+}/{action:[a-z\-]+}/this-is-a-country')
-                    ->convert('controller', function($controller) {
+                    ->convert('controller', function ($controller) {
                         return str_replace('-', '', $controller);
                     })
-                    ->convert('action', function($action){
+                    ->convert('action', function ($action) {
                         return str_replace('-', '', $action);
                     });
 
@@ -62,11 +62,11 @@ class RouterTest extends UnitTest
                     'controller' => 1,
                     'action' => 'default',
                     'id' => 2,
-                ])->convert('controller', function($controller) {
+                ])->convert('controller', function ($controller) {
                     return strtolower($controller);
-                })->convert('action', function($action) {
+                })->convert('action', function ($action) {
                     return $action == 'default' ? 'index' : $action;
-                })->convert('id', function($id) {
+                })->convert('id', function ($id) {
                     return strrev($id);
                 });
 
@@ -75,7 +75,10 @@ class RouterTest extends UnitTest
                 expect($router->wasMatched())->true();
                 expect($router->getControllerName())->equals($paths['controller']);
                 expect($router->getActionName())->equals($paths['action']);
-            }, ['examples' => $this->convertersProvider()]
+            },
+            [
+                'examples' => $this->convertersProvider()
+            ]
         );
     }
 
@@ -95,14 +98,14 @@ class RouterTest extends UnitTest
 
                 $router
                     ->add('/static/route')
-                    ->beforeMatch(function() use (&$trace) {
+                    ->beforeMatch(function () use (&$trace) {
                         $trace++;
                         return false;
                     });
 
                 $router
                     ->add('/static/route2')
-                    ->beforeMatch(function() use (&$trace) {
+                    ->beforeMatch(function () use (&$trace) {
                         $trace++;
                         return true;
                     });
@@ -164,7 +167,10 @@ class RouterTest extends UnitTest
                 expect($router->wasMatched())->true();
                 expect($router->getControllerName())->equals($paths['controller']);
                 expect($router->getActionName())->equals($paths['action']);
-            }, ['examples' => $this->extraSlashesProvider()]
+            },
+            [
+                'examples' => $this->extraSlashesProvider()
+            ]
         );
     }
 
@@ -240,7 +246,10 @@ class RouterTest extends UnitTest
                 expect($router->getControllerName())->equals($controller);
                 expect($router->getActionName())->equals($action);
                 expect($router->getParams())->equals($params);
-            }, ['examples' => $this->routerProvider()]
+            },
+            [
+                'examples' => $this->routerProvider()
+            ]
         );
     }
 
@@ -313,8 +322,10 @@ class RouterTest extends UnitTest
                 expect($router->getControllerName())->equals($controller);
                 expect($router->getActionName())->equals($action);
                 expect($router->getParams())->equals($params);
-
-            }, ['examples' => $this->methodProvider()]
+            },
+            [
+                'examples' => $this->methodProvider()
+            ]
         );
     }
 
@@ -340,8 +351,10 @@ class RouterTest extends UnitTest
                 expect($router->getControllerName())->equals($controller);
                 expect($router->getActionName())->equals($action);
                 expect($router->getParams())->equals($params);
-
-            }, ['examples' => $this->paramsProvider()]
+            },
+            [
+                'examples' => $this->paramsProvider()
+            ]
         );
     }
 
@@ -359,7 +372,10 @@ class RouterTest extends UnitTest
                 $router = $this->getRouter(false);
                 $route = $router->add($route, $path);
                 expect($route->getPaths())->equals($expected);
-            }, ['examples' => $this->pathsProvider()]
+            },
+            [
+                'examples' => $this->pathsProvider()
+            ]
         );
     }
 
@@ -399,7 +415,10 @@ class RouterTest extends UnitTest
                 $_SERVER['HTTP_HOST'] = $hostname;
                 $router->handle('/edit');
                 expect($router->getControllerName())->equals($expected);
-            }, ['examples' => $this->hostnameRegexProvider()]
+            },
+            [
+                'examples' => $this->hostnameRegexProvider()
+            ]
         );
     }
 
@@ -440,7 +459,10 @@ class RouterTest extends UnitTest
                 $_SERVER['HTTP_HOST'] = $hostname . ($port ? ':' . $port : '');
                 $router->handle('/edit');
                 expect($router->getControllerName())->equals($expected);
-            }, ['examples' => $this->hostnameRegexRouterWithHostPortProvider()]
+            },
+            [
+                'examples' => $this->hostnameRegexRouterWithHostPortProvider()
+            ]
         );
     }
 
@@ -475,7 +497,10 @@ class RouterTest extends UnitTest
                 $_SERVER['HTTP_HOST'] = $hostname;
                 $router->handle('/edit');
                 expect($router->getControllerName())->equals($expected);
-            }, ['examples' => $this->hostnameProvider()]
+            },
+            [
+                'examples' => $this->hostnameProvider()
+            ]
         );
     }
 
@@ -903,7 +928,7 @@ class RouterTest extends UnitTest
         $router = new Router($defaultRoutes);
 
         $di = new Di;
-        $di->setShared('request', function() {
+        $di->setShared('request', function () {
             return new Request;
         });
 

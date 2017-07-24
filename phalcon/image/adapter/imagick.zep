@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (http://www.phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -21,7 +21,6 @@ namespace Phalcon\Image\Adapter;
 
 use Phalcon\Image\Adapter;
 use Phalcon\Image\Exception;
-use Phalcon\Image\AdapterInterface;
 
 /**
  * Phalcon\Image\Adapter\Imagick
@@ -29,14 +28,16 @@ use Phalcon\Image\AdapterInterface;
  * Image manipulation support. Allows images to be resized, cropped, etc.
  *
  *<code>
- * $image = new Phalcon\Image\Adapter\Imagick("upload/test.jpg");
+ * $image = new \Phalcon\Image\Adapter\Imagick("upload/test.jpg");
+ *
  * $image->resize(200, 200)->rotate(90)->crop(100, 100);
+ *
  * if ($image->save()) {
- *     echo 'success';
+ *     echo "success";
  * }
  *</code>
  */
-class Imagick extends Adapter implements AdapterInterface
+class Imagick extends Adapter
 {
 	protected static _version = 0;
 	protected static _checked = false;
@@ -351,13 +352,23 @@ class Imagick extends Adapter implements AdapterInterface
 	 */
 	protected function _watermark(<Adapter> image, int offsetX, int offsetY, int opacity)
 	{
-		var watermark, ret;
+		var watermark, ret, version, method;
 
 		let opacity = opacity / 100,
-			watermark = new \Imagick();
+			watermark = new \Imagick(),
+			method = "setImageOpacity";
+
+		// Imagick >= 2.0.0
+		if likely method_exists(watermark, "getVersion") {
+			let version = watermark->getVersion();
+
+			if version["versionNumber"] >= 0x700 {
+				let method = "setImageAlpha";
+			}
+		}
 
 		watermark->readImageBlob(image->render());
-		watermark->setImageOpacity(opacity);
+		watermark->{method}(opacity);
 
 		this->_image->setIteratorIndex(0);
 

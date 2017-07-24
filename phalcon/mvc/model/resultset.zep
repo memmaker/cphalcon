@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -38,17 +38,32 @@ use Phalcon\Mvc\Model\ResultsetInterface;
  * <code>
  *
  * // Using a standard foreach
- * $robots = Robots::find(["type='virtual'", 'order' => 'name']);
+ * $robots = Robots::find(
+ *     [
+ *         "type = 'virtual'",
+ *         "order" => "name",
+ *     ]
+ * );
+ *
  * foreach ($robots as robot) {
  *     echo robot->name, "\n";
  * }
  *
  * // Using a while
- * $robots = Robots::find(["type='virtual'", 'order' => 'name');
+ * $robots = Robots::find(
+ *     [
+ *         "type = 'virtual'",
+ *         "order" => "name",
+ *     ]
+ * );
+ *
  * $robots->rewind();
+ *
  * while ($robots->valid()) {
  *     $robot = $robots->current();
+ *
  *     echo $robot->name, "\n";
+ *
  *     $robots->next();
  * }
  * </code>
@@ -471,9 +486,10 @@ abstract class Resultset
 	 */
 	public function delete(<\Closure> conditionCallback = null) -> boolean
 	{
-		boolean transaction;
+		boolean result, transaction;
 		var record, connection = null;
 
+		let result = true;
 		let transaction = false;
 
 		this->rewind();
@@ -521,6 +537,7 @@ abstract class Resultset
 				 * Rollback the transaction
 				 */
 				connection->rollback();
+				let result = false;
 				let transaction = false;
 				break;
 			}
@@ -535,18 +552,20 @@ abstract class Resultset
 			connection->commit();
 		}
 
-		return true;
+		return result;
 	}
 
 	/**
 	 * Filters a resultset returning only those the developer requires
 	 *
 	 *<code>
-	 * $filtered = $robots->filter(function($robot){
-	 *		if ($robot->id < 3) {
-	 *			return $robot;
-	 *		}
-	 *	});
+	 * $filtered = $robots->filter(
+	 *     function ($robot) {
+	 *         if ($robot->id < 3) {
+	 *             return $robot;
+	 *         }
+	 *     }
+	 * );
 	 *</code>
 	 *
 	 * @param callback filter

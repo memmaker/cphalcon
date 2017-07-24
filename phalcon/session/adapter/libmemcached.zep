@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)          |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -29,27 +29,33 @@ use Phalcon\Cache\Frontend\Data as FrontendData;
  *
  * This adapter store sessions in libmemcached
  *
- *<code>
+ * <code>
  * use Phalcon\Session\Adapter\Libmemcached;
  *
- * $session = new Libmemcached([
- *     'servers' => [
- *         ['host' => 'localhost', 'port' => 11211, 'weight' => 1],
- *     ],
- *     'client' => [
- *         \Memcached::OPT_HASH       => \Memcached::HASH_MD5,
- *         \Memcached::OPT_PREFIX_KEY => 'prefix.',
- *     ],
- *     'lifetime' => 3600,
- *     'prefix'   => 'my_'
- * ]);
+ * $session = new Libmemcached(
+ *     [
+ *         "servers" => [
+ *             [
+ *                 "host"   => "localhost",
+ *                 "port"   => 11211,
+ *                 "weight" => 1,
+ *             ],
+ *         ],
+ *         "client" => [
+ *             \Memcached::OPT_HASH       => \Memcached::HASH_MD5,
+ *             \Memcached::OPT_PREFIX_KEY => "prefix.",
+ *         ],
+ *         "lifetime" => 3600,
+ *         "prefix"   => "my_",
+ *     ]
+ * );
  *
  * $session->start();
  *
- * $session->set('var', 'some-value');
+ * $session->set("var", "some-value");
  *
- * echo $session->get('var');
- *</code>
+ * echo $session->get("var");
+ * </code>
  */
 class Libmemcached extends Adapter
 {
@@ -129,9 +135,9 @@ class Libmemcached extends Adapter
 	/**
 	 * {@inheritdoc}
 	 */
-	public function read(string sessionId) -> var
+	public function read(string sessionId) -> string
 	{
-		return this->_libmemcached->get(sessionId, this->_lifetime);
+		return (string) this->_libmemcached->get(sessionId, this->_lifetime);
 	}
 
 	/**
@@ -145,9 +151,9 @@ class Libmemcached extends Adapter
 	/**
 	 * {@inheritdoc}
 	 */
-	public function destroy(string sessionId = null) ->boolean
+	public function destroy(string sessionId = null) -> boolean
 	{
-		var id, key;
+		var id;
 
 		if sessionId === null {
 			let id = this->getId();
@@ -155,10 +161,13 @@ class Libmemcached extends Adapter
 			let id = sessionId;
 		}
 
-		for key, _ in _SESSION {
-			unset _SESSION[key];
+		this->removeSessionData();
+
+		if !empty id && this->_libmemcached->exists(id) {
+			return (bool) this->_libmemcached->delete(id);
 		}
-		return this->_libmemcached->delete(id);
+
+		return true;
 	}
 
 	/**

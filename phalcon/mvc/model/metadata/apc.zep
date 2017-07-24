@@ -3,10 +3,10 @@
  +------------------------------------------------------------------------+
  | Phalcon Framework                                                      |
  +------------------------------------------------------------------------+
- | Copyright (c) 2011-2016 Phalcon Team (https://phalconphp.com)       |
+ | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
  +------------------------------------------------------------------------+
  | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
+ | with this package in the file LICENSE.txt.                             |
  |                                                                        |
  | If you did not receive a copy of the license and are unable to         |
  | obtain it through the world-wide-web, please send an email             |
@@ -32,10 +32,12 @@ use Phalcon\Mvc\Model\Exception;
  * You can query the meta-data by printing apc_fetch('$PMM$') or apc_fetch('$PMM$my-app-id')
  *
  *<code>
- *	$metaData = new \Phalcon\Mvc\Model\Metadata\Apc(array(
- *		'prefix' => 'my-app-id',
- *		'lifetime' => 86400
- *	));
+ * $metaData = new \Phalcon\Mvc\Model\Metadata\Apc(
+ *     [
+ *         "prefix"   => "my-app-id",
+ *         "lifetime" => 86400,
+ *     ]
+ * );
  *</code>
  */
 class Apc extends MetaData
