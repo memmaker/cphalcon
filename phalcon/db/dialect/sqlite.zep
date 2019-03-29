@@ -1,22 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- |          Vladimir Kolesnikov <vladimir@extrememember.com>              |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db\Dialect;
@@ -44,69 +33,28 @@ class Sqlite extends Dialect
 	 */
 	public function getColumnDefinition(<ColumnInterface> column) -> string
 	{
-		var columnSql, type, typeValues;
+		var columnType, columnSql, typeValues;
 
-		let columnSql = "";
-
-		let type = column->getType();
-		if typeof type == "string" {
-			let columnSql .= type;
-			let type = column->getTypeReference();
-		}
+		let columnSql  = this->checkColumnTypeSql(column);
+		let columnType = this->checkColumnType(column);
 
 		// SQLite has dynamic column typing. The conversion below maximizes
 		// compatibility with other DBMS's while following the type affinity
 		// rules: http://www.sqlite.org/datatype3.html.
-		switch type {
+		switch columnType {
 
-			case Column::TYPE_INTEGER:
+			case Column::TYPE_BIGINTEGER:
 				if empty columnSql {
-					let columnSql .= "INTEGER";
+					let columnSql .= "BIGINT";
+				}
+				if column->isUnsigned() {
+					let columnSql .= " UNSIGNED";
 				}
 				break;
 
-			case Column::TYPE_DATE:
+			case Column::TYPE_BLOB:
 				if empty columnSql {
-					let columnSql .= "DATE";
-				}
-				break;
-
-			case Column::TYPE_VARCHAR:
-				if empty columnSql {
-					let columnSql .= "VARCHAR";
-				}
-				let columnSql .= "(" . column->getSize() . ")";
-				break;
-
-			case Column::TYPE_DECIMAL:
-				if empty columnSql {
-					let columnSql .= "NUMERIC";
-				}
-				let columnSql .= "(" . column->getSize() . "," . column->getScale() . ")";
-				break;
-
-			case Column::TYPE_DATETIME:
-				if empty columnSql {
-					let columnSql .= "DATETIME";
-				}
-				break;
-
-			case Column::TYPE_TIMESTAMP:
-				if empty columnSql {
-					let columnSql .= "TIMESTAMP";
-				}
-				break;
-
-			case Column::TYPE_CHAR:
-				if empty columnSql {
-					let columnSql .= "CHARACTER";
-				}
-				let columnSql .= "(" . column->getSize() . ")";
-				break;
-
-			case Column::TYPE_TEXT:
-				if empty columnSql {
-					let columnSql .= "TEXT";
+					let columnSql .= "BLOB";
 				}
 				break;
 
@@ -116,10 +64,30 @@ class Sqlite extends Dialect
 				}
 				break;
 
-			case Column::TYPE_FLOAT:
+			case Column::TYPE_CHAR:
 				if empty columnSql {
-					let columnSql .= "FLOAT";
+					let columnSql .= "CHARACTER";
 				}
+				let columnSql .= this->getColumnSize(column);
+				break;
+
+			case Column::TYPE_DATE:
+				if empty columnSql {
+					let columnSql .= "DATE";
+				}
+				break;
+
+			case Column::TYPE_DATETIME:
+				if empty columnSql {
+					let columnSql .= "DATETIME";
+				}
+				break;
+
+			case Column::TYPE_DECIMAL:
+				if empty columnSql {
+					let columnSql .= "NUMERIC";
+				}
+				let columnSql .= this->getColumnSizeAndScale(column);
 				break;
 
 			case Column::TYPE_DOUBLE:
@@ -131,24 +99,21 @@ class Sqlite extends Dialect
 				}
 				break;
 
-			case Column::TYPE_BIGINTEGER:
+			case Column::TYPE_FLOAT:
 				if empty columnSql {
-					let columnSql .= "BIGINT";
-				}
-				if column->isUnsigned() {
-					let columnSql .= " UNSIGNED";
+					let columnSql .= "FLOAT";
 				}
 				break;
 
-			case Column::TYPE_TINYBLOB:
+			case Column::TYPE_INTEGER:
 				if empty columnSql {
-					let columnSql .= "TINYBLOB";
+					let columnSql .= "INTEGER";
 				}
 				break;
 
-			case Column::TYPE_BLOB:
+			case Column::TYPE_LONGBLOB:
 				if empty columnSql {
-					let columnSql .= "BLOB";
+					let columnSql .= "LONGBLOB";
 				}
 				break;
 
@@ -158,10 +123,29 @@ class Sqlite extends Dialect
 				}
 				break;
 
-			case Column::TYPE_LONGBLOB:
+			case Column::TYPE_TEXT:
 				if empty columnSql {
-					let columnSql .= "LONGBLOB";
+					let columnSql .= "TEXT";
 				}
+				break;
+
+			case Column::TYPE_TIMESTAMP:
+				if empty columnSql {
+					let columnSql .= "TIMESTAMP";
+				}
+				break;
+
+			case Column::TYPE_TINYBLOB:
+				if empty columnSql {
+					let columnSql .= "TINYBLOB";
+				}
+				break;
+
+			case Column::TYPE_VARCHAR:
+				if empty columnSql {
+					let columnSql .= "VARCHAR";
+				}
+				let columnSql .= this->getColumnSize(column);
 				break;
 
 			default:
@@ -443,7 +427,7 @@ class Sqlite extends Dialect
 	/**
 	 * Generates SQL to drop a table
 	 */
-	public function dropTable(string! tableName, string schemaName = null, boolean! ifExists = true) -> string
+	public function dropTable(string! tableName, string schemaName = null, bool! ifExists = true) -> string
 	{
 		var sql, table;
 
@@ -475,7 +459,7 @@ class Sqlite extends Dialect
 	/**
 	 * Generates SQL to drop a view
 	 */
-	public function dropView(string! viewName, string schemaName = null, boolean! ifExists = true) -> string
+	public function dropView(string! viewName, string schemaName = null, bool! ifExists = true) -> string
 	{
 		var view;
 
@@ -597,5 +581,23 @@ class Sqlite extends Dialect
 	public function tableOptions(string! table, string schema = null) -> string
 	{
 		return "";
+	}
+
+	/**
+	 * Returns a SQL modified a shared lock statement. For now this method
+	 * returns the original query
+	 */
+	public function sharedLock(string! sqlQuery) -> string
+	{
+		return sqlQuery;
+	}
+
+	/**
+	 * Returns a SQL modified with a FOR UPDATE clause. For sqlite it returns
+	 * the original query
+	 */
+	public function forUpdate(string! sqlQuery) -> string
+	{
+		return sqlQuery;
 	}
 }

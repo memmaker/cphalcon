@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\Model\RelationInterface
  *
  * Interface for Phalcon\Mvc\Model\Relation
@@ -29,7 +37,6 @@ ZEPHIR_INIT_CLASS(Phalcon_Mvc_Model_RelationInterface) {
  * Sets the intermediate model dat for has-*-through relations
  *
  * @param string|array intermediateFields
- * @param string intermediateModel
  * @param string|array intermediateReferencedFields
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_RelationInterface, setIntermediateRelation);
@@ -87,6 +94,13 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_RelationInterface, isForeignKey);
  * @return string|array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_RelationInterface, getForeignKey);
+
+/**
+ * Returns parameters that must be always used when the related records are obtained
+ *
+ * @return array
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_RelationInterface, getParams);
 
 /**
  * Check whether the relation is a 'many-to-many' relation or not

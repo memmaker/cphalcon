@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Http;
@@ -22,8 +13,11 @@ namespace Phalcon\Http;
 use Phalcon\DiInterface;
 use Phalcon\FilterInterface;
 use Phalcon\Http\Request\File;
+use Phalcon\Http\Request\FileInterface;
 use Phalcon\Http\Request\Exception;
+use Phalcon\Events\ManagerInterface;
 use Phalcon\Di\InjectionAwareInterface;
+use Phalcon\Service\LocatorInterface;
 
 /**
  * Phalcon\Http\Request
@@ -49,34 +43,28 @@ use Phalcon\Di\InjectionAwareInterface;
  */
 class Request implements RequestInterface, InjectionAwareInterface
 {
+	private container;
 
-	protected _dependencyInjector;
-
-	protected _rawBody;
-
-	protected _filter;
-
-	protected _putCache;
-
-	protected _httpMethodParameterOverride = false { get, set };
-
-	protected _strictHostCheck = false;
+	private filterLocator;
 
 	/**
-	 * Sets the dependency injector
+	 * @var bool
 	 */
-	public function setDI(<DiInterface> dependencyInjector)
-	{
-		let this->_dependencyInjector = dependencyInjector;
-	}
+	private httpMethodParameterOverride = false { get, set };
 
 	/**
-	 * Returns the internal dependency injector
+	 * @var array
 	 */
-	public function getDI() -> <DiInterface>
-	{
-		return this->_dependencyInjector;
-	}
+	private queryFilters = [];
+
+	private putCache;
+
+	private rawBody;
+
+	/**
+	 * @var bool
+	 */
+	private strictHostCheck = false;
 
 	/**
 	 * Gets a variable from the $_REQUEST superglobal applying filters if needed.
@@ -90,167 +78,198 @@ class Request implements RequestInterface, InjectionAwareInterface
 	 * $userEmail = $request->get("user_email", "email");
 	 *</code>
 	 */
-	public function get(string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false) -> var
+	public function get(string! name = null, var filters = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
 	{
 		return this->getHelper(_REQUEST, name, filters, defaultValue, notAllowEmpty, noRecursive);
 	}
 
+
 	/**
-	 * Gets a variable from the $_POST superglobal applying filters if needed
-	 * If no parameters are given the $_POST superglobal is returned
-	 *
-	 *<code>
-	 * // Returns value from $_POST["user_email"] without sanitizing
-	 * $userEmail = $request->getPost("user_email");
-	 *
-	 * // Returns value from $_POST["user_email"] with sanitizing
-	 * $userEmail = $request->getPost("user_email", "email");
-	 *</code>
+	 * Gets an array with mime/types and their quality accepted by the browser/client from _SERVER["HTTP_ACCEPT"]
 	 */
-	public function getPost(string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false) -> var
+	public function getAcceptableContent() -> array
 	{
-		return this->getHelper(_POST, name, filters, defaultValue, notAllowEmpty, noRecursive);
+		return this->getQualityHeader("HTTP_ACCEPT", "accept");
 	}
 
 	/**
-	 * Gets a variable from put request
-	 *
-	 *<code>
-	 * // Returns value from $_PUT["user_email"] without sanitizing
-	 * $userEmail = $request->getPut("user_email");
-	 *
-	 * // Returns value from $_PUT["user_email"] with sanitizing
-	 * $userEmail = $request->getPut("user_email", "email");
-	 *</code>
+	 * Gets auth info accepted by the browser/client from $_SERVER["PHP_AUTH_USER"]
 	 */
-	public function getPut(string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false) -> var
+	public function getBasicAuth() -> array | null
 	{
-		var put;
+		var auth;
 
-		let put = this->_putCache;
-
-		if typeof put != "array" {
-			let put = [];
-			parse_str(this->getRawBody(), put);
-
-			let this->_putCache = put;
+		if isset _SERVER["PHP_AUTH_USER"] && isset _SERVER["PHP_AUTH_PW"] {
+			let auth = [];
+			let auth["username"] = _SERVER["PHP_AUTH_USER"];
+			let auth["password"] = _SERVER["PHP_AUTH_PW"];
+			return auth;
 		}
 
-		return this->getHelper(put, name, filters, defaultValue, notAllowEmpty, noRecursive);
-	}
-
-	/**
-	 * Gets variable from $_GET superglobal applying filters if needed
-	 * If no parameters are given the $_GET superglobal is returned
-	 *
-	 *<code>
-	 * // Returns value from $_GET["id"] without sanitizing
-	 * $id = $request->getQuery("id");
-	 *
-	 * // Returns value from $_GET["id"] with sanitizing
-	 * $id = $request->getQuery("id", "int");
-	 *
-	 * // Returns value from $_GET["id"] with a default value
-	 * $id = $request->getQuery("id", null, 150);
-	 *</code>
-	 */
-	public function getQuery(string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false) -> var
-	{
-		return this->getHelper(_GET, name, filters, defaultValue, notAllowEmpty, noRecursive);
-	}
-
-	/**
-	 * Helper to get data from superglobals, applying filters if needed.
-	 * If no parameters are given the superglobal is returned.
-	 */
-	protected final function getHelper(array source, string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false) -> var
-	{
-		var value, filter, dependencyInjector;
-
-		if name === null {
-			return source;
-		}
-
-		if !fetch value, source[name] {
-			return defaultValue;
-		}
-
-		if filters !== null {
-			let filter = this->_filter;
-			if typeof filter != "object" {
-				let dependencyInjector = <DiInterface> this->_dependencyInjector;
-				if typeof dependencyInjector != "object" {
-					throw new Exception("A dependency injection object is required to access the 'filter' service");
-				}
-				let filter = <FilterInterface> dependencyInjector->getShared("filter");
-				let this->_filter = filter;
-			}
-
-			let value = filter->sanitize(value, filters, noRecursive);
-		}
-
-		if empty value && notAllowEmpty === true {
-			return defaultValue;
-		}
-
-		return value;
-	}
-
-	/**
-	 * Gets variable from $_SERVER superglobal
-	 */
-	public function getServer(string! name) -> string | null
-	{
-		var serverValue;
-
-		if fetch serverValue, _SERVER[name] {
-			return serverValue;
-		}
 		return null;
 	}
 
 	/**
-	 * Checks whether $_REQUEST superglobal has certain index
+	 * Gets best mime/type accepted by the browser/client from _SERVER["HTTP_ACCEPT"]
 	 */
-	public function has(string! name) -> boolean
+	public function getBestAccept() -> string
 	{
-		return isset _REQUEST[name];
+		return this->getBestQuality(this->getAcceptableContent(), "accept");
 	}
 
 	/**
-	 * Checks whether $_POST superglobal has certain index
+	 * Gets best charset accepted by the browser/client from _SERVER["HTTP_ACCEPT_CHARSET"]
 	 */
-	public function hasPost(string! name) -> boolean
+	public function getBestCharset() -> string
 	{
-		return isset _POST[name];
+		return this->getBestQuality(this->getClientCharsets(), "charset");
 	}
 
 	/**
-	 * Checks whether the PUT data has certain index
+	 * Gets best language accepted by the browser/client from _SERVER["HTTP_ACCEPT_LANGUAGE"]
 	 */
-	public function hasPut(string! name) -> boolean
+	public function getBestLanguage() -> string
 	{
-		var put;
-
-		let put = this->getPut();
-
-		return isset put[name];
+		return this->getBestQuality(this->getLanguages(), "language");
 	}
 
 	/**
-	 * Checks whether $_GET superglobal has certain index
+	 * Gets most possible client IPv4 Address. This method searches in
+	 * $_SERVER["REMOTE_ADDR"] and optionally in $_SERVER["HTTP_X_FORWARDED_FOR"]
 	 */
-	public function hasQuery(string! name) -> boolean
+	public function getClientAddress(bool trustForwardedHeader = false) -> string | bool
 	{
-		return isset _GET[name];
+		var address = null;
+
+		/**
+		 * Proxies uses this IP
+		 */
+		if trustForwardedHeader {
+			fetch address, _SERVER["HTTP_X_FORWARDED_FOR"];
+			if address === null {
+				fetch address, _SERVER["HTTP_CLIENT_IP"];
+			}
+		}
+
+		if address === null {
+			fetch address, _SERVER["REMOTE_ADDR"];
+		}
+
+		if typeof address == "string" {
+			if memstr(address, ",") {
+				/**
+				 * The client address has multiples parts, only return the first part
+				 */
+				return explode(",", address)[0];
+			}
+			return address;
+		}
+
+		return false;
 	}
 
 	/**
-	 * Checks whether $_SERVER superglobal has certain index
+	 * Gets a charsets array and their quality accepted by the browser/client from _SERVER["HTTP_ACCEPT_CHARSET"]
 	 */
-	public final function hasServer(string! name) -> boolean
+	public function getClientCharsets() -> array
 	{
-		return isset _SERVER[name];
+		return this->getQualityHeader("HTTP_ACCEPT_CHARSET", "charset");
+	}
+
+	/**
+	 * Gets content type which request has been made
+	 */
+	public function getContentType() -> string | null
+	{
+		var contentType;
+
+		if fetch contentType, _SERVER["CONTENT_TYPE"] {
+			return contentType;
+		} else {
+			/**
+			 * @see https://bugs.php.net/bug.php?id=66606
+			 */
+			if fetch contentType, _SERVER["HTTP_CONTENT_TYPE"] {
+				return contentType;
+			}
+		}
+
+		return null;
+	}
+
+
+	/**
+	 * Returns the internal dependency injector
+	 */
+	public function getDI() -> <DiInterface>
+	{
+		return this->container;
+	}
+
+	/**
+	 * Gets auth info accepted by the browser/client from $_SERVER["PHP_AUTH_DIGEST"]
+	 */
+	public function getDigestAuth() -> array
+	{
+		var digest, matches, match;
+		array auth;
+
+		let auth = [];
+		if fetch digest, _SERVER["PHP_AUTH_DIGEST"] {
+			let matches = [];
+			if !preg_match_all("#(\\w+)=(['\"]?)([^'\" ,]+)\\2#", digest, matches, 2) {
+				return auth;
+			}
+			if typeof matches == "array" {
+				for match in matches {
+					let auth[match[1]] = match[3];
+				}
+			}
+		}
+
+		return auth;
+	}
+
+	/**
+	 * Retrieves a query/get value always sanitized with the preset filters
+	 */
+	public function getFilteredQuery(string! name = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		var filters;
+
+		if !fetch filters, this->queryFilters["get"][name] {
+			let filters = [];
+		}
+
+		return this->getQuery(name, filters, defaultValue, notAllowEmpty, noRecursive);
+	}
+
+	/**
+	 * Retrieves a post value always sanitized with the preset filters
+	 */
+	public function getFilteredPost(string! name = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		var filters;
+
+		if !fetch filters, this->queryFilters["post"][name] {
+			let filters = [];
+		}
+
+		return this->getPost(name, filters, defaultValue, notAllowEmpty, noRecursive);
+	}
+
+	/**
+	 * Retrieves a put value always sanitized with the preset filters
+	 */
+	public function getFilteredPut(string! name = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		var filters;
+
+		if !fetch filters, this->queryFilters["put"][name] {
+			let filters = [];
+		}
+
+		return this->getPut(name, filters, defaultValue, notAllowEmpty, noRecursive);
 	}
 
 	/**
@@ -274,136 +293,53 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
-	 * Gets HTTP schema (http/https)
+	 * Returns the available headers in the request
+	 *
+	 * <code>
+	 * $_SERVER = [
+	 *     "PHP_AUTH_USER" => "phalcon",
+	 *     "PHP_AUTH_PW"   => "secret",
+	 * ];
+	 *
+	 * $headers = $request->getHeaders();
+	 *
+	 * echo $headers["Authorization"]; // Basic cGhhbGNvbjpzZWNyZXQ=
+	 * </code>
 	 */
-	public function getScheme() -> string
+	public function getHeaders() -> array
 	{
-		var https, scheme;
+		var name, value, authHeaders;
 
-		let https = this->getServer("HTTPS");
-		if https {
-			if https == "off" {
-				let scheme = "http";
-			} else {
-				let scheme = "https";
+		array headers = [];
+		array contentHeaders = ["CONTENT_TYPE": true, "CONTENT_LENGTH": true, "CONTENT_MD5": true];
+
+		for name, value in _SERVER {
+			// Note: The starts_with uses case insensitive search here
+			if starts_with(name, "HTTP_") {
+				let name = ucwords(strtolower(str_replace("_", " ", substr(name, 5)))),
+					name = str_replace(" ", "-", name);
+				let headers[name] = value;
+
+				continue;
 			}
-		} else {
-			let scheme = "http";
-		}
-		return scheme;
-	}
 
-	/**
-	 * Checks whether request has been made using ajax
-	 */
-	public function isAjax() -> boolean
-	{
-		return isset _SERVER["HTTP_X_REQUESTED_WITH"] && _SERVER["HTTP_X_REQUESTED_WITH"] === "XMLHttpRequest";
-	}
-
-	/**
-	 * Checks whether request has been made using SOAP
-	 */
-	public function isSoap() -> boolean
-	{
-		var contentType;
-
-		if isset _SERVER["HTTP_SOAPACTION"] {
-			return true;
-		} else {
-			let contentType = this->getContentType();
-			if !empty contentType {
-				return memstr(contentType, "application/soap+xml");
+			// The "CONTENT_" headers are not prefixed with "HTTP_".
+			let name = strtoupper(name);
+			if isset contentHeaders[name] {
+				let name = ucwords(strtolower(str_replace("_", " ", name))),
+					name = str_replace(" ", "-", name);
+				let headers[name] = value;
 			}
 		}
-		return false;
-	}
 
-	/**
-	 * Alias of isSoap(). It will be deprecated in future versions
-	 */
-	deprecated public function isSoapRequested() -> boolean
-	{
-		return this->isSoap();
-	}
+		let authHeaders = this->resolveAuthorizationHeaders();
 
-	/**
-	 * Checks whether request has been made using any secure layer
-	 */
-	public function isSecure() -> boolean
-	{
-		return this->getScheme() === "https";
-	}
-
-	/**
-	 * Alias of isSecure(). It will be deprecated in future versions
-	 */
-	deprecated public function isSecureRequest() -> boolean
-	{
-		return this->isSecure();
-	}
-
-	/**
-	 * Gets HTTP raw request body
-	 */
-	public function getRawBody() -> string
-	{
-		var rawBody, contents;
-
-		let rawBody = this->_rawBody;
-		if empty rawBody {
-
-			let contents = file_get_contents("php://input");
-
-			/**
-			 * We need store the read raw body because it can't be read again
-			 */
-			let this->_rawBody = contents;
-			return contents;
-		}
-		return rawBody;
-	}
-
-	/**
-	 * Gets decoded JSON HTTP raw request body
-	 */
-	public function getJsonRawBody(boolean associative = false) -> <\stdClass> | array | boolean
-	{
-		var rawBody;
-
-		let rawBody = this->getRawBody();
-		if typeof rawBody != "string" {
-			return false;
+		// Protect for future (child classes) changes
+		if typeof authHeaders === "array" {
+			let headers = array_merge(headers, authHeaders);
 		}
 
-		return json_decode(rawBody, associative);
-	}
-
-	/**
-	 * Gets active server address IP
-	 */
-	public function getServerAddress() -> string
-	{
-		var serverAddr;
-
-		if fetch serverAddr, _SERVER["SERVER_ADDR"] {
-			return serverAddr;
-		}
-		return gethostbyname("localhost");
-	}
-
-	/**
-	 * Gets active server name
-	 */
-	public function getServerName() -> string
-	{
-		var serverName;
-
-		if fetch serverName, _SERVER["SERVER_NAME"] {
-			return serverName;
-		}
-
-		return "localhost";
+		return headers;
 	}
 
 	/**
@@ -416,7 +352,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 	 * - `$_SERVER["SERVER_ADDR"]`
 	 *
 	 * Optionally `Request::getHttpHost` validates and clean host name.
-	 * The `Request::$_strictHostCheck` can be used to validate host name.
+	 * The `Request::$strictHostCheck` can be used to validate host name.
 	 *
 	 * Note: validation and cleaning have a negative performance impact because
 	 * they use regular expressions.
@@ -444,7 +380,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 	{
 		var host, strict;
 
-		let strict = this->_strictHostCheck;
+		let strict = this->strictHostCheck;
 
 		/**
 		 * Get the server name from $_SERVER["HTTP_HOST"]
@@ -486,21 +422,78 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
-	 * Sets if the `Request::getHttpHost` method must be use strict validation of host name or not
+	 * Gets web page that refers active request. ie: http://www.google.com
 	 */
-	public function setStrictHostCheck(bool flag = true) -> <Request>
+	public function getHTTPReferer() -> string
 	{
-		let this->_strictHostCheck = flag;
-
-		return this;
+		var httpReferer;
+		if fetch httpReferer, _SERVER["HTTP_REFERER"] {
+			return httpReferer;
+		}
+		return "";
 	}
 
 	/**
-	 * Checks if the `Request::getHttpHost` method will be use strict validation of host name or not
+	 * Gets decoded JSON HTTP raw request body
 	 */
-	public function isStrictHostCheck() -> boolean
+	public function getJsonRawBody(bool associative = false) -> <\stdClass> | array | bool
 	{
-		return this->_strictHostCheck;
+		var rawBody;
+
+		let rawBody = this->getRawBody();
+		if typeof rawBody != "string" {
+			return false;
+		}
+
+		return json_decode(rawBody, associative);
+	}
+
+	/**
+	 * Gets languages array and their quality accepted by the browser/client from _SERVER["HTTP_ACCEPT_LANGUAGE"]
+	 */
+	public function getLanguages() -> array
+	{
+		return this->getQualityHeader("HTTP_ACCEPT_LANGUAGE", "language");
+	}
+
+	/**
+	 * Gets HTTP method which request has been made
+	 *
+	 * If the X-HTTP-Method-Override header is set, and if the method is a POST,
+	 * then it is used to determine the "real" intended HTTP method.
+	 *
+	 * The _method request parameter can also be used to determine the HTTP method,
+	 * but only if setHttpMethodParameterOverride(true) has been called.
+	 *
+	 * The method is always an uppercased string.
+	 */
+	public final function getMethod() -> string
+	{
+		var overridedMethod, spoofedMethod, requestMethod;
+		string returnMethod = "";
+
+		if likely fetch requestMethod, _SERVER["REQUEST_METHOD"] {
+			let returnMethod = strtoupper(requestMethod);
+		} else {
+			return "GET";
+		}
+
+		if "POST" === returnMethod {
+			let overridedMethod = this->getHeader("X-HTTP-METHOD-OVERRIDE");
+			if !empty overridedMethod {
+				let returnMethod = strtoupper(overridedMethod);
+			} elseif this->httpMethodParameterOverride {
+				if fetch spoofedMethod, _REQUEST["_method"] {
+					let returnMethod = strtoupper(spoofedMethod);
+				}
+			}
+		}
+
+		if !this->isValidHttpMethod(returnMethod) {
+			return "GET";
+		}
+
+		return returnMethod;
 	}
 
 	/**
@@ -530,6 +523,214 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
+	 * Gets a variable from the $_POST superglobal applying filters if needed
+	 * If no parameters are given the $_POST superglobal is returned
+	 *
+	 *<code>
+	 * // Returns value from $_POST["user_email"] without sanitizing
+	 * $userEmail = $request->getPost("user_email");
+	 *
+	 * // Returns value from $_POST["user_email"] with sanitizing
+	 * $userEmail = $request->getPost("user_email", "email");
+	 *</code>
+	 */
+	public function getPost(string! name = null, var filters = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		return this->getHelper(_POST, name, filters, defaultValue, notAllowEmpty, noRecursive);
+	}
+
+	/**
+	 * Gets a variable from put request
+	 *
+	 *<code>
+	 * // Returns value from $_PUT["user_email"] without sanitizing
+	 * $userEmail = $request->getPut("user_email");
+	 *
+	 * // Returns value from $_PUT["user_email"] with sanitizing
+	 * $userEmail = $request->getPut("user_email", "email");
+	 *</code>
+	 */
+	public function getPut(string! name = null, var filters = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		var put, contentType;
+
+		let put = this->putCache;
+
+		if typeof put != "array" {
+			let contentType = this->getContentType();
+			if typeof contentType == "string" && stripos(contentType, "json") != false {
+				let put = this->getJsonRawBody(true);
+				if (typeof put != "array") {
+					let put = [];
+				}
+			} else {
+				let put = [];
+				parse_str(this->getRawBody(), put);
+			}
+
+			let this->putCache = put;
+		}
+
+		return this->getHelper(put, name, filters, defaultValue, notAllowEmpty, noRecursive);
+	}
+
+	/**
+	 * Gets variable from $_GET superglobal applying filters if needed
+	 * If no parameters are given the $_GET superglobal is returned
+	 *
+	 *<code>
+	 * // Returns value from $_GET["id"] without sanitizing
+	 * $id = $request->getQuery("id");
+	 *
+	 * // Returns value from $_GET["id"] with sanitizing
+	 * $id = $request->getQuery("id", "int");
+	 *
+	 * // Returns value from $_GET["id"] with a default value
+	 * $id = $request->getQuery("id", null, 150);
+	 *</code>
+	 */
+	public function getQuery(string! name = null, var filters = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		return this->getHelper(_GET, name, filters, defaultValue, notAllowEmpty, noRecursive);
+	}
+
+	/**
+	 * Gets HTTP raw request body
+	 */
+	public function getRawBody() -> string
+	{
+		var rawBody, contents;
+
+		let rawBody = this->rawBody;
+		if empty rawBody {
+
+			let contents = file_get_contents("php://input");
+
+			/**
+			 * We need store the read raw body because it can't be read again
+			 */
+			let this->rawBody = contents;
+			return contents;
+		}
+		return rawBody;
+	}
+
+	/**
+	 * Gets HTTP schema (http/https)
+	 */
+	public function getScheme() -> string
+	{
+		var https, scheme;
+
+		let https = this->getServer("HTTPS");
+		if https {
+			if https == "off" {
+				let scheme = "http";
+			} else {
+				let scheme = "https";
+			}
+		} else {
+			let scheme = "http";
+		}
+		return scheme;
+	}
+
+	/**
+	 * Gets variable from $_SERVER superglobal
+	 */
+	public function getServer(string! name) -> string | null
+	{
+		var serverValue;
+
+		if fetch serverValue, _SERVER[name] {
+			return serverValue;
+		}
+		return null;
+	}
+
+	/**
+	 * Gets active server address IP
+	 */
+	public function getServerAddress() -> string
+	{
+		var serverAddr;
+
+		if fetch serverAddr, _SERVER["SERVER_ADDR"] {
+			return serverAddr;
+		}
+		return gethostbyname("localhost");
+	}
+
+	/**
+	 * Gets active server name
+	 */
+	public function getServerName() -> string
+	{
+		var serverName;
+
+		if fetch serverName, _SERVER["SERVER_NAME"] {
+			return serverName;
+		}
+
+		return "localhost";
+	}
+
+	/**
+	 * Gets attached files as Phalcon\Http\Request\File instances
+	 */
+	public function getUploadedFiles(bool onlySuccessful = false, bool namedKeys = false) -> <FileInterface[]>
+	{
+		var superFiles, prefix, input, smoothInput, file, dataFile;
+		array files = [];
+
+		let superFiles = _FILES;
+
+		if count(superFiles) > 0 {
+
+			for prefix, input in superFiles {
+				if typeof input["name"] == "array" {
+					let smoothInput = this->smoothFiles(
+						input["name"],
+						input["type"],
+						input["tmp_name"],
+						input["size"],
+						input["error"],
+						prefix
+					);
+
+					for file in smoothInput {
+						if onlySuccessful == false || file["error"] == UPLOAD_ERR_OK {
+							let dataFile = [
+								"name": file["name"],
+								"type": file["type"],
+								"tmp_name": file["tmp_name"],
+								"size": file["size"],
+								"error": file["error"]
+							];
+
+                            if namedKeys == true {
+                                let files[file["key"]] = new File(dataFile, file["key"]);
+                            } else {
+                                let files[] = new File(dataFile, file["key"]);
+                            }
+						}
+					}
+				} else {
+					if onlySuccessful == false || input["error"] == UPLOAD_ERR_OK {
+						if namedKeys == true {
+                            let files[prefix] = new File(input, prefix);
+                        } else {
+                            let files[] = new File(input, prefix);
+                        }
+					}
+				}
+			}
+		}
+
+		return files;
+	}
+
+	/**
 	 * Gets HTTP URI which request has been made
 	 */
 	public final function getURI() -> string
@@ -541,81 +742,6 @@ class Request implements RequestInterface, InjectionAwareInterface
 		}
 
 		return "";
-	}
-
-	/**
-	 * Gets most possible client IPv4 Address. This method searches in
-	 * $_SERVER["REMOTE_ADDR"] and optionally in $_SERVER["HTTP_X_FORWARDED_FOR"]
-	 */
-	public function getClientAddress(boolean trustForwardedHeader = false) -> string | boolean
-	{
-		var address = null;
-
-		/**
-		 * Proxies uses this IP
-		 */
-		if trustForwardedHeader {
-			fetch address, _SERVER["HTTP_X_FORWARDED_FOR"];
-			if address === null {
-				fetch address, _SERVER["HTTP_CLIENT_IP"];
-			}
-		}
-
-		if address === null {
-			fetch address, _SERVER["REMOTE_ADDR"];
-		}
-
-		if typeof address == "string" {
-			if memstr(address, ",") {
-				/**
-				 * The client address has multiples parts, only return the first part
-				 */
-				return explode(",", address)[0];
-			}
-			return address;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Gets HTTP method which request has been made
-	 *
-	 * If the X-HTTP-Method-Override header is set, and if the method is a POST,
-	 * then it is used to determine the "real" intended HTTP method.
-	 *
-	 * The _method request parameter can also be used to determine the HTTP method,
-	 * but only if setHttpMethodParameterOverride(true) has been called.
-	 *
-	 * The method is always an uppercased string.
-	 */
-	public final function getMethod() -> string
-	{
-		var overridedMethod, spoofedMethod, requestMethod;
-		string returnMethod = "";
-
-		if likely fetch requestMethod, _SERVER["REQUEST_METHOD"] {
-			let returnMethod = strtoupper(requestMethod);
-		} else {
-			return "GET";
-		}
-
-		if "POST" === returnMethod {
-			let overridedMethod = this->getHeader("X-HTTP-METHOD-OVERRIDE");
-			if !empty overridedMethod {
-				let returnMethod = strtoupper(overridedMethod);
-			} elseif this->_httpMethodParameterOverride {
-				if fetch spoofedMethod, _REQUEST["_method"] {
-					let returnMethod = strtoupper(spoofedMethod);
-				}
-			}
-		}
-
-		if !this->isValidHttpMethod(returnMethod) {
-			return "GET";
-		}
-
-		return returnMethod;
 	}
 
 	/**
@@ -632,32 +758,148 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
-	 * Checks if a method is a valid HTTP method
+	 * Checks whether $_REQUEST superglobal has certain index
 	 */
-	public function isValidHttpMethod(string method) -> boolean
+	public function has(string! name) -> bool
 	{
-		switch strtoupper(method) {
-			case "GET":
-			case "POST":
-			case "PUT":
-			case "DELETE":
-			case "HEAD":
-			case "OPTIONS":
-			case "PATCH":
-			case "PURGE": // Squid and Varnish support
-			case "TRACE":
-			case "CONNECT":
-				return true;
+		return isset _REQUEST[name];
+	}
+
+	/**
+	 * Returns the number of files available
+	 *
+	 * TODO: Check this
+	 */
+	public function hasFiles(bool onlySuccessful = false) -> long
+	{
+		var files, file, error;
+		int numberFiles = 0;
+
+		let files = _FILES;
+
+		if typeof files != "array" {
+			return 0;
 		}
 
-		return false;
+		for file in files {
+			if fetch error, file["error"] {
+
+				if typeof error != "array" {
+					if !error || !onlySuccessful {
+						let numberFiles++;
+					}
+				}
+
+				if typeof error == "array" {
+					let numberFiles += this->hasFileHelper(error, onlySuccessful);
+				}
+			}
+		}
+
+		return numberFiles;
+	}
+
+    /**
+     * Checks whether headers has certain index
+     */
+    public final function hasHeader(string! header) -> bool
+    {
+        var name;
+
+        let name = strtoupper(strtr(header, "-", "_"));
+
+        if isset _SERVER[name] {
+            return true;
+        }
+
+        if isset _SERVER["HTTP_" . name] {
+            return true;
+        }
+
+        return false;
+    }
+
+	/**
+	 * Checks whether $_POST superglobal has certain index
+	 */
+	public function hasPost(string! name) -> bool
+	{
+		return isset _POST[name];
+	}
+
+	/**
+	 * Checks whether the PUT data has certain index
+	 */
+	public function hasPut(string! name) -> bool
+	{
+		var put;
+
+		let put = this->getPut();
+
+		return isset put[name];
+	}
+
+	/**
+	 * Checks whether $_GET superglobal has certain index
+	 */
+	public function hasQuery(string! name) -> bool
+	{
+		return isset _GET[name];
+	}
+
+	/**
+	 * Checks whether $_SERVER superglobal has certain index
+	 */
+	public final function hasServer(string! name) -> bool
+	{
+		return isset _SERVER[name];
+	}
+
+	/**
+	 * Checks whether request has been made using ajax
+	 */
+	public function isAjax() -> bool
+	{
+		return isset _SERVER["HTTP_X_REQUESTED_WITH"] && _SERVER["HTTP_X_REQUESTED_WITH"] === "XMLHttpRequest";
+	}
+
+	/**
+	 * Checks whether HTTP method is CONNECT. if _SERVER["REQUEST_METHOD"]==="CONNECT"
+	 */
+	public function isConnect() -> bool
+	{
+		return this->getMethod() === "CONNECT";
+	}
+
+	/**
+	 * Checks whether HTTP method is DELETE. if _SERVER["REQUEST_METHOD"]==="DELETE"
+	 */
+	public function isDelete() -> bool
+	{
+		return this->getMethod() === "DELETE";
+	}
+
+	/**
+	 * Checks whether HTTP method is GET. if _SERVER["REQUEST_METHOD"]==="GET"
+	 */
+	public function isGet() -> bool
+	{
+		return this->getMethod() === "GET";
+	}
+
+	/**
+	 * Checks whether HTTP method is HEAD. if _SERVER["REQUEST_METHOD"]==="HEAD"
+	 */
+	public function isHead() -> bool
+	{
+		return this->getMethod() === "HEAD";
 	}
 
 	/**
 	 * Check if HTTP method match any of the passed methods
 	 * When strict is true it checks if validated methods are real HTTP methods
 	 */
-	public function isMethod(var methods, boolean strict = false) -> boolean
+	public function isMethod(var methods, bool strict = false) -> bool
 	{
 		var httpMethod, method;
 
@@ -688,121 +930,229 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
-	 * Checks whether HTTP method is POST. if _SERVER["REQUEST_METHOD"]==="POST"
-	 */
-	public function isPost() -> boolean
-	{
-		return this->getMethod() === "POST";
-	}
-
-	/**
-	 * Checks whether HTTP method is GET. if _SERVER["REQUEST_METHOD"]==="GET"
-	 */
-	public function isGet() -> boolean
-	{
-		return this->getMethod() === "GET";
-	}
-
-	/**
-	 * Checks whether HTTP method is PUT. if _SERVER["REQUEST_METHOD"]==="PUT"
-	 */
-	public function isPut() -> boolean
-	{
-		return this->getMethod() === "PUT";
-	}
-
-	/**
-	 * Checks whether HTTP method is PATCH. if _SERVER["REQUEST_METHOD"]==="PATCH"
-	 */
-	public function isPatch() -> boolean
-	{
-		return this->getMethod() === "PATCH";
-	}
-
-	/**
-	 * Checks whether HTTP method is HEAD. if _SERVER["REQUEST_METHOD"]==="HEAD"
-	 */
-	public function isHead() -> boolean
-	{
-		return this->getMethod() === "HEAD";
-	}
-
-	/**
-	 * Checks whether HTTP method is DELETE. if _SERVER["REQUEST_METHOD"]==="DELETE"
-	 */
-	public function isDelete() -> boolean
-	{
-		return this->getMethod() === "DELETE";
-	}
-
-	/**
 	 * Checks whether HTTP method is OPTIONS. if _SERVER["REQUEST_METHOD"]==="OPTIONS"
 	 */
-	public function isOptions() -> boolean
+	public function isOptions() -> bool
 	{
 		return this->getMethod() === "OPTIONS";
 	}
 
 	/**
+	 * Checks whether HTTP method is PATCH. if _SERVER["REQUEST_METHOD"]==="PATCH"
+	 */
+	public function isPatch() -> bool
+	{
+		return this->getMethod() === "PATCH";
+	}
+
+	/**
+	 * Checks whether HTTP method is POST. if _SERVER["REQUEST_METHOD"]==="POST"
+	 */
+	public function isPost() -> bool
+	{
+		return this->getMethod() === "POST";
+	}
+
+	/**
+	 * Checks whether HTTP method is PUT. if _SERVER["REQUEST_METHOD"]==="PUT"
+	 */
+	public function isPut() -> bool
+	{
+		return this->getMethod() === "PUT";
+	}
+
+	/**
 	 * Checks whether HTTP method is PURGE (Squid and Varnish support). if _SERVER["REQUEST_METHOD"]==="PURGE"
 	 */
-	public function isPurge() -> boolean
+	public function isPurge() -> bool
 	{
 		return this->getMethod() === "PURGE";
 	}
 
 	/**
+	 * Checks whether request has been made using any secure layer
+	 */
+	public function isSecure() -> bool
+	{
+		return this->getScheme() === "https";
+	}
+
+	/**
+	 * Checks if the `Request::getHttpHost` method will be use strict validation of host name or not
+	 */
+	public function isStrictHostCheck() -> bool
+	{
+		return this->strictHostCheck;
+	}
+
+	/**
+	 * Checks whether request has been made using SOAP
+	 */
+	public function isSoap() -> bool
+	{
+		var contentType;
+
+		if isset _SERVER["HTTP_SOAPACTION"] {
+			return true;
+		} else {
+			let contentType = this->getContentType();
+			if !empty contentType {
+				return memstr(contentType, "application/soap+xml");
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Checks whether HTTP method is TRACE. if _SERVER["REQUEST_METHOD"]==="TRACE"
 	 */
-	public function isTrace() -> boolean
+	public function isTrace() -> bool
 	{
 		return this->getMethod() === "TRACE";
 	}
 
 	/**
-	 * Checks whether HTTP method is CONNECT. if _SERVER["REQUEST_METHOD"]==="CONNECT"
+	 * Checks if a method is a valid HTTP method
 	 */
-	public function isConnect() -> boolean
+	public function isValidHttpMethod(string method) -> bool
 	{
-		return this->getMethod() === "CONNECT";
+		switch strtoupper(method) {
+			case "GET":
+			case "POST":
+			case "PUT":
+			case "DELETE":
+			case "HEAD":
+			case "OPTIONS":
+			case "PATCH":
+			case "PURGE": // Squid and Varnish support
+			case "TRACE":
+			case "CONNECT":
+				return true;
+		}
+
+		return false;
 	}
 
 	/**
-	 * Checks whether request include attached files
+	 * Sets the dependency injector
 	 */
-	public function hasFiles(boolean onlySuccessful = false) -> long
+	public function setDI(<DiInterface> container)
 	{
-		var files, file, error;
-		int numberFiles = 0;
+		let this->container = container;
+	}
 
-		let files = _FILES;
+	/**
+	 * Sets automatic sanitizers/filters for a particular field and for particular methods
+	 */
+	public function setParameterFilters(string! name, array filters = [], array scope = []) -> <RequestInterface>
+	{
+		var filterLocator, sanitizer, localScope, scopeMethod;
 
-		if typeof files != "array" {
-			return 0;
+		if count(filters) < 1 {
+			throw new Exception("Filters have not been defined for '" . name . "'");
 		}
 
-		for file in files {
-			if fetch error, file["error"] {
+		let filterLocator = this->getFilterLocatorService();
 
-				if typeof error != "array" {
-					if !error || !onlySuccessful {
-						let numberFiles++;
-					}
-				}
-
-				if typeof error == "array" {
-					let numberFiles += this->hasFileHelper(error, onlySuccessful);
-				}
+		for sanitizer in filters {
+			if true !== filterLocator->has(sanitizer) {
+				throw new Exception("Sanitizer '" . sanitizer . "' does not exist in the filter locator");
 			}
 		}
 
-		return numberFiles;
+		if count(scope) < 1 {
+			let localScope = ["get", "post", "put"];
+		} else {
+			let localScope = scope;
+		}
+
+		for scopeMethod in localScope {
+			let this->queryFilters[scopeMethod][name] = filters;
+		}
+
+		return this;
+	}
+
+	/**
+	 * Sets if the `Request::getHttpHost` method must be use strict validation of host name or not
+	 */
+	public function setStrictHostCheck(bool flag = true) -> <RequestInterface>
+	{
+		let this->strictHostCheck = flag;
+
+		return this;
+	}
+
+	/**
+	 * Process a request header and return the one with best quality
+	 */
+	protected final function getBestQuality(array qualityParts, string! name) -> string
+	{
+		int i;
+		double quality, acceptQuality;
+		var selectedName, accept;
+
+		let i = 0,
+			quality = 0.0,
+			selectedName = "";
+
+		for accept in qualityParts {
+			if i == 0 {
+				let quality = (double) accept["quality"],
+					selectedName = accept[name];
+			} else {
+				let acceptQuality = (double) accept["quality"];
+				if acceptQuality > quality {
+					let quality = acceptQuality,
+						selectedName = accept[name];
+				}
+			}
+			let i++;
+		}
+		return selectedName;
+	}
+
+	/**
+	 * Helper to get data from superglobals, applying filters if needed.
+	 * If no parameters are given the superglobal is returned.
+	 */
+	protected final function getHelper(array source, string! name = null, var filters = null, var defaultValue = null, bool notAllowEmpty = false, bool noRecursive = false) -> var
+	{
+		var value, filter, container;
+
+		if name === null {
+			return source;
+		}
+
+		if !fetch value, source[name] {
+			return defaultValue;
+		}
+		if filters !== null {
+			let filter = this->filterLocator;
+			if typeof filter != "object" {
+				let container = <DiInterface> this->container;
+				if typeof container != "object" {
+					throw new Exception("A dependency injection object is required to access the 'filter' service");
+				}
+				let filter = <LocatorInterface> container->getShared("filter");
+//				let filter = <FilterInterface> container->getShared("filter");
+				let this->filterLocator = filter;
+			}
+
+			let value = filter->sanitize(value, filters, noRecursive);
+		}
+
+		if empty value && notAllowEmpty === true {
+			return defaultValue;
+		}
+
+		return value;
 	}
 
 	/**
 	 * Recursively counts file in an array of files
 	 */
-	protected final function hasFileHelper(var data, boolean onlySuccessful) -> long
+	protected final function hasFileHelper(var data, bool onlySuccessful) -> long
 	{
 		var value;
 		int numberFiles = 0;
@@ -827,50 +1177,113 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
-	 * Gets attached files as Phalcon\Http\Request\File instances
+	 * Process a request header and return an array of values with their qualities
 	 */
-	public function getUploadedFiles(boolean onlySuccessful = false) -> <File[]>
+	protected final function getQualityHeader(string! serverIndex, string! name) -> array
 	{
-		var superFiles, prefix, input, smoothInput, file, dataFile;
-		array files = [];
+		var returnedParts, part, headerParts, headerPart, split;
 
-		let superFiles = _FILES;
+		let returnedParts = [];
+		for part in preg_split("/,\\s*/", this->getServer(serverIndex), -1, PREG_SPLIT_NO_EMPTY) {
 
-		if count(superFiles) > 0 {
-
-			for prefix, input in superFiles {
-				if typeof input["name"] == "array" {
-					let smoothInput = this->smoothFiles(
-						input["name"],
-						input["type"],
-						input["tmp_name"],
-						input["size"],
-						input["error"],
-						prefix
-					);
-
-					for file in smoothInput {
-						if onlySuccessful == false || file["error"] == UPLOAD_ERR_OK {
-							let dataFile = [
-								"name": file["name"],
-								"type": file["type"],
-								"tmp_name": file["tmp_name"],
-								"size": file["size"],
-								"error": file["error"]
-							];
-
-							let files[] = new File(dataFile, file["key"]);
-						}
+			let headerParts = [];
+			for headerPart in preg_split("/\s*;\s*/", trim(part), -1, PREG_SPLIT_NO_EMPTY) {
+				if strpos(headerPart, "=") !== false {
+					let split = explode("=", headerPart, 2);
+					if split[0] === "q" {
+						let headerParts["quality"] = (double) split[1];
+					} else {
+						let headerParts[split[0]] = split[1];
 					}
 				} else {
-					if onlySuccessful == false || input["error"] == UPLOAD_ERR_OK {
-						let files[] = new File(input, prefix);
+					let headerParts[name] = headerPart;
+					let headerParts["quality"] = 1.0;
+				}
+			}
+
+			let returnedParts[] = headerParts;
+		}
+
+		return returnedParts;
+	}
+
+	/**
+	 * Resolve authorization headers.
+	 */
+	protected function resolveAuthorizationHeaders() -> array
+	{
+		var resolved, eventsManager, hasEventsManager, container, exploded, digest, authHeader = null;
+		array headers = [];
+
+		let container = <DiInterface> this->getDI();
+
+		// TODO: Make Request implements EventsAwareInterface for v4.0.0
+		if typeof container === "object" {
+			let hasEventsManager = (bool) container->has("eventsManager");
+			if hasEventsManager {
+				let eventsManager = <ManagerInterface> container->getShared("eventsManager");
+			}
+		}
+
+		if hasEventsManager && typeof eventsManager === "object" {
+			let resolved = eventsManager->fire(
+				"request:beforeAuthorizationResolve",
+				this,
+				["server": _SERVER]
+			);
+
+			if typeof resolved === "array" {
+				let headers = array_merge(headers, resolved);
+			}
+		}
+
+		if isset _SERVER["PHP_AUTH_USER"] && isset _SERVER["PHP_AUTH_PW"] {
+			let headers["Php-Auth-User"] = _SERVER["PHP_AUTH_USER"],
+				headers["Php-Auth-Pw"] = _SERVER["PHP_AUTH_PW"];
+		} else {
+			if isset _SERVER["HTTP_AUTHORIZATION"] {
+				let authHeader = _SERVER["HTTP_AUTHORIZATION"];
+			} elseif isset _SERVER["REDIRECT_HTTP_AUTHORIZATION"] {
+				let authHeader = _SERVER["REDIRECT_HTTP_AUTHORIZATION"];
+			}
+
+			if authHeader {
+				if stripos(authHeader, "basic ") === 0 {
+					let exploded = explode(":", base64_decode(substr(authHeader, 6)), 2);
+					if count(exploded) == 2 {
+						let headers["Php-Auth-User"] = exploded[0],
+							headers["Php-Auth-Pw"]   = exploded[1];
 					}
+				} elseif stripos(authHeader, "digest ") === 0 && !fetch digest, _SERVER["PHP_AUTH_DIGEST"] {
+					let headers["Php-Auth-Digest"] = authHeader;
+				} elseif stripos(authHeader, "bearer ") === 0 {
+					let headers["Authorization"] = authHeader;
 				}
 			}
 		}
 
-		return files;
+		if !isset headers["Authorization"] {
+			if isset headers["Php-Auth-User"] {
+				let headers["Authorization"] = "Basic " . base64_encode(headers["Php-Auth-User"] . ":" . headers["Php-Auth-Pw"]);
+			} elseif fetch digest, headers["Php-Auth-Digest"] {
+				let headers["Authorization"] = digest;
+			}
+		}
+
+		if hasEventsManager && typeof eventsManager === "object" {
+			let resolved = eventsManager->fire(
+				"request:afterAuthorizationResolve",
+				this,
+				["headers": headers, "server": _SERVER]
+			);
+
+			if typeof resolved === "array" {
+				let headers = array_merge(headers, resolved);
+			}
+
+		}
+
+		return headers;
 	}
 
 	/**
@@ -917,256 +1330,22 @@ class Request implements RequestInterface, InjectionAwareInterface
 	}
 
 	/**
-	 * Returns the available headers in the request
-	 *
-	 * <code>
-	 * $_SERVER = [
-	 *     "PHP_AUTH_USER" => "phalcon",
-	 *     "PHP_AUTH_PW"   => "secret",
-	 * ];
-	 *
-	 * $headers = $request->getHeaders();
-	 *
-	 * echo $headers["Authorization"]; // Basic cGhhbGNvbjpzZWNyZXQ=
-	 * </code>
+	 * Checks the filter service and assigns it to the class parameter
 	 */
-	public function getHeaders() -> array
+	private function getFilterLocatorService() -> <LocatorInterface>
 	{
-		var name, value, exploded, digest, authHeader = null;
-		array headers, contentHeaders;
+		var container, locator;
 
-		let headers = [];
-		let contentHeaders = ["CONTENT_TYPE": true, "CONTENT_LENGTH": true, "CONTENT_MD5": true];
-
-		for name, value in _SERVER {
-			if starts_with(name, "HTTP_") {
-				let name = ucwords(strtolower(str_replace("_", " ", substr(name, 5)))),
-					name = str_replace(" ", "-", name);
-				let headers[name] = value;
-			} elseif isset contentHeaders[name] {
-				let name = ucwords(strtolower(str_replace("_", " ", name))),
-					name = str_replace(" ", "-", name);
-				let headers[name] = value;
+		let locator = this->filterLocator;
+		if typeof locator != "object" {
+			let container = <DiInterface> this->container;
+			if typeof container != "object" {
+				throw new Exception("A dependency injection object is required to access the 'filter' service");
 			}
+			let locator             = <LocatorInterface> container->getShared("filter"),
+				this->filterLocator = locator;
 		}
 
-		if isset _SERVER["PHP_AUTH_USER"] && isset _SERVER["PHP_AUTH_PW"] {
-			let headers["Php-Auth-User"] = _SERVER["PHP_AUTH_USER"],
-				headers["Php-Auth-Pw"] = _SERVER["PHP_AUTH_PW"];
-		} else {
-			if isset _SERVER["HTTP_AUTHORIZATION"] {
-				let authHeader = _SERVER["HTTP_AUTHORIZATION"];
-			} elseif isset _SERVER["REDIRECT_HTTP_AUTHORIZATION"] {
-				let authHeader = _SERVER["REDIRECT_HTTP_AUTHORIZATION"];
-			}
-
-			if authHeader {
-				if stripos(authHeader, "basic ") === 0 {
-					let exploded = explode(":", base64_decode(substr(authHeader, 6)), 2);
-					if count(exploded) == 2 {
-						let headers["Php-Auth-User"] = exploded[0],
-							headers["Php-Auth-Pw"]   = exploded[1];
-					}
-				} elseif stripos(authHeader, "digest ") === 0 && !fetch digest, _SERVER["PHP_AUTH_DIGEST"] {
-					let headers["Php-Auth-Digest"] = authHeader;
-				} elseif stripos(authHeader, "bearer ") === 0 {
-					let headers["Authorization"] = authHeader;
-				}
-			}
-		}
-
-		if isset headers["Authorization"] {
-			return headers;
-        }
-
-		if isset headers["Php-Auth-User"] {
-			let headers["Authorization"] = "Basic " . base64_encode(headers["Php-Auth-User"] . ":" . headers["Php-Auth-Pw"]);
-		} elseif fetch digest, headers["Php-Auth-Digest"] {
-			let headers["Authorization"] = digest;
-		}
-
-		return headers;
-	}
-
-	/**
-	 * Gets web page that refers active request. ie: http://www.google.com
-	 */
-	public function getHTTPReferer() -> string
-	{
-		var httpReferer;
-		if fetch httpReferer, _SERVER["HTTP_REFERER"] {
-			return httpReferer;
-		}
-		return "";
-	}
-
-	/**
-	 * Process a request header and return the one with best quality
-	 */
-	protected final function _getBestQuality(array qualityParts, string! name) -> string
-	{
-		int i;
-		double quality, acceptQuality;
-		var selectedName, accept;
-
-		let i = 0,
-			quality = 0.0,
-			selectedName = "";
-
-		for accept in qualityParts {
-			if i == 0 {
-				let quality = (double) accept["quality"],
-					selectedName = accept[name];
-			} else {
-				let acceptQuality = (double) accept["quality"];
-				if acceptQuality > quality {
-					let quality = acceptQuality,
-						selectedName = accept[name];
-				}
-			}
-			let i++;
-		}
-		return selectedName;
-	}
-
-	/**
-	 * Gets content type which request has been made
-	 */
-	public function getContentType() -> string | null
-	{
-		var contentType;
-
-		if fetch contentType, _SERVER["CONTENT_TYPE"] {
-			return contentType;
-		} else {
-			/**
-			 * @see https://bugs.php.net/bug.php?id=66606
-			 */
-			if fetch contentType, _SERVER["HTTP_CONTENT_TYPE"] {
-				return contentType;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Gets an array with mime/types and their quality accepted by the browser/client from _SERVER["HTTP_ACCEPT"]
-	 */
-	public function getAcceptableContent() -> array
-	{
-		return this->_getQualityHeader("HTTP_ACCEPT", "accept");
-	}
-
-	/**
-	 * Gets best mime/type accepted by the browser/client from _SERVER["HTTP_ACCEPT"]
-	 */
-	public function getBestAccept() -> string
-	{
-		return this->_getBestQuality(this->getAcceptableContent(), "accept");
-	}
-
-	/**
-	 * Gets a charsets array and their quality accepted by the browser/client from _SERVER["HTTP_ACCEPT_CHARSET"]
-	 */
-	public function getClientCharsets() -> var
-	{
-		return this->_getQualityHeader("HTTP_ACCEPT_CHARSET", "charset");
-	}
-
-	/**
-	 * Gets best charset accepted by the browser/client from _SERVER["HTTP_ACCEPT_CHARSET"]
-	 */
-	public function getBestCharset() -> string
-	{
-		return this->_getBestQuality(this->getClientCharsets(), "charset");
-	}
-
-	/**
-	 * Gets languages array and their quality accepted by the browser/client from _SERVER["HTTP_ACCEPT_LANGUAGE"]
-	 */
-	public function getLanguages() -> array
-	{
-		return this->_getQualityHeader("HTTP_ACCEPT_LANGUAGE", "language");
-	}
-
-	/**
-	 * Gets best language accepted by the browser/client from _SERVER["HTTP_ACCEPT_LANGUAGE"]
-	 */
-	public function getBestLanguage() -> string
-	{
-		return this->_getBestQuality(this->getLanguages(), "language");
-	}
-
-	/**
-	 * Gets auth info accepted by the browser/client from $_SERVER["PHP_AUTH_USER"]
-	 */
-	public function getBasicAuth() -> array | null
-	{
-		var auth;
-
-		if isset _SERVER["PHP_AUTH_USER"] && isset _SERVER["PHP_AUTH_PW"] {
-			let auth = [];
-			let auth["username"] = _SERVER["PHP_AUTH_USER"];
-			let auth["password"] = _SERVER["PHP_AUTH_PW"];
-			return auth;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Gets auth info accepted by the browser/client from $_SERVER["PHP_AUTH_DIGEST"]
-	 */
-	public function getDigestAuth() -> array
-	{
-		var digest, matches, match;
-		array auth;
-
-		let auth = [];
-		if fetch digest, _SERVER["PHP_AUTH_DIGEST"] {
-			let matches = [];
-			if !preg_match_all("#(\\w+)=(['\"]?)([^'\" ,]+)\\2#", digest, matches, 2) {
-				return auth;
-			}
-			if typeof matches == "array" {
-				for match in matches {
-					let auth[match[1]] = match[3];
-				}
-			}
-		}
-
-		return auth;
-	}
-
-	/**
-	 * Process a request header and return an array of values with their qualities
-	 */
-	protected final function _getQualityHeader(string! serverIndex, string! name) -> array
-	{
-		var returnedParts, part, headerParts, headerPart, split;
-
-		let returnedParts = [];
-		for part in preg_split("/,\\s*/", this->getServer(serverIndex), -1, PREG_SPLIT_NO_EMPTY) {
-
-			let headerParts = [];
-			for headerPart in preg_split("/\s*;\s*/", trim(part), -1, PREG_SPLIT_NO_EMPTY) {
-				if strpos(headerPart, "=") !== false {
-					let split = explode("=", headerPart, 2);
-					if split[0] === "q" {
-						let headerParts["quality"] = (double) split[1];
-					} else {
-						let headerParts[split[0]] = split[1];
-					}
-				} else {
-					let headerParts[name] = headerPart;
-					let headerParts["quality"] = 1.0;
-				}
-			}
-
-			let returnedParts[] = headerParts;
-		}
-
-		return returnedParts;
+		return this->filterLocator;
 	}
 }

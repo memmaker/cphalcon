@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\EntityInterface
  *
  * Interface for Phalcon\Mvc\Collection and Phalcon\Mvc\Model
@@ -27,17 +35,11 @@ ZEPHIR_INIT_CLASS(Phalcon_Mvc_EntityInterface) {
 
 /**
  * Reads an attribute value by its name
- *
- * @param string attribute
- * @return mixed
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_EntityInterface, readAttribute);
 
 /**
  * Writes an attribute value by its name
- *
- * @param string attribute
- * @param mixed value
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_EntityInterface, writeAttribute);
 

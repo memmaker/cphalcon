@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework							                          |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)	      |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled	  |
- | with this package in the file LICENSE.txt.                             |
- |									   								      |
- | If you did not receive a copy of the license and are unable to	      |
- | obtain it through the world-wide-web, please send an email		      |
- | to license@phalconphp.com so we can send you a copy immediately.	      |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>			          |
- |		  Eduar Carvajal <eduar@phalconphp.com>			                  |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Resultset;
@@ -26,6 +17,9 @@ use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\Model\Exception;
 use Phalcon\Cache\BackendInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
+use Phalcon\DiInterface;
+use Phalcon\Di;
+use Phalcon\Cache\FrontendInterface;
 
 /**
  * Phalcon\Mvc\Model\Resultset\Complex
@@ -46,8 +40,6 @@ class Complex extends Resultset implements ResultsetInterface
 	 * Phalcon\Mvc\Model\Resultset\Complex constructor
 	 *
 	 * @param array columnTypes
-	 * @param \Phalcon\Db\ResultInterface result
-	 * @param \Phalcon\Cache\BackendInterface cache
 	 */
 	public function __construct(var columnTypes, <ResultInterface> result = null, <BackendInterface> cache = null)
 	{
@@ -62,7 +54,7 @@ class Complex extends Resultset implements ResultsetInterface
 	/**
 	 * Returns current row in the resultset
 	 */
-	public final function current() -> <ModelInterface> | boolean
+	public final function current() -> <ModelInterface> | bool
 	{
 		var row, hydrateMode, eager,
 			dirtyState, alias, activeRow, type, column, columnValue,
@@ -272,8 +264,7 @@ class Complex extends Resultset implements ResultsetInterface
 	 */
 	public function serialize() -> string
 	{
-		var records, cache, columnTypes, hydrateMode, serialized;
-
+		var records, cache, columnTypes, hydrateMode, dependencyInjector, serializer;
 		/**
 		 * Obtain the records as an array
 		 */
@@ -282,30 +273,48 @@ class Complex extends Resultset implements ResultsetInterface
 		let cache = this->_cache,
 			columnTypes = this->_columnTypes,
 			hydrateMode = this->_hydrateMode;
+		let dependencyInjector = Di::getDefault();
+		if typeof dependencyInjector != "object" {
+        	throw new Exception("The dependency injector container is not valid");
+        }
+		if dependencyInjector->has("serializer") {
+			let serializer = <FrontendInterface> dependencyInjector->getShared("serializer");
+			return serializer->beforeStore([
+				"cache"	      : cache,
+				"rows"		  : records,
+				"columnTypes" : columnTypes,
+				"hydrateMode" : hydrateMode
+			]);
+		}
 
-		let serialized = serialize([
+		return serialize([
 			"cache"	      : cache,
 			"rows"		  : records,
 			"columnTypes" : columnTypes,
 			"hydrateMode" : hydrateMode
 		]);
-
-		return serialized;
 	}
 
 	/**
 	 * Unserializing a resultset will allow to only works on the rows present in the saved state
 	 */
-	public function unserialize(string! data) -> void
+	public function unserialize(var data) -> void
 	{
-		var resultset;
-
+		var resultset, dependencyInjector, serializer;
 		/**
 		* Rows are already hydrated
 		*/
 		let this->_disableHydration = true;
-
-		let resultset = unserialize(data);
+		let dependencyInjector = Di::getDefault();
+		if typeof dependencyInjector != "object" {
+			throw new Exception("The dependency injector container is not valid");
+		}
+		if dependencyInjector->has("serializer") {
+			let serializer = <FrontendInterface> dependencyInjector->getShared("serializer");
+			let resultset = serializer->afterRetrieve(data);
+		} else {
+			let resultset = unserialize(data);
+		}
 		if typeof resultset != "array" {
 			throw new Exception("Invalid serialization data");
 		}

@@ -1,34 +1,25 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db\Adapter\Pdo;
 
 use Phalcon\Db;
+use Phalcon\Db\Adapter\Pdo as PdoAdapter;
 use Phalcon\Db\Column;
+use Phalcon\Db\ColumnInterface;
 use Phalcon\Db\Exception;
+use Phalcon\Db\Index;
+use Phalcon\Db\IndexInterface;
 use Phalcon\Db\RawValue;
 use Phalcon\Db\Reference;
 use Phalcon\Db\ReferenceInterface;
-use Phalcon\Db\Index;
-use Phalcon\Db\IndexInterface;
-use Phalcon\Db\Adapter\Pdo as PdoAdapter;
 
 /**
  * Phalcon\Db\Adapter\Pdo\Sqlite
@@ -48,15 +39,35 @@ use Phalcon\Db\Adapter\Pdo as PdoAdapter;
 class Sqlite extends PdoAdapter
 {
 
+	protected _dialectType = "sqlite";
+
 	protected _type = "sqlite";
 
-	protected _dialectType = "sqlite";
+	/**
+	 * Returns PDO adapter DSN defaults as a key-value map.
+	 */
+	protected function getDsnDefaults() -> array
+	{
+		return [];
+	}
+
+	/**
+	 * Constructor for Phalcon\Db\Adapter\Pdo\Sqlite
+	 */
+	public function __construct(array! descriptor)
+	{
+		if isset descriptor["charset"] {
+			trigger_error("Sqlite does not allow the charset to be changed in the DSN.");
+		}
+
+		parent::__construct(descriptor);
+	}
 
 	/**
 	 * This method is automatically called in Phalcon\Db\Adapter\Pdo constructor.
 	 * Call it when you need to restore a database connection.
 	 */
-	public function connect(array descriptor = null) -> boolean
+	public function connect(array descriptor = null) -> bool
 	{
 		var dbname;
 
@@ -64,11 +75,12 @@ class Sqlite extends PdoAdapter
 			let descriptor = (array) this->_descriptor;
 		}
 
-		if !fetch dbname, descriptor["dbname"] {
-			throw new Exception("dbname must be specified");
+		if fetch dbname, descriptor["dbname"] {
+			let descriptor["dsn"] = dbname;
+			unset descriptor["dbname"];
+		} elseif !isset descriptor["dsn"] {
+			throw new Exception("The database must be specified with either 'dbname' or 'dsn'.");
 		}
-
-		let descriptor["dsn"] = dbname;
 
 		return parent::connect(descriptor);
 	}
@@ -82,7 +94,7 @@ class Sqlite extends PdoAdapter
 	 * );
 	 * </code>
 	 */
-	public function describeColumns(string table, string schema = null) -> <Column[]>
+	public function describeColumns(string! table, string! schema = null) -> <ColumnInterface[]>
 	{
 		var columns, columnType, field, definition,
 			oldColumn, sizePattern, matches, matchOne, matchTwo, columnName;
@@ -107,14 +119,19 @@ class Sqlite extends PdoAdapter
 			 */
 			let columnType = field[2];
 
-			if memstr(columnType, "tinyint(1)") {
-				/**
-				 * Tinyint(1) is boolean
-				 */
-				let definition["type"] = Column::TYPE_BOOLEAN,
-					definition["bindType"] = Column::BIND_PARAM_BOOL,
-					columnType = "boolean"; // Change column type to skip size check
-			} elseif memstr(columnType, "bigint") {
+			/**
+			 * The order of these IF statements matters. Since we are using memstr
+			 * to figure out whether a particular string exists in the columnType
+			 * we will end up with false positives if the order changes.
+			 *
+			 * For instance if we have a `varchar` column and we check for `char`
+			 * first, then that will match. Therefore we have firs the IF
+			 * statements that are "unique" and further down the ones that can
+			 * appear a substrings of the columnType above them.
+			 *
+			 * BIGINT/INT
+			 */
+			if memstr(columnType, "bigint") {
 				/**
 				 * Bigint are int
 				 */
@@ -132,21 +149,40 @@ class Sqlite extends PdoAdapter
 				if field[5] {
 					let definition["autoIncrement"] = true;
 				}
-			} elseif memstr(columnType, "varchar") {
+			} elseif memstr(columnType, "tinyint(1)") {
 				/**
-				 * Varchar are varchars
+				 * Tinyint(1) is boolean
 				 */
-				let definition["type"] = Column::TYPE_VARCHAR;
+				let definition["type"] = Column::TYPE_BOOLEAN,
+					definition["bindType"] = Column::BIND_PARAM_BOOL,
+					columnType = "boolean"; // Change column type to skip size check
+
+			/**
+			 * ENUM
+			 */
+			} elseif memstr(columnType, "enum") {
+				/**
+				 * Enum are treated as char
+				 */
+				let definition["type"] = Column::TYPE_CHAR;
+
+			/**
+			 * DATE/DATETIME
+			 */
+			} elseif memstr(columnType, "datetime") {
+				/**
+				 * Special type for datetime
+				 */
+				let definition["type"] = Column::TYPE_DATETIME;
 			} elseif memstr(columnType, "date") {
 				/**
 				 * Date/Datetime are varchars
 				 */
 				let definition["type"] = Column::TYPE_DATE;
-			} elseif memstr(columnType, "timestamp") {
-				/**
-				 * Timestamp as date
-				 */
-				let definition["type"] = Column::TYPE_TIMESTAMP;
+
+			/**
+			 * FLOAT/DECIMAL/DOUBLE
+			 */
 			} elseif memstr(columnType, "decimal") {
 				/**
 				 * Decimals are floats
@@ -154,21 +190,6 @@ class Sqlite extends PdoAdapter
 				let definition["type"] = Column::TYPE_DECIMAL,
 					definition["isNumeric"] = true,
 					definition["bindType"] = Column::BIND_PARAM_DECIMAL;
-			} elseif memstr(columnType, "char") {
-				/**
-				 * Chars are chars
-				 */
-				let definition["type"] = Column::TYPE_CHAR;
-			} elseif memstr(columnType, "datetime") {
-				/**
-				 * Special type for datetime
-				 */
-				let definition["type"] = Column::TYPE_DATETIME;
-			} elseif memstr(columnType, "text") {
-				/**
-				 * Text are varchars
-				 */
-				let definition["type"] = Column::TYPE_TEXT;
 			} elseif memstr(columnType, "float") {
 				/**
 				 * Float/Smallfloats/Decimals are float
@@ -176,11 +197,35 @@ class Sqlite extends PdoAdapter
 				let definition["type"] = Column::TYPE_FLOAT,
 					definition["isNumeric"] = true,
 					definition["bindType"] = Column::TYPE_DECIMAL;
-			} elseif memstr(columnType, "enum") {
+
+			/**
+			 * TIMESTAMP
+			 */
+			} elseif memstr(columnType, "timestamp") {
 				/**
-				 * Enum are treated as char
+				 * Timestamp as date
+				 */
+				let definition["type"] = Column::TYPE_TIMESTAMP;
+
+			/**
+			 * TEXT/VARCHAR/CHAR
+			 */
+			} elseif memstr(columnType, "varchar") {
+				/**
+				 * Varchar are varchars
+				 */
+				let definition["type"] = Column::TYPE_VARCHAR;
+			} elseif memstr(columnType, "char") {
+				/**
+				 * Chars are chars
 				 */
 				let definition["type"] = Column::TYPE_CHAR;
+			} elseif memstr(columnType, "text") {
+				/**
+				 * Text are varchars
+				 */
+				let definition["type"] = Column::TYPE_TEXT;
+
 			} else {
 				/**
 				 * By default is string
@@ -260,12 +305,8 @@ class Sqlite extends PdoAdapter
 	 *     $connection->describeIndexes("robots_parts")
 	 * );
 	 * </code>
-	 *
-	 * @param  string table
-	 * @param  string schema
-	 * @return \Phalcon\Db\IndexInterface[]
 	 */
-	public function describeIndexes(table, schema = null) -> <IndexInterface[]>
+	public function describeIndexes(string! table, string! schema = null) -> <IndexInterface[]>
 	{
 		var indexes, index, keyName, indexObjects, name, columns, describeIndex, indexSql;
 
@@ -311,12 +352,8 @@ class Sqlite extends PdoAdapter
 
 	/**
 	 * Lists table references
-	 *
-	 * @param	string table
-	 * @param	string schema
-	 * @return	Phalcon\Db\ReferenceInterface[]
 	 */
-	public function describeReferences(table, schema = null) -> <ReferenceInterface[]>
+	public function describeReferences(string! table, string! schema = null) -> <ReferenceInterface[]>
 	{
 		var references, reference,
 			arrayReference, constraintName, referenceObjects, name,
@@ -365,14 +402,6 @@ class Sqlite extends PdoAdapter
 	}
 
 	/**
-	 * Check whether the database system requires an explicit value for identity columns
-	 */
-	public function useExplicitIdValue() -> boolean
-	{
-		return true;
-	}
-
-	/**
 	 * Returns the default value to make the RBDM use the default value declared in the table definition
 	 *
 	 *<code>
@@ -393,5 +422,13 @@ class Sqlite extends PdoAdapter
 	public function getDefaultValue() -> <RawValue>
 	{
 		return new RawValue("NULL");
+	}
+
+	/**
+	 * Check whether the database system requires an explicit value for identity columns
+	 */
+	public function useExplicitIdValue() -> bool
+	{
+		return true;
 	}
 }

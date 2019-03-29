@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Image\Adapter;
@@ -45,7 +36,7 @@ class Imagick extends Adapter
 	/**
 	 * Checks if Imagick is enabled
 	 */
-	public static function check() -> boolean
+	public static function check() -> bool
 	{
 		if self::_checked {
 			return true;
@@ -256,7 +247,7 @@ class Imagick extends Adapter
 	/**
 	 * Execute a reflection.
 	 */
-	protected function _reflection(int height, int opacity, boolean fadeIn)
+	protected function _reflection(int height, int opacity, bool fadeIn)
 	{
 		var reflection, fade, pseudo, image, pixel, ret;
 
@@ -415,8 +406,8 @@ class Imagick extends Adapter
 
 		let gravity = null;
 
-		if typeof offsetX == "bool" {
-			if typeof offsetY == "bool" {
+		if typeof offsetX == "boolean" {
+			if typeof offsetY == "boolean" {
 				let offsetX	= 0,
 					offsetY = 0;
 				if offsetX && offsetY {
@@ -460,7 +451,7 @@ class Imagick extends Adapter
 			if typeof offsetX == "int" {
 				let x = (int) offsetX;
 				if offsetX {
-					if typeof offsetY == "bool" {
+					if typeof offsetY == "boolean" {
 						if offsetY {
 							if x < 0 {
 								let offsetX	= x * -1,

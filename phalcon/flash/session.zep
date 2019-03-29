@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Flash;
@@ -22,7 +13,7 @@ namespace Phalcon\Flash;
 use Phalcon\Flash as FlashBase;
 use Phalcon\DiInterface;
 use Phalcon\Flash\Exception;
-use Phalcon\Session\AdapterInterface as SessionInterface;
+use Phalcon\Session\ManagerInterface as SessionInterface;
 
 /**
  * Phalcon\Flash\Session
@@ -34,7 +25,7 @@ class Session extends FlashBase
 	/**
 	 * Returns the messages stored in session
 	 */
-	protected function _getSessionMessages(boolean remove, type = null) -> array
+	protected function _getSessionMessages(bool remove, type = null) -> array
 	{
 		var dependencyInjector, session, messages, returnMessages;
 
@@ -99,7 +90,7 @@ class Session extends FlashBase
 	/**
 	 * Checks whether there are messages
 	 */
-	public function has(type = null) -> boolean
+	public function has(type = null) -> bool
 	{
 		var messages;
 
@@ -116,7 +107,7 @@ class Session extends FlashBase
 	/**
 	 * Returns the messages in the session flasher
 	 */
-	public function getMessages(type = null, boolean remove = true) -> array
+	public function getMessages(type = null, bool remove = true) -> array
 	{
 		return this->_getSessionMessages(remove, type);
 	}
@@ -124,7 +115,7 @@ class Session extends FlashBase
 	/**
 	 * Prints the messages in the session flasher
 	 */
-	public function output(boolean remove = true) -> void
+	public function output(bool remove = true) -> void
 	{
 		var type, message, messages;
 

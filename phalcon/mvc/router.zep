@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc;
@@ -50,7 +41,9 @@ use Phalcon\Events\EventsAwareInterface;
  *     ]
  * );
  *
- * $router->handle();
+ * $router->handle(
+ *     "/documentation/1/examples.html"
+ * );
  *
  * echo $router->getControllerName();
  * </code>
@@ -95,9 +88,9 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 
 	protected _notFoundPaths;
 
-	const URI_SOURCE_GET_URL = 0;
+	protected _keyRouteNames = [] { get, set };
 
-	const URI_SOURCE_SERVER_REQUEST_URI = 1;
+	protected _keyRouteIds = [] { get, set };
 
 	const POSITION_FIRST = 0;
 
@@ -106,7 +99,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	/**
 	 * Phalcon\Mvc\Router constructor
 	 */
-	public function __construct(boolean! defaultRoutes = true)
+	public function __construct(bool! defaultRoutes = true)
 	{
 		array routes = [];
 
@@ -162,55 +155,9 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	}
 
 	/**
-	 * Get rewrite info. This info is read from $_GET["_url"]. This returns '/' if the rewrite information cannot be read
-	 */
-	public function getRewriteUri() -> string
-	{
-		var url, urlParts, realUri;
-
-		/**
-		 * By default we use $_GET["url"] to obtain the rewrite information
-		 */
-		if !this->_uriSource {
-			if fetch url, _GET["_url"] {
-				if !empty url {
-					return url;
-				}
-			}
-		} else {
-			/**
-			 * Otherwise use the standard $_SERVER["REQUEST_URI"]
-			 */
-			if fetch url, _SERVER["REQUEST_URI"] {
-				let urlParts = explode("?", url),
-					realUri = urlParts[0];
-				if !empty realUri {
-					return realUri;
-				}
-			}
-		}
-		return "/";
-	}
-
-	/**
-	 * Sets the URI source. One of the URI_SOURCE_* constants
-	 *
-	 * <code>
-	 * $router->setUriSource(
-	 *     Router::URI_SOURCE_SERVER_REQUEST_URI
-	 * );
-	 * </code>
-	 */
-	public function setUriSource(var uriSource) -> <RouterInterface>
-	{
-		let this->_uriSource = uriSource;
-		return this;
-	}
-
-	/**
 	 * Set whether router must remove the extra slashes in the handled routes
 	 */
-	public function removeExtraSlashes(boolean! remove) -> <RouterInterface>
+	public function removeExtraSlashes(bool! remove) -> <RouterInterface>
 	{
 		let this->_removeExtraSlashes = remove;
 		return this;
@@ -315,38 +262,26 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	 * Handles routing information received from the rewrite engine
 	 *
 	 *<code>
-	 * // Read the info from the rewrite engine
-	 * $router->handle();
-	 *
-	 * // Manually passing an URL
+	 * // Passing a URL
 	 * $router->handle("/posts/edit/1");
 	 *</code>
 	 */
-	public function handle(string uri = null)
+	public function handle(string! uri)
 	{
-		var realUri, request, currentHostName, routeFound, parts,
+		var request, currentHostName, routeFound, parts,
 			params, matches, notFoundPaths,
 			vnamespace, module,  controller, action, paramsStr, strParams,
 			route, methods, dependencyInjector,
 			hostname, regexHostName, matched, pattern, handledUri, beforeMatch,
 			paths, converters, part, position, matchPosition, converter, eventsManager;
 
-		if !uri {
-			/**
-			 * If 'uri' isn't passed as parameter it reads _GET["_url"]
-			 */
-			let realUri = this->getRewriteUri();
-		} else {
-			let realUri = uri;
-		}
-
 		/**
 		 * Remove extra slashes in the route
 		 */
-		if this->_removeExtraSlashes && realUri != "/" {
-			let handledUri = rtrim(realUri, "/");
+		if this->_removeExtraSlashes && uri != "/" {
+			let handledUri = rtrim(uri, "/");
 		} else {
-			let handledUri = realUri;
+			let handledUri = uri;
 		}
 
 		let request = null,
@@ -674,6 +609,41 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	}
 
 	/**
+	 * Attach Route object to the routes stack.
+	 *
+	 * <code>
+	 * use Phalcon\Mvc\Router;
+	 * use Phalcon\Mvc\Router\Route;
+	 *
+	 * class CustomRoute extends Route {
+	 *      // ...
+	 * }
+	 *
+	 * $router = new Router();
+	 *
+	 * $router->attach(
+	 *     new CustomRoute("/about", "About::index", ["GET", "HEAD"]),
+	 *     Router::POSITION_FIRST
+	 * );
+	 * </code>
+	 */
+	public function attach(<RouteInterface> route, var position = Router::POSITION_LAST) -> <RouterInterface>
+	{
+		switch position {
+			case self::POSITION_LAST:
+				let this->_routes[] = route;
+				break;
+			case self::POSITION_FIRST:
+				let this->_routes = array_merge([route], this->_routes);
+				break;
+			default:
+				throw new Exception("Invalid route position");
+		}
+
+		return this;
+	}
+
+	/**
 	 * Adds a route to the router without any HTTP constraint
 	 *
 	 *<code>
@@ -693,19 +663,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 		 */
 		let route = new Route(pattern, paths, httpMethods);
 
-		switch position {
-
-			case self::POSITION_LAST:
-				let this->_routes[] = route;
-				break;
-
-			case self::POSITION_FIRST:
-				let this->_routes = array_merge([route], this->_routes);
-				break;
-
-			default:
-				throw new Exception("Invalid route position");
-		}
+		this->attach(route, position);
 
 		return route;
 	}
@@ -795,7 +753,13 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	 */
 	public function mount(<GroupInterface> group) -> <RouterInterface>
 	{
-		var groupRoutes, beforeMatch, hostname, routes, route;
+		var groupRoutes, beforeMatch, hostname, routes, route, eventsManager;
+
+		let eventsManager = this->_eventsManager;
+
+		if typeof eventsManager == "object" {
+			eventsManager->fire("router:beforeMount", this, group);
+		}
 
 		let groupRoutes = group->getRoutes();
 		if !count(groupRoutes) {
@@ -912,7 +876,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	/**
 	 * Checks if the router matches any of the defined routes
 	 */
-	public function wasMatched() -> boolean
+	public function wasMatched() -> bool
 	{
 		return this->_wasMatched;
 	}
@@ -928,29 +892,44 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	/**
 	 * Returns a route object by its id
 	 */
-	public function getRouteById(var id) -> <RouteInterface> | boolean
+	public function getRouteById(var id) -> <RouteInterface> | bool
 	{
-		var route;
+		var route, routeId, key;
 
-		for route in this->_routes {
-			if route->getRouteId() == id {
+		if fetch key, this->_keyRouteIds[id] {
+			return this->_routes[key];
+		}
+
+		for key, route in this->_routes {
+			let routeId = route->getRouteId();
+			let this->_keyRouteIds[routeId] = key;
+
+			if routeId == id {
 				return route;
 			}
 		}
-
 		return false;
 	}
 
 	/**
 	 * Returns a route object by its name
 	 */
-	public function getRouteByName(string! name) -> <RouteInterface> | boolean
+	public function getRouteByName(string! name) -> <RouteInterface> | bool
 	{
-		var route;
+		var route, routeName, key;
 
-		for route in this->_routes {
-			if route->getName() == name {
-				return route;
+		if fetch key, this->_keyRouteNames[name] {
+			return this->_routes[key];
+		}
+
+		for key, route in this->_routes {
+			let routeName = route->getName();
+			if !empty routeName {
+                let this->_keyRouteNames[routeName] = key;
+
+                if routeName == name {
+                    return route;
+                }
 			}
 		}
 		return false;
@@ -959,7 +938,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
 	/**
 	 * Returns whether controller name should not be mangled
 	 */
-	public function isExactControllerName() -> boolean
+	public function isExactControllerName() -> bool
 	{
 		return true;
 	}

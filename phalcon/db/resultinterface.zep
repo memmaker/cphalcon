@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db;
@@ -29,10 +20,8 @@ interface ResultInterface
 	/**
 	 * Allows to executes the statement again. Some database systems don't support scrollable cursors,
 	 * So, as cursors are forward only, we need to execute the cursor again to fetch rows from the begining
-	 *
-	 * @return boolean
 	 */
-	public function execute();
+	public function execute() -> bool;
 
 	/**
 	 * Fetches an array/object of strings that corresponds to the fetched row, or FALSE if there are no more rows.
@@ -53,31 +42,25 @@ interface ResultInterface
 	/**
 	 * Returns an array of arrays containing all the records in the result
 	 * This method is affected by the active fetch flag set using Phalcon\Db\Result\Pdo::setFetchMode
-	 *
-	 * @return array
 	 */
-	public function fetchAll();
+	public function fetchAll() -> array;
 
 	/**
 	 * Gets number of rows returned by a resultset
-	 *
-	 * @return int
 	 */
-	public function numRows();
+	public function numRows() -> int;
 
 	/**
 	 * Moves internal resultset cursor to another position letting us to fetch a certain row
 	 *
-	 * @param int number
+	 * @param long number
 	 */
-	public function dataSeek(number);
+	public function dataSeek(long number);
 
 	/**
 	 * Changes the fetching mode affecting Phalcon\Db\Result\Pdo::fetch()
-	 *
-	 * @param int fetchMode
 	 */
-	public function setFetchMode(fetchMode) -> boolean;
+	public function setFetchMode(int fetchMode) -> bool;
 
 	/**
 	 * Gets the internal PDO result object

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -236,7 +227,7 @@ abstract class MetaData implements InjectionAwareInterface, MetaDataInterface
 	 * );
 	 *</code>
 	 */
-	public final function readMetaData(<ModelInterface> model)
+	public final function readMetaData(<ModelInterface> model) -> array
 	{
 		var source, schema, key;
 
@@ -334,7 +325,7 @@ abstract class MetaData implements InjectionAwareInterface, MetaDataInterface
 	 * );
 	 *</code>
 	 */
-	public final function readColumnMap(<ModelInterface> model)
+	public final function readColumnMap(<ModelInterface> model) -> array | null
 	{
 		var keyName, data;
 
@@ -523,7 +514,7 @@ abstract class MetaData implements InjectionAwareInterface, MetaDataInterface
 	 * @param  Phalcon\Mvc\ModelInterface model
 	 * @return string
 	 */
-	public function getIdentityField(<ModelInterface> model)
+	public function getIdentityField(<ModelInterface> model) -> string
 	{
 		return this->readMetaDataIndex(model, self::MODELS_IDENTITY_COLUMN);
 	}
@@ -740,7 +731,7 @@ abstract class MetaData implements InjectionAwareInterface, MetaDataInterface
 	 * );
 	 *</code>
 	 */
-	public function hasAttribute(<ModelInterface> model, string attribute) -> boolean
+	public function hasAttribute(<ModelInterface> model, string attribute) -> bool
 	{
 		var columnMap;
 
@@ -761,7 +752,7 @@ abstract class MetaData implements InjectionAwareInterface, MetaDataInterface
 	 * );
 	 *</code>
 	 */
-	public function isEmpty() -> boolean
+	public function isEmpty() -> bool
 	{
 		return count(this->_metaData) == 0;
 	}

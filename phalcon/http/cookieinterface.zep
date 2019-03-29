@@ -1,19 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Olivier Garbe <ogarbe@voyageprive.com                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Http;
@@ -29,19 +21,14 @@ interface CookieInterface
 	 * Sets the cookie's value
 	 *
 	 * @param string value
-	 * @return \Phalcon\Http\CookieInterface
 	 */
 	public function setValue(value) -> <CookieInterface>;
 
 	/**
-	 * Returns the cookie's value
-	 *
-	 * @param string|array filters
-	 * @param string defaultValue
-	 * @return mixed
+	 * Returns the cookie's value.
 	 */
-	public function getValue(filters = null, defaultValue = null);
-	
+	public function getValue(var filters = null, var defaultValue = null) -> var;
+
 	/**
 	 * Sends the cookie to the HTTP client
 	 */
@@ -55,13 +42,13 @@ interface CookieInterface
 	/**
 	 * Sets if the cookie must be encrypted/decrypted automatically
 	 */
-	public function useEncryption(boolean useEncryption) -> <CookieInterface>;
+	public function useEncryption(bool useEncryption) -> <CookieInterface>;
 
 	/**
 	 * Check if the cookie is using implicit encryption
 	 */
-	public function isUsingEncryption() -> boolean;
-	
+	public function isUsingEncryption() -> bool;
+
 	/**
 	 * Sets the cookie's expiration time
 	 */
@@ -100,20 +87,20 @@ interface CookieInterface
 	/**
 	 * Sets if the cookie must only be sent when the connection is secure (HTTPS)
 	 */
-	public function setSecure(boolean secure) -> <CookieInterface>;
+	public function setSecure(bool secure) -> <CookieInterface>;
 
 	/**
 	 * Returns whether the cookie must only be sent when the connection is secure (HTTPS)
 	 */
-	public function getSecure() -> boolean;
+	public function getSecure() -> bool;
 
 	/**
 	 * Sets if the cookie is accessible only through the HTTP protocol
 	 */
-	public function setHttpOnly(boolean httpOnly) -> <CookieInterface>;
+	public function setHttpOnly(bool httpOnly) -> <CookieInterface>;
 
 	/**
 	 * Returns if the cookie is accessible only through the HTTP protocol
 	 */
-	public function getHttpOnly() -> boolean;
+	public function getHttpOnly() -> bool;
 }

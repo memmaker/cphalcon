@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\CollectionInterface
  *
  * Interface for Phalcon\Mvc\Collection
@@ -85,7 +93,7 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, fireEvent);
 
 /**
  * Fires an event, implicitly listeners in the events manager are notified
- * This method stops if one of the callbacks/listeners returns boolean false
+ * This method stops if one of the callbacks/listeners returns bool false
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, fireEventCancel);
 
@@ -113,31 +121,21 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, save);
  * Find a document by its id
  *
  * @param string id
- * @return \Phalcon\Mvc\Collection
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, findById);
 
 /**
  * Allows to query the first record that match the specified conditions
- *
- * @param array parameters
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, findFirst);
 
 /**
  * Allows to query a set of records that match the specified conditions
- *
- * @param 	array parameters
- * @return  array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, find);
 
 /**
  * Perform a count over a collection
- *
- * @param array parameters
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_CollectionInterface, count);
 

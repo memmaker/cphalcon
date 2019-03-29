@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\MetaData;
@@ -66,19 +57,7 @@ class Redis extends MetaData
 		if typeof options != "array" {
 			let options = [];
 		}
-
-		if !isset options["host"] {
-			let options["host"] = "127.0.0.1";
-		}
-
-		if !isset options["port"] {
-			let options["port"] = 6379;
-		}
-
-		if !isset options["persistent"] {
-			let options["persistent"] = 0;
-		}
-
+		
 		if !isset options["statsKey"] {
 			let options["statsKey"] = "_PHCM_MM";
 		}
@@ -110,7 +89,7 @@ class Redis extends MetaData
 	/**
 	 * Writes the metadata to Redis
 	 */
-	public function write(string! key, var data) -> void
+	public function write(string! key, array data) -> void
 	{
 		this->_redis->save(key, data);
 	}

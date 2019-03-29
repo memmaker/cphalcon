@@ -1,28 +1,18 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Nikolaos Dimopoulos <nikos@phalconphp.com>                    |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
 
 use Phalcon\Tag\Select;
 use Phalcon\Tag\Exception;
-use Phalcon\Mvc\UrlInterface;
+use Phalcon\UrlInterface;
 
 /**
  * Phalcon\Tag
@@ -88,11 +78,8 @@ class Tag
 
 	/**
 	 * Obtains the 'escaper' service if required
-	 *
-	 * @param array params
-	 * @return EscaperInterface
 	 */
-	public static function getEscaper(array! params)
+	public static function getEscaper(array! params) -> <EscaperInterface> | null
 	{
 		var autoescape;
 
@@ -230,7 +217,7 @@ class Tag
 	/**
 	 * Set autoescape mode in generated html
 	 */
-	public static function setAutoescape(boolean autoescape) -> void
+	public static function setAutoescape(bool autoescape) -> void
 	{
 		let self::_autoEscape = autoescape;
 	}
@@ -246,7 +233,6 @@ class Tag
 	 * echo Phalcon\Tag::textField("name"); // Will have the value "peter" by default
 	 * </code>
 	 *
-	 * @param string id
 	 * @param string value
 	 */
 	public static function setDefault(string! id, value) -> void
@@ -274,7 +260,7 @@ class Tag
 	 * echo Phalcon\Tag::textField("name"); // Will have the value "peter" by default
 	 * </code>
 	 */
-	public static function setDefaults(array! values, boolean merge = false) -> void
+	public static function setDefaults(array! values, bool merge = false) -> void
 	{
 		if merge && typeof self::_displayValues == "array" {
 			let self::_displayValues = array_merge(self::_displayValues, values);
@@ -286,10 +272,9 @@ class Tag
 	/**
 	 * Alias of Phalcon\Tag::setDefault
 	 *
-	 * @param string id
 	 * @param string value
 	 */
-	public static function displayTo(id, value) -> void
+	public static function displayTo(string! id, value) -> void
 	{
 		self::setDefault(id, value);
 	}
@@ -298,9 +283,8 @@ class Tag
 	 * Check if a helper has a default value set using Phalcon\Tag::setDefault or value from $_POST
 	 *
 	 * @param string name
-	 * @return boolean
 	 */
-	public static function hasValue(var name) -> boolean
+	public static function hasValue(var name) -> bool
 	{
 		/**
 		 * Check if there is a predefined or a POST value for it
@@ -313,14 +297,13 @@ class Tag
 	 * value using Phalcon\Tag::setDefault or value from $_POST
 	 *
 	 * @param string name
-	 * @param array params
 	 * @return mixed
 	 */
-	public static function getValue(var name, params = null)
+	public static function getValue(var name, array params = [])
 	{
 		var value;
 
-		if !params || !fetch value, params["value"] {
+		if !fetch value, params["value"] {
 			/**
 			 * Check if there is a predefined value for it
 			 */
@@ -402,7 +385,7 @@ class Tag
 	 *
 	 * @param array|string parameters
 	 * @param string text
-	 * @param boolean local
+	 * @param bool local
 	 */
 	public static function linkTo(parameters, text = null, local = true) -> string
 	{
@@ -455,12 +438,9 @@ class Tag
 	/**
 	 * Builds generic INPUT tags
 	 *
-	 * @param string type
 	 * @param array parameters
-	 * @param boolean asValue
-	 * @return string
 	 */
-	static protected final function _inputField(string type, parameters, boolean asValue = false) -> string
+	static protected final function _inputField(string type, parameters, bool asValue = false) -> string
 	{
 		var params, id, value, code, name;
 
@@ -526,9 +506,7 @@ class Tag
 	/**
 	 * Builds INPUT tags that implements the checked attribute
 	 *
-	 * @param string type
 	 * @param array parameters
-	 * @return string
 	 */
 	static protected final function _inputFieldChecked(string type, var parameters) -> string
 	{
@@ -610,7 +588,6 @@ class Tag
 	 * Builds a HTML input[type="color"] tag
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function colorField(var parameters) -> string
 	{
@@ -630,7 +607,6 @@ class Tag
 	 * </code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function textField(var parameters) -> string
 	{
@@ -651,7 +627,6 @@ class Tag
 	 * </code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function numericField(var parameters) -> string
 	{
@@ -663,7 +638,6 @@ class Tag
 	* Builds a HTML input[type="range"] tag
 	*
 	* @param array parameters
-	* @return string
 	*/
 	public static function rangeField(var parameters) -> string
 	{
@@ -678,7 +652,6 @@ class Tag
 	 * </code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function emailField(var parameters) -> string
 	{
@@ -698,7 +671,6 @@ class Tag
 	 * </code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function dateField(var parameters) -> string
 	{
@@ -709,7 +681,6 @@ class Tag
 	* Builds a HTML input[type="datetime"] tag
 	*
 	* @param array parameters
-	* @return string
 	*/
 	public static function dateTimeField(var parameters) -> string
 	{
@@ -720,7 +691,6 @@ class Tag
 	* Builds a HTML input[type="datetime-local"] tag
 	*
 	* @param array parameters
-	* @return string
 	*/
 	public static function dateTimeLocalField(var parameters) -> string
 	{
@@ -731,7 +701,6 @@ class Tag
 	 * Builds a HTML input[type="month"] tag
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function monthField(var parameters) -> string
 	{
@@ -742,7 +711,6 @@ class Tag
 	 * Builds a HTML input[type="time"] tag
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function timeField(var parameters) -> string
 	{
@@ -753,7 +721,6 @@ class Tag
 	 * Builds a HTML input[type="week"] tag
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function weekField(var parameters) -> string
 	{
@@ -773,7 +740,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function passwordField(var parameters) -> string
 	{
@@ -793,7 +759,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function hiddenField(var parameters) -> string
 	{
@@ -808,7 +773,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function fileField(var parameters) -> string
 	{
@@ -819,7 +783,6 @@ class Tag
 	 * Builds a HTML input[type="search"] tag
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function searchField(var parameters) -> string
 	{
@@ -830,7 +793,6 @@ class Tag
 	* Builds a HTML input[type="tel"] tag
 	*
 	* @param array parameters
-	* @return string
 	*/
 	public static function telField(var parameters) -> string
 	{
@@ -841,7 +803,6 @@ class Tag
 	 * Builds a HTML input[type="url"] tag
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function urlField(var parameters) -> string
 	{
@@ -866,7 +827,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function checkField(var parameters) -> string
 	{
@@ -891,7 +851,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function radioField(var parameters) -> string
 	{
@@ -915,7 +874,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function imageInput(var parameters) -> string
 	{
@@ -935,7 +893,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function submitButton(var parameters) -> string
 	{
@@ -957,7 +914,6 @@ class Tag
 	 *
 	 * @param array parameters
 	 * @param array data
-	 * @return string
 	 */
 	public static function selectStatic(parameters, data = null) -> string
 	{
@@ -984,7 +940,6 @@ class Tag
 	 *
 	 * @param array parameters
 	 * @param array data
-	 * @return string
 	 */
 	public static function select(var parameters, data = null) -> string
 	{
@@ -1010,7 +965,6 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function textArea(var parameters) -> string
 	{
@@ -1050,7 +1004,7 @@ class Tag
 		}
 
 		let code = self::renderAttributes("<textarea", params),
-			code .= ">" . content . "</textarea>";
+			code .= ">" . htmlspecialchars(content) . "</textarea>";
 
 		return code;
 	}
@@ -1076,7 +1030,6 @@ class Tag
 	 * </code>
 	 *
 	 * @param array parameters
-	 * @return string
 	 */
 	public static function form(var parameters) -> string
 	{
@@ -1191,14 +1144,21 @@ class Tag
 	 * The title will be automatically escaped.
 	 *
 	 * <code>
-	 * echo Phalcon\Tag::getTitle();
+	 * Tag::prependTitle('Hello');
+	 * Tag::setTitle('World');
+	 * Tag::appendTitle('from Phalcon');
+	 *
+	 * echo Tag::getTitle();             // Hello World from Phalcon
+	 * echo Tag::getTitle(false);        // World from Phalcon
+	 * echo Tag::getTitle(true, false);  // Hello World
+	 * echo Tag::getTitle(false, false); // World
 	 * </code>
 	 *
 	 * <code>
 	 * {{ get_title() }}
 	 * </code>
 	 */
-	public static function getTitle(boolean tags = true) -> string
+	public static function getTitle(bool prepend = true, bool append = true) -> string
 	{
 		var items, output, title, documentTitle, documentAppendTitle, documentPrependTitle, documentTitleSeparator, escaper;
 
@@ -1208,22 +1168,18 @@ class Tag
 		let documentTitle = escaper->escapeHtml(self::_documentTitle);
 		let documentTitleSeparator = escaper->escapeHtml(self::_documentTitleSeparator);
 
-		if typeof self::_documentAppendTitle == "null" {
-			let self::_documentAppendTitle = [];
-		}
+		if prepend {
+			if typeof self::_documentPrependTitle == "null" {
+				let self::_documentPrependTitle = [];
+			}
 
-		let documentAppendTitle = self::_documentAppendTitle;
+			let documentPrependTitle = self::_documentPrependTitle;
 
-		if typeof self::_documentPrependTitle == "null" {
-			let self::_documentPrependTitle = [];
-		}
-
-		let documentPrependTitle = self::_documentPrependTitle;
-
-		if !empty documentPrependTitle {
-			var tmp = array_reverse(documentPrependTitle);
-			for title in tmp {
-				let items[] = escaper->escapeHtml(title);
+			if !empty documentPrependTitle {
+				var tmp = array_reverse(documentPrependTitle);
+				for title in tmp {
+					let items[] = escaper->escapeHtml(title);
+				}
 			}
 		}
 
@@ -1231,9 +1187,17 @@ class Tag
 			let items[] = documentTitle;
 		}
 
-		if !empty documentAppendTitle {
-			for title in documentAppendTitle {
-				let items[] = escaper->escapeHtml(title);
+		if append {
+			if typeof self::_documentAppendTitle == "null" {
+				let self::_documentAppendTitle = [];
+			}
+
+			let documentAppendTitle = self::_documentAppendTitle;
+
+			if !empty documentAppendTitle {
+				for title in documentAppendTitle {
+					let items[] = escaper->escapeHtml(title);
+				}
 			}
 		}
 
@@ -1245,11 +1209,30 @@ class Tag
 			let output = implode(documentTitleSeparator, items);
 		}
 
-		if tags {
-			return "<title>" . output . "</title>" . PHP_EOL;
-		}
-
 		return output;
+	}
+
+	/**
+	 * Renders the title with title tags. The title is automaticall escaped
+	 *
+	 * <code>
+	 * Tag::prependTitle('Hello');
+	 * Tag::setTitle('World');
+	 * Tag::appendTitle('from Phalcon');
+	 *
+	 * echo Tag::renderTitle();             // <title>Hello World from Phalcon</title>
+	 * echo Tag::renderTitle(false);        // <title>World from Phalcon</title>
+	 * echo Tag::renderTitle(true, false);  // <title>Hello World</title>
+	 * echo Tag::renderTitle(false, false); // <title>World</title>
+	 * </code>
+	 *
+	 * <code>
+	 * {{ render_title() }}
+	 * </code>
+	 */
+	public static function renderTitle(bool prepend = true, bool append = true) -> string
+	{
+		return "<title>" . self::getTitle(prepend, append) . "</title>" . PHP_EOL;
 	}
 
 	/**
@@ -1283,10 +1266,8 @@ class Tag
 	 *</code>
 	 *
 	 * @param array parameters
-	 * @param boolean local
-	 * @return string
 	 */
-	public static function stylesheetLink(var parameters = null, boolean local = true) -> string
+	public static function stylesheetLink(var parameters = null, bool local = true) -> string
 	{
 		var params, code;
 
@@ -1297,10 +1278,10 @@ class Tag
 		}
 
 		if isset params[1] {
-			let local = (boolean) params[1];
+			let local = (bool) params[1];
 		} else {
 			if isset params["local"] {
-				let local = (boolean) params["local"];
+				let local = (bool) params["local"];
 				unset params["local"];
 			}
 		}
@@ -1357,10 +1338,8 @@ class Tag
 	 * </code>
 	 *
 	 * @param array parameters
-	 * @param boolean local
-	 * @return string
 	 */
-	public static function javascriptInclude(var parameters = null, boolean local = true) -> string
+	public static function javascriptInclude(var parameters = null, bool local = true) -> string
 	{
 		var params, code;
 
@@ -1371,15 +1350,15 @@ class Tag
 		}
 
 		if isset params[1] {
-			let local = (boolean) params[1];
+			let local = (bool) params[1];
 		} else {
 			if isset params["local"] {
-				let local = (boolean) params["local"];
+				let local = (bool) params["local"];
 				unset params["local"];
 			}
 		}
 
-		if !isset params["type"] {
+		if !isset params["type"] && self::_documentType < self::HTML5 {
 			let params["type"] = "text/javascript";
 		}
 
@@ -1426,10 +1405,8 @@ class Tag
 	 * </code>
 	 *
 	 * @param  array parameters
-	 * @param  boolean local
-	 * @return string
 	 */
-	public static function image(var parameters = null, boolean local = true) -> string
+	public static function image(var parameters = null, bool local = true) -> string
 	{
 		var params, code, src;
 
@@ -1438,7 +1415,7 @@ class Tag
 		} else {
 			let params = parameters;
 			if isset params[1] {
-				let local = (boolean) params[1];
+				let local = (bool) params[1];
 			}
 		}
 
@@ -1478,7 +1455,7 @@ class Tag
 	 * echo Phalcon\Tag::friendlyTitle("These are big important news", "-")
 	 *</code>
 	 */
-	public static function friendlyTitle(string text, string separator = "-", boolean lowercase = true, var replace = null) -> string
+	public static function friendlyTitle(string text, string separator = "-", bool lowercase = true, var replace = null) -> string
 	{
 		var friendly, locale, search;
 
@@ -1578,8 +1555,8 @@ class Tag
 	/**
 	 * Builds a HTML tag
 	 */
-	public static function tagHtml(string tagName, var parameters = null, boolean selfClose = false,
-		boolean onlyStart = false, boolean useEol = false) -> string
+	public static function tagHtml(string tagName, var parameters = null, bool selfClose = false,
+		bool onlyStart = false, bool useEol = false) -> string
 	{
 		var params, localCode;
 
@@ -1622,7 +1599,7 @@ class Tag
 	 * echo Phalcon\Tag::tagHtmlClose("script", true);
 	 *</code>
 	 */
-	public static function tagHtmlClose(string tagName, boolean useEol = false) -> string
+	public static function tagHtmlClose(string tagName, bool useEol = false) -> string
 	{
 		if useEol {
 			return "</" . tagName . ">" . PHP_EOL;

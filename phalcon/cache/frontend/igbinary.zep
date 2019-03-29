@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Vladimir Kolesnikov <vladimir@extrememember.com>              |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache\Frontend;
@@ -75,10 +65,8 @@ class Igbinary extends Data implements FrontendInterface
 
 	/**
 	 * Phalcon\Cache\Frontend\Data constructor
-	 *
-	 * @param array frontendOptions
 	 */
-	public function __construct(frontendOptions = null)
+	public function __construct(array frontendOptions = [])
 	{
 		let this->_frontendOptions = frontendOptions;
 	}
@@ -101,7 +89,7 @@ class Igbinary extends Data implements FrontendInterface
 	/**
 	 * Check whether if frontend is buffering output
 	 */
-	public function isBuffering() -> boolean
+	public function isBuffering() -> bool
 	{
 		return false;
 	}
@@ -146,6 +134,11 @@ class Igbinary extends Data implements FrontendInterface
 	public function afterRetrieve(var data) -> var
 	{
 		if is_numeric(data) {
+			return data;
+		}
+
+		// do not unserialize empty string, null, false, etc
+		if empty data {
 			return data;
 		}
 

@@ -1,21 +1,12 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
-*/
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
 
 namespace Phalcon;
 
@@ -75,7 +66,7 @@ class Config implements \ArrayAccess, \Countable
 	 * );
 	 *</code>
 	 */
-	public function offsetExists(var index) -> boolean
+	public function offsetExists(var index) -> bool
 	{
 		let index = strval(index);
 
@@ -153,7 +144,7 @@ class Config implements \ArrayAccess, \Countable
 	 * );
 	 *</code>
 	 */
-	public function offsetGet(var index) -> string
+	public function offsetGet(var index) -> var
 	{
 		let index = strval(index);
 
@@ -169,7 +160,7 @@ class Config implements \ArrayAccess, \Countable
 	 * ];
 	 *</code>
 	 */
-	public function offsetSet(var index, var value)
+	public function offsetSet(var index, var value) -> void
 	{
 		let index = strval(index);
 
@@ -187,7 +178,7 @@ class Config implements \ArrayAccess, \Countable
 	 * unset($config["database"]);
 	 *</code>
 	 */
-	public function offsetUnset(var index)
+	public function offsetUnset(var index) -> void
 	{
 		let index = strval(index);
 
@@ -210,8 +201,21 @@ class Config implements \ArrayAccess, \Countable
 	 * $globalConfig->merge($appConfig);
 	 *</code>
 	 */
-	public function merge(<Config> config) -> <Config>
+	public function merge(var configParam) -> <Config>
 	{
+		var config;
+
+		switch typeof configParam {
+			case "array":
+				let config = new Config(configParam);
+				break;
+			case "object":
+				let config = configParam;
+				break;
+			default:
+				throw new Exception("Invalid data type for merge.");
+		}
+
 		return this->_merge(config);
 	}
 
@@ -294,13 +298,8 @@ class Config implements \ArrayAccess, \Countable
 
 	/**
 	 * Helper method for merge configs (forwarding nested config instance)
-	 *
-	 * @param Config config
-	 * @param Config instance = null
-	 *
-	 * @return Config merged config
 	 */
-	protected final function _merge(<Config> config, var instance = null) -> <Config>
+	protected final function _merge(<Config> config, <Config> instance = null) -> <Config>
 	{
 		var key, value, number, localObject, property;
 
@@ -323,9 +322,13 @@ class Config implements \ArrayAccess, \Countable
 			}
 
 			if is_numeric(key) {
-				let key = strval(number),
-					number++;
-			}
+				let key = strval(key);
+				while instance->offsetExists(key) {
+					// increment the number afterwards, because "number" starts at one not zero.
+					let key = strval(number);
+					let number++;
+				}
+ 			}
 			let instance->{key} = value;
 		}
 

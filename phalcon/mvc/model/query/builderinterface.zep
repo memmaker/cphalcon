@@ -1,22 +1,16 @@
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Query;
+
+use Phalcon\Mvc\Model\QueryInterface;
 
 /**
  * Phalcon\Mvc\Model\Query\BuilderInterface
@@ -33,9 +27,8 @@ interface BuilderInterface
 	 * Sets the columns to be queried
 	 *
 	 * @param string|array columns
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function columns(columns);
+	public function columns(columns) -> <BuilderInterface>;
 
 	/**
 	 * Return the columns to be queried
@@ -48,18 +41,13 @@ interface BuilderInterface
 	 * Sets the models who makes part of the query
 	 *
 	 * @param string|array models
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function from(models);
+	public function from(models) -> <BuilderInterface>;
 
 	/**
 	 * Add a model to take part of the query
-	 *
-	 * @param string model
-	 * @param string alias
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function addFrom(model, alias = null);
+	public function addFrom(string model, string alias = null) -> <BuilderInterface>;
 
 	/**
 	 * Return the models who makes part of the query
@@ -77,95 +65,58 @@ interface BuilderInterface
 	 * @param string type
 	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function join(model, conditions = null, alias = null, type = null);
+	public function join(string model, string conditions = null, string alias = null) -> <BuilderInterface>;
 
 	/**
 	 * Adds an INNER join to the query
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @param string type
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function innerJoin(model, conditions = null, alias = null);
+	public function innerJoin(string model, string conditions = null, string alias = null) -> <BuilderInterface>;
 
 	/**
 	 * Adds a LEFT join to the query
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function leftJoin(model, conditions = null, alias = null);
+	public function leftJoin(string model, string conditions = null, string alias = null) -> <BuilderInterface>;
 
 	/**
 	 * Adds a RIGHT join to the query
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function rightJoin(model, conditions = null, alias = null);
+	public function rightJoin(string model, string conditions = null, string alias = null) -> <BuilderInterface>;
 
 	/**
 	 * Return join parts of the query
-	 *
-	 * @return array
 	 */
-	public function getJoins();
+	public function getJoins() -> array;
 
 	/**
 	 * Sets conditions for the query
-	 *
-	 * @param string conditions
-	 * @param array bindParams
-	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function where(conditions, bindParams = null, bindTypes = null);
+	public function where(string conditions, array bindParams = [], array bindTypes = []) -> <BuilderInterface>;
 
 	/**
 	 * Appends a condition to the current conditions using a AND operator
-	 *
-	 * @param string conditions
-	 * @param array bindParams
-	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function andWhere(conditions, bindParams = null, bindTypes = null);
+	public function andWhere(string conditions, array bindParams = [], array bindTypes = []) -> <BuilderInterface>;
 
 	/**
 	 * Appends a condition to the current conditions using an OR operator
-	 *
-	 * @param string conditions
-	 * @param array bindParams
-	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function orWhere(conditions, bindParams = null, bindTypes = null);
+	public function orWhere(string conditions, array bindParams = [], array bindTypes = []) -> <BuilderInterface>;
 
 	/**
 	 * Appends a BETWEEN condition to the current conditions
 	 *
-	 * @param string expr
 	 * @param mixed minimum
 	 * @param mixed maximum
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function betweenWhere(expr, minimum, maximum, string! operator = BuilderInterface::OPERATOR_AND);
+	public function betweenWhere(string! expr, minimum, maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>;
 
 	/**
 	 * Appends a NOT BETWEEN condition to the current conditions
 	 *
-	 * @param string expr
 	 * @param mixed minimum
 	 * @param mixed maximum
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function notBetweenWhere(expr, minimum, maximum, string! operator = BuilderInterface::OPERATOR_AND);
+	public function notBetweenWhere(string! expr, minimum, maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>;
 
 	/**
 	 * Appends an IN condition to the current conditions
@@ -186,11 +137,8 @@ interface BuilderInterface
 
 	/**
 	 * Sets an ORDER BY condition clause
-	 *
-	 * @param string orderBy
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function orderBy(orderBy);
+	public function orderBy(string orderBy) -> <BuilderInterface>;
 
 	/**
 	 * Return the set ORDER BY clause
@@ -201,27 +149,20 @@ interface BuilderInterface
 
 	/**
 	 * Sets a HAVING condition clause
-	 *
-	 * @param string having
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function having(having);
+	public function having(string having) -> <BuilderInterface>;
 
 	/**
 	 * Returns the HAVING condition clause
-	 *
-	 * @return string|array
 	 */
-	public function getHaving();
+	public function getHaving() -> string;
 
 	/**
 	 * Sets a LIMIT clause
 	 *
-	 * @param int limit
 	 * @param int offset
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function limit(int limit, offset = null);
+	public function limit(int limit, offset = null) -> <BuilderInterface>;
 
 	/**
 	 * Returns the current LIMIT clause
@@ -232,31 +173,76 @@ interface BuilderInterface
 
 	/**
 	 * Sets a LIMIT clause
-	 *
-	 * @param string group
-	 * @return \Phalcon\Mvc\Model\Query\BuilderInterface
 	 */
-	public function groupBy(group);
+	public function groupBy(string group) -> <BuilderInterface>;
 
 	/**
 	 * Returns the GROUP BY clause
-	 *
-	 * @return string
 	 */
-	public function getGroupBy();
+	public function getGroupBy() -> string;
 
 	/**
 	 * Returns a PHQL statement built based on the builder parameters
-	 *
-	 * @return string
 	 */
-	public function getPhql();
+	public function getPhql() -> string;
 
 	/**
 	 * Returns the query built
-	 *
-	 * @return \Phalcon\Mvc\Model\QueryInterface
 	 */
-	public function getQuery();
+	public function getQuery() -> <QueryInterface>;
 
+	/**
+	 * Sets an OFFSET clause
+	 */
+	public function offset(int offset) -> <BuilderInterface>;
+
+	/**
+	 * Set default bind parameters
+	 */
+	public function setBindParams(array! bindParams, bool merge = false) -> <BuilderInterface>;
+
+	/**
+	 * Set default bind types
+	 */
+	public function setBindTypes(array! bindTypes, bool merge = false) -> <BuilderInterface>;
+	
+	/**
+	 * Returns default bind params
+	 */
+	public function getBindParams() -> array;
+
+	/**
+	 * Returns default bind types
+	 */
+	public function getBindTypes() -> array;
+
+	/**
+	 * Sets SELECT DISTINCT / SELECT ALL flag
+	 *
+	 *<code>
+	 * $builder->distinct("status");
+	 * $builder->distinct(null);
+	 *</code>
+	 */
+	public function distinct(var distinct) -> <BuilderInterface>;
+
+	/**
+	 * Returns SELECT DISTINCT / SELECT ALL flag
+	 */
+	public function getDistinct() -> bool;
+
+	/**
+	 * Sets a FOR UPDATE clause
+	 *
+	 *<code>
+	 * $builder->forUpdate(true);
+	 *</code>
+	 */
+	public function forUpdate(bool forUpdate) -> <BuilderInterface>;
+
+
+	/**
+	 * Returns the current OFFSET clause
+	 */
+	public function getOffset() -> int;
 }

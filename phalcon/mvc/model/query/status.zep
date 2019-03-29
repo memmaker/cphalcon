@@ -1,24 +1,16 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Query;
 
+use Phalcon\Messages\MessageInterface;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\Query\StatusInterface;
 
@@ -59,7 +51,7 @@ class Status implements StatusInterface
 	/**
 	 * Phalcon\Mvc\Model\Query\Status
 	 */
-	public function __construct(boolean success, <ModelInterface> model = null)
+	public function __construct(bool success, <ModelInterface> model = null)
 	{
 		let this->_success = success,
 			this->_model = model;
@@ -76,7 +68,7 @@ class Status implements StatusInterface
 	/**
 	 * Returns the messages produced because of a failed operation
 	 */
-	public function getMessages() -> <\Phalcon\Mvc\Model\MessageInterface[]>
+	public function getMessages() -> <MessageInterface[]>
 	{
 		var model;
 		let model = this->_model;
@@ -89,7 +81,7 @@ class Status implements StatusInterface
 	/**
 	 * Allows to check if the executed operation was successful
 	 */
-	public function success() -> boolean
+	public function success() -> bool
 	{
 		return this->_success;
 	}

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Transaction;
@@ -36,11 +27,12 @@ use Phalcon\Mvc\Model\TransactionInterface;
  * A transaction produces a unique connection that is passed to every
  * object part of the transaction.
  *
- *<code>
- * try {
- *    use Phalcon\Mvc\Model\Transaction\Manager as TransactionManager;
+ * <code>
+ * use Phalcon\Mvc\Model\Transaction\Failed;
+ * use Phalcon\Mvc\Model\Transaction\Manager;
  *
- *    $transactionManager = new TransactionManager();
+ * try {
+ *    $transactionManager = new Manager();
  *
  *    $transaction = $transactionManager->get();
  *
@@ -66,9 +58,9 @@ use Phalcon\Mvc\Model\TransactionInterface;
  *    }
  *
  *    $transaction->commit();
- *} catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
+ * } catch (Failed $e) {
  *    echo "Failed, reason: ", $e->getMessage();
- *}
+ * }
  *</code>
  */
 class Manager implements ManagerInterface, InjectionAwareInterface
@@ -121,7 +113,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	/**
 	 * Sets the database service used to run the isolated transactions
 	 */
-	public function setDbService(string! service) -> <Manager>
+	public function setDbService(string! service) -> <ManagerInterface>
 	{
 		let this->_service = service;
 		return this;
@@ -129,10 +121,8 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 
 	/**
 	 * Returns the database service used to isolate the transaction
-	 *
-	 * @return string
 	 */
-	public function getDbService()
+	public function getDbService() -> string
 	{
 		return this->_service;
 	}
@@ -140,7 +130,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	/**
 	 * Set if the transaction manager must register a shutdown function to clean up pendent transactions
 	 */
-	public function setRollbackPendent(boolean rollbackPendent) -> <Manager>
+	public function setRollbackPendent(bool rollbackPendent) -> <ManagerInterface>
 	{
 		let this->_rollbackPendent = rollbackPendent;
 		return this;
@@ -149,7 +139,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	/**
 	 * Check if the transaction manager is registering a shutdown function to clean up pendent transactions
 	 */
-	public function getRollbackPendent() -> boolean
+	public function getRollbackPendent() -> bool
 	{
 		return this->_rollbackPendent;
 	}
@@ -157,7 +147,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	/**
 	 * Checks whether the manager has an active transaction
 	 */
-	public function has() -> boolean
+	public function has() -> bool
 	{
 		return this->_number > 0;
 	}
@@ -166,7 +156,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	 * Returns a new \Phalcon\Mvc\Model\Transaction or an already created once
 	 * This method registers a shutdown function to rollback active connections
 	 */
-	public function get(boolean autoBegin = true) -> <TransactionInterface>
+	public function get(bool autoBegin = true) -> <TransactionInterface>
 	{
 		if !this->_initialized {
 			if this->_rollbackPendent {
@@ -180,7 +170,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	/**
 	 * Create/Returns a new transaction or an existing one
 	 */
-	public function getOrCreateTransaction(boolean autoBegin = true) -> <TransactionInterface>
+	public function getOrCreateTransaction(bool autoBegin = true) -> <TransactionInterface>
 	{
 		var dependencyInjector, transaction, transactions;
 
@@ -237,10 +227,8 @@ class Manager implements ManagerInterface, InjectionAwareInterface
 	/**
 	 * Rollbacks active transactions within the manager
 	 * Collect will remove the transaction from the manager
-	 *
-	 * @param boolean collect
 	 */
-	public function rollback(collect = true)
+	public function rollback(bool collect = true)
 	{
 		var transactions, transaction, connection;
 

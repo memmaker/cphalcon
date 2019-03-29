@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\MetaData\Strategy;
@@ -112,33 +103,25 @@ class Annotations implements StrategyInterface
 						numericTyped[columnName] = true;
 					break;
 
-				case "integer":
-					let fieldTypes[columnName] = Column::TYPE_INTEGER,
+				case "bit":
+					let fieldTypes[columnName] = Column::TYPE_BIT,
 						fieldBindTypes[columnName] = Column::BIND_PARAM_INT,
 						numericTyped[columnName] = true;
 					break;
 
-				case "decimal":
-					let fieldTypes[columnName] = Column::TYPE_DECIMAL,
-						fieldBindTypes[columnName] = Column::BIND_PARAM_DECIMAL,
-						numericTyped[columnName] = true;
-					break;
-
-				case "float":
-					let fieldTypes[columnName] = Column::TYPE_FLOAT,
-						fieldBindTypes[columnName] = Column::BIND_PARAM_DECIMAL,
-						numericTyped[columnName] = true;
-					break;
-
-				case "double":
-					let fieldTypes[columnName] = Column::TYPE_DOUBLE,
-						fieldBindTypes[columnName] = Column::BIND_PARAM_DECIMAL,
-						numericTyped[columnName] = true;
+				case "blob":
+					let fieldTypes[columnName] = Column::TYPE_BLOB,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
 					break;
 
 				case "boolean":
 					let fieldTypes[columnName] = Column::TYPE_BOOLEAN,
 						fieldBindTypes[columnName] = Column::BIND_PARAM_BOOL;
+					break;
+
+				case "char":
+					let fieldTypes[columnName] = Column::TYPE_CHAR,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
 					break;
 
 				case "date":
@@ -151,9 +134,76 @@ class Annotations implements StrategyInterface
 						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
 					break;
 
-				case "timestamp":
-					let fieldTypes[columnName] = Column::TYPE_TIMESTAMP,
+				case "decimal":
+					let fieldTypes[columnName] = Column::TYPE_DECIMAL,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_DECIMAL,
+						numericTyped[columnName] = true;
+					break;
+
+				case "double":
+					let fieldTypes[columnName] = Column::TYPE_DOUBLE,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_DECIMAL,
+						numericTyped[columnName] = true;
+					break;
+
+				case "enum":
+					let fieldTypes[columnName] = Column::TYPE_ENUM,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_STR,
+						numericTyped[columnName] = true;
+					break;
+
+				case "float":
+					let fieldTypes[columnName] = Column::TYPE_FLOAT,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_DECIMAL,
+						numericTyped[columnName] = true;
+					break;
+
+				case "integer":
+					let fieldTypes[columnName] = Column::TYPE_INTEGER,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_INT,
+						numericTyped[columnName] = true;
+					break;
+
+				case "json":
+					let fieldTypes[columnName] = Column::TYPE_JSON,
 						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
+					break;
+
+				case "jsonb":
+					let fieldTypes[columnName] = Column::TYPE_JSONB,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
+					break;
+
+				case "longblob":
+					let fieldTypes[columnName] = Column::TYPE_LONGBLOB,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
+					break;
+
+				case "longtext":
+					let fieldTypes[columnName] = Column::TYPE_LONGTEXT,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
+					break;
+
+				case "mediumblob":
+					let fieldTypes[columnName] = Column::TYPE_MEDIUMBLOB,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
+					break;
+
+				case "mediumint":
+					let fieldTypes[columnName] = Column::TYPE_MEDIUMINTEGER,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_INT,
+						numericTyped[columnName] = true;
+					break;
+
+				case "mediumtext":
+					let fieldTypes[columnName] = Column::TYPE_MEDIUMTEXT,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
+					break;
+
+				case "smallint":
+					let fieldTypes[columnName] = Column::TYPE_SMALLINTEGER,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_INT,
+						numericTyped[columnName] = true;
 					break;
 
 				case "text":
@@ -161,13 +211,13 @@ class Annotations implements StrategyInterface
 						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
 					break;
 
-				case "char":
-					let fieldTypes[columnName] = Column::TYPE_CHAR,
+				case "time":
+					let fieldTypes[columnName] = Column::TYPE_TIME,
 						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
 					break;
 
-				case "json":
-					let fieldTypes[columnName] = Column::TYPE_JSON,
+				case "timestamp":
+					let fieldTypes[columnName] = Column::TYPE_TIMESTAMP,
 						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
 					break;
 
@@ -176,19 +226,15 @@ class Annotations implements StrategyInterface
 						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
 					break;
 
-				case "blob":
-					let fieldTypes[columnName] = Column::TYPE_BLOB,
-						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
+				case "tinyint":
+					let fieldTypes[columnName] = Column::TYPE_TINYINTEGER,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_INT,
+						numericTyped[columnName] = true;
 					break;
 
-				case "mediumblob":
-					let fieldTypes[columnName] = Column::TYPE_MEDIUMBLOB,
-						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
-					break;
-
-				case "longblob":
-					let fieldTypes[columnName] = Column::TYPE_LONGBLOB,
-						fieldBindTypes[columnName] = Column::BIND_PARAM_BLOB;
+				case "tinytext":
+					let fieldTypes[columnName] = Column::TYPE_TINYTEXT,
+						fieldBindTypes[columnName] = Column::BIND_PARAM_STR;
 					break;
 
 				default:

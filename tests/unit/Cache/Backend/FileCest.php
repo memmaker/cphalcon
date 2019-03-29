@@ -2,20 +2,22 @@
 
 namespace Phalcon\Test\Unit\Cache\Backend;
 
-use UnitTester;
+use Codeception\Example;
 use Phalcon\Cache\Backend\File;
-use Phalcon\Cache\Frontend\Output;
+use Phalcon\Cache\Frontend\Data;
 use Phalcon\Cache\Frontend\Igbinary;
+use Phalcon\Cache\Frontend\Output;
+use UnitTester;
 
 /**
- * \Phalcon\Test\Unit\Cache\Backend\FileCest
+ * Phalcon\Test\Unit\Cache\Backend\FileCest
  * Tests the \Phalcon\Cache\Backend\File component
  *
  * @copyright (c) 2011-2017 Phalcon Team
- * @link      http://www.phalconphp.com
- * @author    Andres Gutierrez <andres@phalconphp.com>
- * @author    Serghei Iakovlev <serghei@phalconphp.com>
- * @package   Phalcon\Test\Unit\Cache\Backend
+ * @link          https://www.phalconphp.com
+ * @author        Andres Gutierrez <andres@phalconphp.com>
+ * @author        Phalcon Team <team@phalconphp.com>
+ * @package       Phalcon\Test\Unit\Cache\Backend
  *
  * The contents of this file are subject to the New BSD License that is
  * bundled with this package in the file LICENSE.txt
@@ -29,8 +31,9 @@ class FileCest
     public function checkFreshState(UnitTester $I)
     {
         $I->wantTo("Check fresh state by using file cache as backend");
+        $I->skipTest('TODO - Check me');
 
-        $cache = new File(new Output(['lifetime' => 2]), ['cacheDir' => PATH_CACHE]);
+        $cache = new File(new Output(['lifetime' => 2]), ['cacheDir' => cacheFolder()]);
 
         $I->assertFalse($cache->isStarted());
         $I->assertFalse($cache->isFresh());
@@ -57,21 +60,22 @@ class FileCest
         $cache->start('start-keyname');
         $I->assertTrue($cache->isFresh());
 
-        $I->amInPath(PATH_CACHE);
-        $I->deleteFile('start-keyname');
+        $I->amInPath(cacheFolder());
+        $I->safeDeleteFile('start-keyname');
     }
 
     public function outputFrontend(UnitTester $I)
     {
         $I->wantTo("Use File cache with Output frontend");
+        $I->skipTest('TODO - Check me');
 
         for ($i = 0; $i < 2; $i++) {
             $time = date('H:i:s');
 
             $frontCache = new Output(['lifetime' => 2]);
-            $cache = new File($frontCache, [
-                'cacheDir' => PATH_CACHE,
-                'prefix'   => 'unit_'
+            $cache      = new File($frontCache, [
+                'cacheDir' => cacheFolder(),
+                'prefix'   => 'unit_',
             ]);
 
             // on the second run set useSafeKey to true to test the compatibility toggle
@@ -98,7 +102,7 @@ class FileCest
             ob_end_clean();
 
             $I->assertEquals($time, $obContent);
-            $I->amInPath(PATH_CACHE);
+            $I->amInPath(cacheFolder());
             $I->seeFileFound('unit_' . $cache->getKey('test_output'));
 
             // Same cache
@@ -152,58 +156,74 @@ class FileCest
         }
     }
 
-    public function dataIgbinary(UnitTester $I)
+    /**
+     * @param UnitTester $I
+     * @param Example    $example
+     *
+     * @dataprovider frontendProvider
+     */
+    public function shouldWorkWithAnyFrontend(UnitTester $I, Example $example)
     {
-        if (!extension_loaded('igbinary')) {
-            throw new \PHPUnit_Framework_SkippedTestError(
-                'Warning: igbinary extension is not loaded'
-            );
+        $I->skipTest('TODO - Check me');
+        $I->haveFrontendAdapter($example['frontend'], ['prefix' => $example['prefix']]);
+        $I->dontSeeCacheStarted();
+
+        foreach ($example['data'] as $data) {
+            $I->haveInCacheStorage($example['key'], $data);
+            $I->seeInCacheStorage($example['key'], $data);
         }
 
-        $I->wantTo("Use File cache with Igbinary frontend");
+        $I->deleteCacheData($example['key']);
+        $I->dontSeeCacheFound($example['key']);
+    }
 
-        $frontend = new Igbinary(['lifetime' => 600]);
-        $backend  = new File($frontend, [
-            'cacheDir' => PATH_CACHE,
-            'prefix'   => 'igbinary_'
-        ]);
-
-        $I->assertFalse($backend->isStarted());
-
-        $backend->save('test-data', 'nothing interesting');
-
-        $I->amInPath(PATH_CACHE);
-
-        $I->seeFileFound('igbinary_' . $backend->getKey('test-data'));
-        $I->seeFileContentsEqual(igbinary_serialize('nothing interesting'));
-        $I->assertEquals('nothing interesting', $backend->get('test-data'));
-
-        $backend->save('test-data', 'something interesting');
-        $I->assertEquals('something interesting', $backend->get('test-data'));
-
-        $data = [
-            'null' => null,
-            'array' => [1, 2, 3, 4 => 5],
-            'string',
-            123.45,
-            6,
-            true,
-            false,
-            null,
-            0,
-            ""
+    protected function frontendProvider()
+    {
+        return [
+            [
+                'frontend' => Igbinary::class,
+                'prefix'   => 'igbinary_',
+                'key'      => 'test-data',
+                'data'     => [
+                    'nothing interesting',
+                    'something interesting',
+                    [
+                        'null'  => null,
+                        'array' => [1, 2, 3, 4 => 5],
+                        'string',
+                        123.45,
+                        6,
+                        true,
+                        false,
+                        null,
+                        0,
+                        "",
+                        '0',
+                    ],
+                ],
+            ],
+            [
+                'frontend' => Data::class,
+                'prefix'   => 'data_',
+                'key'      => 'test-data',
+                'data'     => [
+                    'nothing interesting',
+                    'something interesting',
+                    [
+                        'null'  => null,
+                        'array' => [1, 2, 3, 4 => 5],
+                        'string',
+                        123.45,
+                        6,
+                        true,
+                        false,
+                        null,
+                        0,
+                        "",
+                        '0',
+                    ],
+                ],
+            ],
         ];
-
-        $serialized = igbinary_serialize($data);
-        $I->assertEquals($data, igbinary_unserialize($serialized));
-
-        $backend->save('test-data', $data);
-        $I->assertEquals($data, $backend->get('test-data'));
-
-        $I->assertTrue($backend->exists('test-data'));
-        $I->assertTrue($backend->delete('test-data'));
-
-        // Delete cache
-        $I->dontSeeFileFound('igbinary_' . $backend->getKey('test-data'));
     }
 }

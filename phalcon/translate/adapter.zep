@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Translate;
@@ -54,9 +45,7 @@ abstract class Adapter implements AdapterInterface
 	/**
 	 * Returns the translation string of the given key
 	 *
-	 * @param string  translateKey
 	 * @param array   placeholders
-	 * @return string
 	 */
 	public function t(string! translateKey, placeholders = null) -> string
 	{
@@ -66,9 +55,7 @@ abstract class Adapter implements AdapterInterface
 	/**
 	 * Returns the translation string of the given key (alias of method 't')
 	 *
-	 * @param string  translateKey
 	 * @param array   placeholders
-	 * @return string
 	 */
 	public function _(string! translateKey, placeholders = null) -> string
 	{
@@ -78,10 +65,9 @@ abstract class Adapter implements AdapterInterface
 	/**
 	 * Sets a translation value
 	 *
-	 * @param string offset
 	 * @param string value
 	 */
-	public function offsetSet(var offset, var value)
+	public function offsetSet(var offset, var value) -> void
 	{
 		throw new Exception("Translate is an immutable ArrayAccess object");
 	}
@@ -89,28 +75,23 @@ abstract class Adapter implements AdapterInterface
 	/**
 	 * Check whether a translation key exists
 	 */
-	public function offsetExists(string! translateKey) -> boolean
+	public function offsetExists(var translateKey) -> bool
 	{
 		return this->{"exists"}(translateKey);
 	}
 
 	/**
 	 * Unsets a translation from the dictionary
-	 *
-	 * @param string offset
 	 */
-	public function offsetUnset(var offset)
+	public function offsetUnset(var offset) -> void
 	{
 		throw new Exception("Translate is an immutable ArrayAccess object");
 	}
 
 	/**
 	 * Returns the translation related to the given key
-	 *
-	 * @param  string translateKey
-	 * @return string
 	 */
-	public function offsetGet(string! translateKey)
+	public function offsetGet(var translateKey) -> var
 	{
 		return this->{"query"}(translateKey, null);
 	}

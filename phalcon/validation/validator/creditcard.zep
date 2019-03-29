@@ -1,27 +1,18 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Validation\Validator;
 
+use Phalcon\Messages\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator;
-use Phalcon\Validation\Message;
 
 /**
  * Phalcon\Validation\Validator\CreditCard
@@ -29,7 +20,10 @@ use Phalcon\Validation\Message;
  * Checks if a value has a valid credit card number
  *
  * <code>
+ * use Phalcon\Validation;
  * use Phalcon\Validation\Validator\CreditCard as CreditCardValidator;
+ *
+ * $validator = new Validation();
  *
  * $validator->add(
  *     "creditCard",
@@ -61,7 +55,7 @@ class CreditCard extends Validator
 	/**
 	 * Executes the validation
 	 */
-	public function validate(<Validation> validation, string! field) -> boolean
+	public function validate(<Validation> validation, var field) -> bool
 	{
 		var message, label, replacePairs, value, valid, code;
 
@@ -93,10 +87,8 @@ class CreditCard extends Validator
 
 	/**
 	 * is a simple checksum formula used to validate a variety of identification numbers
-	 * @param  string number
-	 * @return boolean
 	 */
-	private function verifyByLuhnAlgorithm(number) -> boolean
+	private function verifyByLuhnAlgorithm(string number) -> bool
 	{
 		array digits;
 		let digits = (array) str_split(number);

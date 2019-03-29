@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Annotations;
@@ -52,20 +43,16 @@ class Collection implements \Iterator, \Countable
 	 *
 	 * @param array reflectionData
 	 */
-	public function __construct(var reflectionData = null)
+	public function __construct(array reflectionData = [])
 	{
 		var annotations, annotationData;
 
-		if typeof reflectionData != "null" && typeof reflectionData != "array" {
-			throw new Exception("Reflection data must be an array");
+		let annotations = [];
+
+		for annotationData in reflectionData {
+			let annotations[] = new Annotation(annotationData);
 		}
 
-		let annotations = [];
-		if typeof reflectionData == "array" {
-			for annotationData in reflectionData {
-				let annotations[] = new Annotation(annotationData);
-			}
-		}
 		let this->_annotations = annotations;
 	}
 
@@ -87,10 +74,8 @@ class Collection implements \Iterator, \Countable
 
 	/**
 	 * Returns the current annotation in the iterator
-	 *
-	 * @return \Phalcon\Annotations\Annotation
 	 */
-	public function current() -> <Annotation> | boolean
+	public function current() -> <Annotation> | bool
 	{
 		var annotation;
 		if fetch annotation, this->_annotations[this->_position] {
@@ -118,7 +103,7 @@ class Collection implements \Iterator, \Countable
 	/**
 	 * Check if the current annotation in the iterator is valid
 	 */
-	public function valid() -> boolean
+	public function valid() -> bool
 	{
 		return isset this->_annotations[this->_position];
 	}
@@ -172,7 +157,7 @@ class Collection implements \Iterator, \Countable
 	/**
 	 * Check if an annotation exists in a collection
 	 */
-	public function has(string name) -> boolean
+	public function has(string name) -> bool
 	{
 		var annotations, annotation;
 

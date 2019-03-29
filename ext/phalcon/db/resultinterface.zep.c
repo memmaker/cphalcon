@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Db\ResultInterface
  *
  * Interface for Phalcon\Db\Result objects
@@ -28,8 +36,6 @@ ZEPHIR_INIT_CLASS(Phalcon_Db_ResultInterface) {
 /**
  * Allows to executes the statement again. Some database systems don't support scrollable cursors,
  * So, as cursors are forward only, we need to execute the cursor again to fetch rows from the begining
- *
- * @return boolean
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ResultInterface, execute);
 
@@ -52,29 +58,23 @@ ZEPHIR_DOC_METHOD(Phalcon_Db_ResultInterface, fetchArray);
 /**
  * Returns an array of arrays containing all the records in the result
  * This method is affected by the active fetch flag set using Phalcon\Db\Result\Pdo::setFetchMode
- *
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ResultInterface, fetchAll);
 
 /**
  * Gets number of rows returned by a resultset
- *
- * @return int
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ResultInterface, numRows);
 
 /**
  * Moves internal resultset cursor to another position letting us to fetch a certain row
  *
- * @param int number
+ * @param long number
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ResultInterface, dataSeek);
 
 /**
  * Changes the fetching mode affecting Phalcon\Db\Result\Pdo::fetch()
- *
- * @param int fetchMode
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ResultInterface, setFetchMode);
 

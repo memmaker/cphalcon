@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Micro;
@@ -39,115 +30,67 @@ interface CollectionInterface
 
 	/**
 	 * Returns the registered handlers
-	 *
-	 * @return array
 	 */
-	public function getHandlers();
+	public function getHandlers() -> array;
 
 	/**
 	 * Sets the main handler
-	 *
-	 * @param mixed handler
-	 * @param boolean lazy
-	 * @return \Phalcon\Mvc\Micro\Collection
 	 */
-	public function setHandler(handler, boolean lazy = false);
+	public function setHandler(var handler, bool lazy = false) -> <CollectionInterface>;
 
 	/**
 	 * Sets if the main handler must be lazy loaded
 	 */
-	public function setLazy(boolean! lazy) -> <CollectionInterface>;
+	public function setLazy(bool! lazy) -> <CollectionInterface>;
 
 	/**
 	 * Returns if the main handler must be lazy loaded
 	 */
-	public function isLazy() -> boolean;
+	public function isLazy() -> bool;
 
 	/**
 	 * Returns the main handler
-	 *
-	 * @return mixed
 	 */
-	public function getHandler();
+	public function getHandler() -> var;
 
 	/**
 	 * Maps a route to a handler
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function map(string! routePattern, handler, name = null);
+	public function map(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is GET
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function get(string! routePattern, handler, name = null);
+	public function get(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is POST
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function post(string! routePattern, handler, name = null);
+	public function post(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is PUT
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function put(string! routePattern, handler, name = null);
+	public function put(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is PATCH
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function patch(string! routePattern, handler, name = null);
+	public function patch(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is HEAD
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function head(string! routePattern, handler, name = null);
+	public function head(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is DELETE
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function delete(string! routePattern, handler, name = null);
+	public function delete(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is OPTIONS
-	 *
-	 * @param  string routePattern
-	 * @param  callable handler
-	 * @param  string name
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
-	public function options(string! routePattern, handler, name = null);
+	public function options(string! routePattern, callable handler, string name = null) -> <CollectionInterface>;
 
 }

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Tag;
@@ -22,6 +13,7 @@ namespace Phalcon\Tag;
 use Phalcon\Tag\Exception;
 use Phalcon\Tag as BaseTag;
 use Phalcon\EscaperInterface;
+use Phalcon\Mvc\Model\ResulsetInterface;
 
 /**
  * Phalcon\Tag\Select
@@ -135,8 +127,6 @@ abstract class Select
 				 * Create the SELECT's option from an array
 				 */
 				let code .= self::_optionsFromArray(options, value, "</option>" . PHP_EOL);
-			} else {
-				throw new Exception("Invalid data provided to SELECT helper");
 			}
 		}
 
@@ -148,12 +138,9 @@ abstract class Select
 	/**
 	 * Generate the OPTION tags based on a resultset
 	 *
-	 * @param \Phalcon\Mvc\Model\Resultset resultset
 	 * @param array using
-	 * @param mixed value
-	 * @param string closeOption
 	 */
-	private static function _optionsFromResultset(resultset, using, value, closeOption)
+	private static function _optionsFromResultset(<ResulsetInterface> resultset, using, var value, string closeOption)
 	{
 		var code, params, option, usingZero, usingOne, escaper,
 			optionValue, optionText, strValue, strOptionValue;
@@ -232,12 +219,8 @@ abstract class Select
 
 	/**
 	 * Generate the OPTION tags based on an array
-	 *
-	 * @param array data
-	 * @param mixed value
-	 * @param string closeOption
 	 */
-	private static function _optionsFromArray(var data, var value, var closeOption)
+	private static function _optionsFromArray(array data, var value, string closeOption)
 	{
 		var strValue, strOptionValue, code, optionValue, optionText, escaped;
 

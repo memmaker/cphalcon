@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache\Backend;
@@ -73,7 +64,6 @@ class Libmemcached extends Backend
 	/**
 	 * Phalcon\Cache\Backend\Memcache constructor
 	 *
-	 * @param	Phalcon\Cache\FrontendInterface frontend
 	 * @param	array options
 	 */
 	public function __construct(<FrontendInterface> frontend, options = null)
@@ -147,7 +137,7 @@ class Libmemcached extends Backend
 	/**
 	 * Returns a cached content
 	 */
-	public function get(string keyName, int lifetime = null) -> var | null
+	public function get(string keyName, var lifetime = null) -> var | null
 	{
 		var memcache, prefixedKey, cachedContent;
 
@@ -161,15 +151,16 @@ class Libmemcached extends Backend
 		let this->_lastKey = prefixedKey;
 
 		let cachedContent = memcache->get(prefixedKey);
-		if !cachedContent {
+
+		if \Memcached::RES_NOTFOUND === memcache->getResultCode() {
 			return null;
 		}
 
 		if is_numeric(cachedContent) {
 			return cachedContent;
-		} else {
-			return this->_frontend->afterRetrieve(cachedContent);
 		}
+
+		return this->_frontend->afterRetrieve(cachedContent);
 	}
 
 	/**
@@ -178,9 +169,8 @@ class Libmemcached extends Backend
 	 * @param int|string keyName
 	 * @param string content
 	 * @param int lifetime
-	 * @param boolean stopBuffer
 	 */
-	public function save(keyName = null, content = null, lifetime = null, boolean stopBuffer = true) -> boolean
+	public function save(keyName = null, content = null, lifetime = null, bool stopBuffer = true) -> bool
 	{
 		var lastKey, frontend, memcache, cachedContent, preparedContent, tmp, tt1, success, options,
 			specialKey, keys, isBuffering;
@@ -280,9 +270,9 @@ class Libmemcached extends Backend
 	 * Deletes a value from the cache by its key
 	 *
 	 * @param int|string keyName
-	 * @return boolean
+	 * @return bool
 	 */
-	public function delete(keyName)
+	public function delete(var keyName) -> bool
 	{
 		var memcache, prefixedKey, options, keys, specialKey, ret;
 
@@ -369,7 +359,7 @@ class Libmemcached extends Backend
 	 * @param string keyName
 	 * @param int lifetime
 	 */
-	public function exists(keyName = null, lifetime = null) -> boolean
+	public function exists(var keyName = null, int lifetime = null) -> bool
 	{
 		var lastKey, memcache, value;
 
@@ -400,7 +390,7 @@ class Libmemcached extends Backend
 	 *
 	 * @param string keyName
 	 */
-	public function increment(keyName = null, int value = 1) -> int | boolean
+	public function increment(keyName = null, int value = 1) -> int | bool
 	{
 		var memcache, prefix, lastKey;
 
@@ -419,10 +409,6 @@ class Libmemcached extends Backend
 			let this->_lastKey = lastKey;
 		}
 
-		if !value {
-			let value = 1;
-		}
-
 		return memcache->increment(lastKey, value);
 	}
 
@@ -431,7 +417,7 @@ class Libmemcached extends Backend
 	 *
 	 * @param string keyName
 	 */
-	public function decrement(keyName = null, int value = 1) -> int | boolean
+	public function decrement(keyName = null, int value = 1) -> int | bool
 	{
 		var memcache, prefix, lastKey;
 
@@ -473,7 +459,7 @@ class Libmemcached extends Backend
      * $cache->flush();
      *</code>
 	 */
-	public function flush() -> boolean
+	public function flush() -> bool
 	{
 		var memcache, options, keys, specialKey, key;
 

@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Wojciech Ślawski <jurigag@gmail.com>                          |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Config;
@@ -42,14 +32,28 @@ class Factory extends BaseFactory
 	/**
 	 * @param \Phalcon\Config|array config
 	 */
-	public static function load(var config) -> <Config>
+	public static function load(var config) -> object
 	{
 		return self::loadClass("Phalcon\\Config\\Adapter", config);
 	}
 
 	protected static function loadClass(string $namespace, var config)
 	{
-		var adapter, className, mode, callbacks, filePath;
+		var adapter, className, mode, callbacks, filePath, extension, oldConfig;
+
+		if typeof config == "string" {
+			let oldConfig = config;
+			let extension = substr(strrchr(config, "."), 1);
+
+			if empty extension {
+				throw new Exception("You need to provide extension in file path");
+			}
+
+			let config = [
+				"adapter": extension,
+				"filePath": oldConfig
+			];
+		}
 
 		if typeof config == "object" && config instanceof Config {
 			let config = config->toArray();

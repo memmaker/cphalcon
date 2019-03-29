@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://www.phalconphp.com)      |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Stanislav Kiryukhin <korsar.zn@gmail.com>                     |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Translate\Adapter;
@@ -82,6 +72,8 @@ class Gettext extends Adapter implements \ArrayAccess
 	 * <code>
 	 * $translator->query("你好 %name%！", ["name" => "Phalcon"]);
 	 * </code>
+	 *
+	 * @param array   placeholders
 	 */
 	public function query(string! index, placeholders = null) -> string
 	{
@@ -95,7 +87,7 @@ class Gettext extends Adapter implements \ArrayAccess
 	/**
 	 * Check whether is defined a translation key in the internal array
 	 */
-	public function exists(string! index) -> boolean
+	public function exists(string! index) -> bool
 	{
 		var result;
 
@@ -193,7 +185,7 @@ class Gettext extends Adapter implements \ArrayAccess
 	 * $gettext->setLocale(LC_ALL, "de_DE@euro", "de_DE", "de", "ge");
 	 * </code>
 	 */
-	public function setLocale(int! category, string! locale) -> string | boolean
+	public function setLocale(int! category, string! locale) -> string | bool
 	{
 		let this->_locale   = call_user_func_array("setlocale", func_get_args());
 		let this->_category = category;

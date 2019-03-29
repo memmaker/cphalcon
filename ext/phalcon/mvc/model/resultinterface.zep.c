@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\Model\ResultInterface
  *
  * All single objects passed as base objects to Resultsets must implement this interface
@@ -27,8 +35,6 @@ ZEPHIR_INIT_CLASS(Phalcon_Mvc_Model_ResultInterface) {
 
 /**
  * Sets the object's state
- *
- * @param boolean dirtyState
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ResultInterface, setDirtyState);
 

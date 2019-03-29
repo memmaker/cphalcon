@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db;
@@ -29,11 +20,34 @@ use Phalcon\Db\Profiler\Item;
  * information includes execution time in milliseconds.
  * This helps you to identify bottlenecks in your applications.
  *
- *<code>
- * $profiler = new \Phalcon\Db\Profiler();
+ * <code>
+ * use Phalcon\Db\Profiler;
+ * use Phalcon\Events\Event;
+ * use Phalcon\Events\Manager;
  *
- * // Set the connection profiler
- * $connection->setProfiler($profiler);
+ * $profiler = new Profiler();
+ * $eventsManager = new Manager();
+ *
+ * $eventsManager->attach(
+ *     "db",
+ *     function (Event $event, $connection) use ($profiler) {
+ *         if ($event->getType() === "beforeQuery") {
+ *             $sql = $connection->getSQLStatement();
+ *
+ *             // Start a profile with the active connection
+ *             $profiler->startProfile($sql);
+ *         }
+ *
+ *         if ($event->getType() === "afterQuery") {
+ *             // Stop the active profile
+ *             $profiler->stopProfile();
+ *         }
+ *     }
+ * );
+ *
+ * // Set the event manager on the connection
+ * $connection->setEventsManager($eventsManager);
+ *
  *
  * $sql = "SELECT buyer_name, quantity, product_name
  * FROM buyers LEFT JOIN products ON
@@ -49,7 +63,7 @@ use Phalcon\Db\Profiler\Item;
  * echo "Start Time: ", $profile->getInitialTime(), "\n";
  * echo "Final Time: ", $profile->getFinalTime(), "\n";
  * echo "Total Elapsed Time: ", $profile->getTotalElapsedSeconds(), "\n";
- *</code>
+ * </code>
  */
 class Profiler
 {
@@ -77,11 +91,8 @@ class Profiler
 
 	/**
 	 * Starts the profile of a SQL sentence
-	 *
-	 * @param string sqlStatement
-	 * @return \Phalcon\Db\Profiler
 	 */
-	public function startProfile(var sqlStatement, var sqlVariables = null, var sqlBindTypes = null) -> <Profiler>
+	public function startProfile(string sqlStatement, var sqlVariables = null, var sqlBindTypes = null) -> <Profiler>
 	{
 		var activeProfile;
 

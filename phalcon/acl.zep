@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
@@ -28,8 +19,8 @@ namespace Phalcon;
  *
  *<code>
  * use Phalcon\Acl;
- * use Phalcon\Acl\Role;
- * use Phalcon\Acl\Resource;
+ * use Phalcon\Acl\Operation;
+ * use Phalcon\Acl\Subject;
  * use Phalcon\Acl\Adapter\Memory;
  *
  * $acl = new Memory();
@@ -37,32 +28,32 @@ namespace Phalcon;
  * // Default action is deny access
  * $acl->setDefaultAction(Acl::DENY);
  *
- * // Create some roles
- * $roleAdmins = new Role("Administrators", "Super-User role");
- * $roleGuests = new Role("Guests");
+ * // Create some operations
+ * $adminsOperation = new Operation("Administrators", "Super-User role");
+ * $guestsOperation = new Operation("Guests");
  *
- * // Add "Guests" role to acl
- * $acl->addRole($roleGuests);
+ * // Add "Guests" operation to acl
+ * $acl->addOperation($roleGuests);
  *
- * // Add "Designers" role to acl
- * $acl->addRole("Designers");
+ * // Add "Designers" operation to acl
+ * $acl->addOperation("Designers");
  *
- * // Define the "Customers" resource
- * $customersResource = new Resource("Customers", "Customers management");
+ * // Define the "Customers" subject
+ * $customersSubject = new Subject("Customers", "Customers management");
  *
- * // Add "customers" resource with a couple of operations
- * $acl->addResource($customersResource, "search");
- * $acl->addResource($customersResource, ["create", "update"]);
+ * // Add "customers" subject with a couple of operations
+ * $acl->addSubject($customersSubject, "search");
+ * $acl->addSubject($customersSubject, ["create", "update"]);
  *
- * // Set access level for roles into resources
- * $acl->allow("Guests", "Customers", "search");
+ * // Set access level for operations into subjects
+ * $acl->allow($guestsOperation->getName(), "Customers", "search");
  * $acl->allow("Guests", "Customers", "create");
- * $acl->deny("Guests", "Customers", "update");
+ * $acl->deny($guestsOperation->getName(), "Customers", "update");
  *
- * // Check whether role has access to the operations
+ * // Check whether operation has access to the operations
  * $acl->isAllowed("Guests", "Customers", "edit"); // Returns 0
- * $acl->isAllowed("Guests", "Customers", "search"); // Returns 1
- * $acl->isAllowed("Guests", "Customers", "create"); // Returns 1
+ * $acl->isAllowed($guestsOperation->getName(), "Customers", "search"); // Returns 1
+ * $acl->isAllowed($guestsOperation->getName(), "Customers", "create"); // Returns 1
  *</code>
  */
 abstract class Acl

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Resultset;
@@ -23,6 +14,10 @@ use Phalcon\Mvc\Model;
 use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\Model\Exception;
 use Phalcon\Cache\BackendInterface;
+use Phalcon\DiInterface;
+use Phalcon\Di;
+use Phalcon\Cache\FrontendInterface;
+
 
 /**
  * Phalcon\Mvc\Model\Resultset\Simple
@@ -44,11 +39,8 @@ class Simple extends Resultset
 	 *
 	 * @param array columnMap
 	 * @param \Phalcon\Mvc\ModelInterface|Phalcon\Mvc\Model\Row model
-	 * @param \Phalcon\Db\Result\Pdo|null result
-	 * @param \Phalcon\Cache\BackendInterface cache
-	 * @param boolean keepSnapshots
 	 */
-	public function __construct(var columnMap, var model, result, <BackendInterface> cache = null, keepSnapshots = null)
+	public function __construct(var columnMap, var model, result, <BackendInterface> cache = null, bool keepSnapshots = null)
 	{
 		let this->_model = model,
 			this->_columnMap = columnMap;
@@ -64,7 +56,7 @@ class Simple extends Resultset
 	/**
 	 * Returns current row in the resultset
 	 */
-	public final function current() -> <ModelInterface> | boolean
+	public final function current() -> <ModelInterface> | bool
 	{
 		var row, hydrateMode, columnMap, activeRow, modelName;
 
@@ -150,7 +142,7 @@ class Simple extends Resultset
 	 * it could consume more memory than currently it does. Export the resultset to an array
 	 * couldn't be faster with a large number of records
 	 */
-	public function toArray(boolean renameColumns = true) -> array
+	public function toArray(bool renameColumns = true) -> array
 	{
 		var result, records, record, renamed, renamedKey,
 			key, value, renamedRecords, columnMap;
@@ -227,6 +219,22 @@ class Simple extends Resultset
 	 */
 	public function serialize() -> string
 	{
+		var dependencyInjector, serializer;
+		let dependencyInjector = Di::getDefault();
+		if typeof dependencyInjector != "object" {
+			throw new Exception("The dependency injector container is not valid");
+		}
+		if dependencyInjector->has("serializer") {
+			let serializer = <FrontendInterface> dependencyInjector->getShared("serializer");
+			return serializer->beforeStore([
+				"model"         : this->_model,
+				"cache"         : this->_cache,
+				"rows"          : this->toArray(false),
+				"columnMap"     : this->_columnMap,
+				"hydrateMode"   : this->_hydrateMode,
+				"keepSnapshots" : this->_keepSnapshots
+			]);
+		}
 		/**
 		 * Serialize the cache using the serialize function
 		 */
@@ -243,11 +251,19 @@ class Simple extends Resultset
 	/**
 	 * Unserializing a resultset will allow to only works on the rows present in the saved state
 	 */
-	public function unserialize(string! data) -> void
+	public function unserialize(var data) -> void
 	{
-		var resultset, keepSnapshots;
-
-		let resultset = unserialize(data);
+		var resultset, keepSnapshots, dependencyInjector, serializer;
+		let dependencyInjector = Di::getDefault();
+		if typeof dependencyInjector != "object" {
+			throw new Exception("The dependency injector container is not valid");
+		}
+		if dependencyInjector->has("serializer") {
+			let serializer = <FrontendInterface> dependencyInjector->getShared("serializer");
+			let resultset = serializer->afterRetrieve(data);
+		} else {
+			let resultset = unserialize(data);
+		}
 		if typeof resultset != "array" {
 			throw new Exception("Invalid serialization data");
 		}

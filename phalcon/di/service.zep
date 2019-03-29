@@ -1,26 +1,18 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Di;
 
 use Phalcon\DiInterface;
 use Phalcon\Di\Exception;
+use Phalcon\Di\Exception\ServiceResolutionException;
 use Phalcon\Di\ServiceInterface;
 use Phalcon\Di\Service\Builder;
 
@@ -36,12 +28,10 @@ use Phalcon\Di\Service\Builder;
  * );
  *
  * $request = service->resolve();
- *<code>
+ *</code>
  */
 class Service implements ServiceInterface
 {
-
-	protected _name;
 
 	protected _definition;
 
@@ -54,29 +44,18 @@ class Service implements ServiceInterface
 	/**
 	 * Phalcon\Di\Service
 	 *
-	 * @param string name
 	 * @param mixed definition
-	 * @param boolean shared
 	 */
-	public final function __construct(string! name, definition, boolean shared = false)
+	public final function __construct(definition, bool shared = false)
 	{
-		let this->_name = name,
-			this->_definition = definition,
+		let this->_definition = definition,
 			this->_shared = shared;
-	}
-
-	/**
-	 * Returns the service's name
-	 */
-	public function getName() -> string
-	{
-		return this->_name;
 	}
 
 	/**
 	 * Sets if the service is shared or not
 	 */
-	public function setShared(boolean shared) -> void
+	public function setShared(bool shared) -> void
 	{
 		let this->_shared = shared;
 	}
@@ -84,7 +63,7 @@ class Service implements ServiceInterface
 	/**
 	 * Check whether the service is shared or not
 	 */
-	public function isShared() -> boolean
+	public function isShared() -> bool
 	{
 		return this->_shared;
 	}
@@ -123,12 +102,11 @@ class Service implements ServiceInterface
 	 * Resolves the service
 	 *
 	 * @param array parameters
-	 * @param \Phalcon\DiInterface dependencyInjector
 	 * @return mixed
 	 */
 	public function resolve(parameters = null, <DiInterface> dependencyInjector = null)
 	{
-		boolean found;
+		bool found;
 		var shared, definition, sharedInstance, instance, builder;
 
 		let shared = this->_shared;
@@ -204,8 +182,8 @@ class Service implements ServiceInterface
 		/**
 		 * If the service can't be built, we must throw an exception
 		 */
-		if found === false  {
-			throw new Exception("Service '" . this->_name . "' cannot be resolved");
+		if found === false {
+			throw new ServiceResolutionException();
 		}
 
 		/**
@@ -223,7 +201,7 @@ class Service implements ServiceInterface
 	/**
 	 * Changes a parameter in the definition without resolve the service
 	 */
-	public function setParameter(int position, array! parameter) -> <Service>
+	public function setParameter(int position, array! parameter) -> <ServiceInterface>
 	{
 		var definition, arguments;
 
@@ -257,7 +235,6 @@ class Service implements ServiceInterface
 	/**
 	 * Returns a parameter in a specific position
 	 *
-	 * @param int position
 	 * @return array
 	 */
 	public function getParameter(int position)
@@ -284,7 +261,7 @@ class Service implements ServiceInterface
 	/**
 	 * Returns true if the service was resolved
 	 */
-	public function isResolved() -> boolean
+	public function isResolved() -> bool
 	{
 		return this->_resolved;
 	}
@@ -292,13 +269,9 @@ class Service implements ServiceInterface
 	/**
 	 * Restore the internal state of a service
 	 */
-	public static function __set_state(array! attributes) -> <Service>
+	public static function __set_state(array! attributes) -> <ServiceInterface>
 	{
-		var name, definition, shared;
-
-		if !fetch name, attributes["_name"] {
-			throw new Exception("The attribute '_name' is required");
-		}
+		var definition, shared;
 
 		if !fetch definition, attributes["_definition"] {
 			throw new Exception("The attribute '_definition' is required");
@@ -308,6 +281,6 @@ class Service implements ServiceInterface
 			throw new Exception("The attribute '_shared' is required");
 		}
 
-		return new self(name, definition, shared);
+		return new self(definition, shared);
 	}
 }

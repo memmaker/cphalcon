@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Vladimir Kolesnikov <vladimir@extrememember.com>              |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
  namespace Phalcon;
@@ -85,7 +75,7 @@ final class Registry implements \ArrayAccess, \Countable, \Iterator
 	/**
 	 * Checks if the element is present in the registry
 	 */
-	public final function offsetExists(string! offset) -> boolean
+	public final function offsetExists(var offset) -> bool
 	{
 		return isset this->_data[offset];
 	}
@@ -93,7 +83,7 @@ final class Registry implements \ArrayAccess, \Countable, \Iterator
 	/**
 	 * Returns an index in the registry
 	 */
-	public final function offsetGet(string! offset) -> var
+	public final function offsetGet(var offset) -> var
 	{
 		return this->_data[offset];
 	}
@@ -101,7 +91,7 @@ final class Registry implements \ArrayAccess, \Countable, \Iterator
 	/**
 	 * Sets an element in the registry
 	 */
-	public final function offsetSet(string! offset, var value) -> void
+	public final function offsetSet(var offset, var value) -> void
 	{
 		let this->_data[offset] = value;
 	}
@@ -109,7 +99,7 @@ final class Registry implements \ArrayAccess, \Countable, \Iterator
 	/**
 	 * Unsets an element in the registry
 	 */
-	public final function offsetUnset(string! offset) -> void
+	public final function offsetUnset(var offset) -> void
 	{
 		unset this->_data[offset];
 	}
@@ -149,7 +139,7 @@ final class Registry implements \ArrayAccess, \Countable, \Iterator
 	/**
 	 * Checks if the iterator is valid
 	 */
-	public function valid() -> boolean
+	public function valid() -> bool
 	{
 		return key(this->_data) !== null;
 	}
@@ -178,7 +168,7 @@ final class Registry implements \ArrayAccess, \Countable, \Iterator
 		return this->offsetGet(key);
 	}
 
-	public final function __isset(string! key) -> boolean
+	public final function __isset(string! key) -> bool
 	{
 		return this->offsetExists(key);
 	}

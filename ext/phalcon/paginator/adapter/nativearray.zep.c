@@ -12,14 +12,22 @@
 #include <Zend/zend_interfaces.h>
 
 #include "kernel/main.h"
+#include "kernel/memory.h"
 #include "kernel/object.h"
 #include "kernel/array.h"
-#include "kernel/operators.h"
-#include "kernel/memory.h"
 #include "kernel/exception.h"
+#include "kernel/operators.h"
 #include "kernel/fcall.h"
 
 
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
 /**
  * Phalcon\Paginator\Adapter\NativeArray
  *
@@ -47,122 +55,101 @@ ZEPHIR_INIT_CLASS(Phalcon_Paginator_Adapter_NativeArray) {
 
 	ZEPHIR_REGISTER_CLASS_EX(Phalcon\\Paginator\\Adapter, NativeArray, phalcon, paginator_adapter_nativearray, phalcon_paginator_adapter_ce, phalcon_paginator_adapter_nativearray_method_entry, 0);
 
-	/**
-	 * Configuration of the paginator
-	 */
-	zend_declare_property_null(phalcon_paginator_adapter_nativearray_ce, SL("_config"), ZEND_ACC_PROTECTED TSRMLS_CC);
-
 	return SUCCESS;
-
-}
-
-/**
- * Phalcon\Paginator\Adapter\NativeArray constructor
- */
-PHP_METHOD(Phalcon_Paginator_Adapter_NativeArray, __construct) {
-
-	zval *config_param = NULL, *page = NULL, *limit = NULL;
-	zval *config = NULL;
-
-	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &config_param);
-
-	zephir_get_arrval(config, config_param);
-
-
-	zephir_update_property_this(getThis(), SL("_config"), config TSRMLS_CC);
-	if (zephir_array_isset_string_fetch(&limit, config, SS("limit"), 1 TSRMLS_CC)) {
-		zephir_update_property_this(getThis(), SL("_limitRows"), limit TSRMLS_CC);
-	}
-	if (zephir_array_isset_string_fetch(&page, config, SS("page"), 1 TSRMLS_CC)) {
-		zephir_update_property_this(getThis(), SL("_page"), page TSRMLS_CC);
-	}
-	ZEPHIR_MM_RESTORE();
 
 }
 
 /**
  * Returns a slice of the resultset to show in the pagination
  */
-PHP_METHOD(Phalcon_Paginator_Adapter_NativeArray, getPaginate) {
+PHP_METHOD(Phalcon_Paginator_Adapter_NativeArray, paginate) {
 
+	zval _6;
 	double roundedTotal = 0;
-	zval *config = NULL, *items = NULL, *page = NULL, *_0, *_1, _2 = zval_used_for_init, *_3 = NULL, _4, *_5 = NULL, *_6;
-	zend_long ZEPHIR_LAST_CALL_STATUS, show = 0, pageNumber = 0, totalPages = 0, number = 0, before = 0, next = 0;
+	zval config, items, _0, _1, _2, _3, _4, _5, _7, _8;
+	zend_long ZEPHIR_LAST_CALL_STATUS, show = 0, pageNumber = 0, totalPages = 0, number = 0, previous = 0, next = 0;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&config);
+	ZVAL_UNDEF(&items);
+	ZVAL_UNDEF(&_0);
+	ZVAL_UNDEF(&_1);
+	ZVAL_UNDEF(&_2);
+	ZVAL_UNDEF(&_3);
+	ZVAL_UNDEF(&_4);
+	ZVAL_UNDEF(&_5);
+	ZVAL_UNDEF(&_7);
+	ZVAL_UNDEF(&_8);
+	ZVAL_UNDEF(&_6);
 
 	ZEPHIR_MM_GROW();
 
-	ZEPHIR_OBS_VAR(config);
-	zephir_read_property_this(&config, this_ptr, SL("_config"), PH_NOISY_CC);
-	ZEPHIR_OBS_VAR(items);
-	zephir_array_fetch_string(&items, config, SL("data"), PH_NOISY, "phalcon/paginator/adapter/nativearray.zep", 87 TSRMLS_CC);
-	if (Z_TYPE_P(items) != IS_ARRAY) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_paginator_exception_ce, "Invalid data for paginator", "phalcon/paginator/adapter/nativearray.zep", 90);
+	ZEPHIR_OBS_VAR(&config);
+	zephir_read_property(&config, this_ptr, SL("_config"), PH_NOISY_CC);
+	ZEPHIR_OBS_VAR(&items);
+	zephir_array_fetch_string(&items, &config, SL("data"), PH_NOISY, "phalcon/paginator/adapter/nativearray.zep", 55 TSRMLS_CC);
+	if (Z_TYPE_P(&items) != IS_ARRAY) {
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(phalcon_paginator_exception_ce, "Invalid data for paginator", "phalcon/paginator/adapter/nativearray.zep", 58);
 		return;
 	}
-	ZEPHIR_OBS_VAR(_0);
-	zephir_read_property_this(&_0, this_ptr, SL("_limitRows"), PH_NOISY_CC);
-	show = zephir_get_intval(_0);
-	ZEPHIR_OBS_VAR(_1);
-	zephir_read_property_this(&_1, this_ptr, SL("_page"), PH_NOISY_CC);
-	pageNumber = zephir_get_intval(_1);
+	ZEPHIR_OBS_VAR(&_0);
+	zephir_read_property(&_0, this_ptr, SL("_limitRows"), PH_NOISY_CC);
+	show = zephir_get_intval(&_0);
+	ZEPHIR_OBS_VAR(&_1);
+	zephir_read_property(&_1, this_ptr, SL("_page"), PH_NOISY_CC);
+	pageNumber = zephir_get_intval(&_1);
 	if (pageNumber <= 0) {
 		pageNumber = 1;
 	}
-	number = zephir_fast_count_int(items TSRMLS_CC);
-	ZEPHIR_SINIT_VAR(_2);
+	number = zephir_fast_count_int(&items TSRMLS_CC);
 	ZVAL_LONG(&_2, show);
-	ZEPHIR_CALL_FUNCTION(&_3, "floatval", NULL, 328, &_2);
+	ZEPHIR_CALL_FUNCTION(&_3, "floatval", NULL, 324, &_2);
 	zephir_check_call_status();
-	roundedTotal = zephir_safe_div_long_zval(number, _3 TSRMLS_CC);
+	roundedTotal = zephir_safe_div_long_zval(number, &_3 TSRMLS_CC);
 	totalPages = (int) (roundedTotal);
 	if (totalPages != roundedTotal) {
 		totalPages++;
 	}
-	ZEPHIR_SINIT_NVAR(_2);
 	ZVAL_LONG(&_2, (show * ((pageNumber - 1))));
-	ZEPHIR_SINIT_VAR(_4);
 	ZVAL_LONG(&_4, show);
-	ZEPHIR_CALL_FUNCTION(&_5, "array_slice", NULL, 406, items, &_2, &_4);
+	ZEPHIR_CALL_FUNCTION(&_5, "array_slice", NULL, 385, &items, &_2, &_4);
 	zephir_check_call_status();
-	ZEPHIR_CPY_WRT(items, _5);
+	ZEPHIR_CPY_WRT(&items, &_5);
 	if (pageNumber < totalPages) {
 		next = (pageNumber + 1);
 	} else {
 		next = totalPages;
 	}
 	if (pageNumber > 1) {
-		before = (pageNumber - 1);
+		previous = (pageNumber - 1);
 	} else {
-		before = 1;
+		previous = 1;
 	}
-	ZEPHIR_INIT_VAR(page);
-	object_init(page);
-	zephir_update_property_zval(page, SL("items"), items TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, 1);
-	zephir_update_property_zval(page, SL("first"), _6 TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, before);
-	zephir_update_property_zval(page, SL("before"), _6 TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, pageNumber);
-	zephir_update_property_zval(page, SL("current"), _6 TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, totalPages);
-	zephir_update_property_zval(page, SL("last"), _6 TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, next);
-	zephir_update_property_zval(page, SL("next"), _6 TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, totalPages);
-	zephir_update_property_zval(page, SL("total_pages"), _6 TSRMLS_CC);
-	ZEPHIR_INIT_ZVAL_NREF(_6);
-	ZVAL_LONG(_6, number);
-	zephir_update_property_zval(page, SL("total_items"), _6 TSRMLS_CC);
-	_6 = zephir_fetch_nproperty_this(this_ptr, SL("_limitRows"), PH_NOISY_CC);
-	zephir_update_property_zval(page, SL("limit"), _6 TSRMLS_CC);
-	RETURN_CCTOR(page);
+	ZEPHIR_INIT_VAR(&_6);
+	zephir_create_array(&_6, 8, 0 TSRMLS_CC);
+	zephir_array_update_string(&_6, SL("items"), &items, PH_COPY | PH_SEPARATE);
+	ZEPHIR_INIT_VAR(&_7);
+	ZVAL_LONG(&_7, number);
+	zephir_array_update_string(&_6, SL("total_items"), &_7, PH_COPY | PH_SEPARATE);
+	ZEPHIR_OBS_VAR(&_8);
+	zephir_read_property(&_8, this_ptr, SL("_limitRows"), PH_NOISY_CC);
+	zephir_array_update_string(&_6, SL("limit"), &_8, PH_COPY | PH_SEPARATE);
+	add_assoc_long_ex(&_6, SL("first"), 1);
+	ZEPHIR_INIT_NVAR(&_7);
+	ZVAL_LONG(&_7, previous);
+	zephir_array_update_string(&_6, SL("previous"), &_7, PH_COPY | PH_SEPARATE);
+	ZEPHIR_INIT_NVAR(&_7);
+	ZVAL_LONG(&_7, pageNumber);
+	zephir_array_update_string(&_6, SL("current"), &_7, PH_COPY | PH_SEPARATE);
+	ZEPHIR_INIT_NVAR(&_7);
+	ZVAL_LONG(&_7, next);
+	zephir_array_update_string(&_6, SL("next"), &_7, PH_COPY | PH_SEPARATE);
+	ZEPHIR_INIT_NVAR(&_7);
+	ZVAL_LONG(&_7, totalPages);
+	zephir_array_update_string(&_6, SL("last"), &_7, PH_COPY | PH_SEPARATE);
+	ZEPHIR_RETURN_CALL_METHOD(this_ptr, "getrepository", NULL, 0, &_6);
+	zephir_check_call_status();
+	RETURN_MM();
 
 }
 

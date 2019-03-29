@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cli;
@@ -37,25 +27,6 @@ class Console extends BaseApplication
 	protected _arguments = [];
 
 	protected _options = [];
-
-	/**
-	 * Merge modules with the existing ones
-	 *
-	 *<code>
-	 * $application->addModules(
-	 *     [
-	 *         "admin" => [
-	 *             "className" => "Multiple\\Admin\\Module",
-	 *             "path"      => "../apps/admin/Module.php",
-	 *         ],
-	 *     ]
-	 * );
-	 *</code>
-	 */
-	deprecated public function addModules(array! modules)
-	{
-		return this->registerModules(modules, true);
-	}
 
 	/**
 	 * Handle the whole command-line tasks
@@ -116,15 +87,18 @@ class Console extends BaseApplication
 				throw new Exception("Invalid module definition path");
 			}
 
-			if fetch path, module["path"] {
-				if !file_exists(path) {
-					throw new Exception("Module definition path '" . path . "' doesn't exist");
-				}
-				require path;
-			}
-
 			if !fetch className, module["className"] {
 				let className = "Module";
+			}
+
+			if fetch path, module["path"] {
+				if !class_exists(className, false) {
+					if !file_exists(path) {
+						throw new Exception("Module definition path '" . path . "' doesn't exist");
+					}
+
+					require path;
+				}
 			}
 
 			let moduleObject = dependencyInjector->get(className);
@@ -142,6 +116,7 @@ class Console extends BaseApplication
 
 		let dispatcher = <\Phalcon\Cli\Dispatcher> dependencyInjector->getShared("dispatcher");
 
+		dispatcher->setModuleName(router->getModuleName());
 		dispatcher->setTaskName(router->getTaskName());
 		dispatcher->setActionName(router->getActionName());
 		dispatcher->setParams(router->getParams());
@@ -165,7 +140,7 @@ class Console extends BaseApplication
 	/**
 	 * Set an specific argument
 	 */
-	public function setArgument(array! arguments = null, boolean! str = true, boolean! shift = true) -> <Console>
+	public function setArgument(array! arguments = null, bool! str = true, bool! shift = true) -> <Console>
 	{
 		var arg, pos, args, opts, handleArgs;
 

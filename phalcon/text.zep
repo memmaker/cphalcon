@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
@@ -150,7 +141,7 @@ abstract class Text
 	 * echo Phalcon\Text::startsWith("Hello", "he"); // true
 	 * </code>
 	 */
-	public static function startsWith(string str, string start, boolean ignoreCase = true) -> boolean
+	public static function startsWith(string str, string start, bool ignoreCase = true) -> bool
 	{
 		return starts_with(str, start, ignoreCase);
 	}
@@ -164,7 +155,7 @@ abstract class Text
 	 * echo Phalcon\Text::endsWith("Hello", "LLO"); // true
 	 * </code>
 	 */
-	public static function endsWith(string str, string end, boolean ignoreCase = true) -> boolean
+	public static function endsWith(string str, string end, bool ignoreCase = true) -> bool
 	{
 		return ends_with(str, end, ignoreCase);
 	}

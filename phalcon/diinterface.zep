@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
@@ -33,19 +24,14 @@ interface DiInterface extends \ArrayAccess
 	/**
 	 * Registers a service in the services container
 	 *
-	 * @param string name
 	 * @param mixed definition
-	 * @param boolean shared
-	 * @return \Phalcon\Di\ServiceInterface
 	 */
-	public function set(string! name, definition, boolean shared = false) -> <ServiceInterface>;
+	public function set(string! name, definition, bool shared = false) -> <ServiceInterface>;
 
 	/**
 	 * Registers an "always shared" service in the services container
 	 *
-	 * @param string name
 	 * @param mixed definition
-	 * @return \Phalcon\Di\ServiceInterface
 	 */
 	public function setShared(string! name, definition) -> <ServiceInterface>;
 
@@ -59,30 +45,23 @@ interface DiInterface extends \ArrayAccess
 	 * Only is successful if a service hasn't been registered previously
 	 * with the same name
 	 *
-	 * @param string name
 	 * @param mixed definition
-	 * @param boolean shared
-	 * @return \Phalcon\Di\ServiceInterface
 	 */
-	public function attempt(string! name, definition, boolean shared = false) -> <ServiceInterface>;
+	public function attempt(string! name, definition, bool shared = false) -> <ServiceInterface> | bool;
 
 	/**
 	 * Resolves the service based on its configuration
 	 *
-	 * @param string name
 	 * @param array parameters
-	 * @return mixed
 	 */
-	public function get(string! name, parameters = null);
+	public function get(string! name, parameters = null) -> var;
 
 	/**
 	 * Returns a shared service based on their configuration
 	 *
-	 * @param string name
 	 * @param array parameters
-	 * @return mixed
 	 */
-	public function getShared(string! name, parameters = null);
+	public function getShared(string! name, parameters = null) -> var;
 
 	/**
 	 * Sets a service using a raw Phalcon\Di\Service definition
@@ -91,11 +70,8 @@ interface DiInterface extends \ArrayAccess
 
 	/**
 	 * Returns a service definition without resolving
-	 *
-	 * @param string name
-	 * @return mixed
 	 */
-	public function getRaw(string! name);
+	public function getRaw(string! name) -> var;
 
 	/**
 	 * Returns the corresponding Phalcon\Di\Service instance for a service
@@ -105,19 +81,12 @@ interface DiInterface extends \ArrayAccess
 	/**
 	 * Check whether the DI contains a service by a name
 	 */
-	public function has(string! name) -> boolean;
-
-	/**
-	 * Check whether the last service obtained via getShared produced a fresh instance or an existing one
-	 */
-	public function wasFreshInstance() -> boolean;
+	public function has(string! name) -> bool;
 
 	/**
 	 * Return the services registered in the DI
-	 *
-	 * @return \Phalcon\Di\ServiceInterface[]
 	 */
-	public function getServices();
+	public function getServices() -> <ServiceInterface[]>;
 
 	/**
 	 * Set a default dependency injection container to be obtained into static methods
@@ -127,7 +96,7 @@ interface DiInterface extends \ArrayAccess
 	/**
 	 * Return the last DI created
 	 */
-	public static function getDefault() -> <DiInterface>;
+	public static function getDefault() -> <DiInterface> | null;
 
 	/**
 	 * Resets the internal default DI

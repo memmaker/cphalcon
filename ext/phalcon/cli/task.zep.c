@@ -18,6 +18,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Cli\Task
  *
  * Every command-line task should extend this class that encapsulates all the task functionality
@@ -56,10 +64,12 @@ ZEPHIR_INIT_CLASS(Phalcon_Cli_Task) {
 PHP_METHOD(Phalcon_Cli_Task, __construct) {
 
 	zend_long ZEPHIR_LAST_CALL_STATUS;
+	zval *this_ptr = getThis();
+
 
 	ZEPHIR_MM_GROW();
 
-	if ((zephir_method_exists_ex(this_ptr, SS("onconstruct") TSRMLS_CC) == SUCCESS)) {
+	if ((zephir_method_exists_ex(this_ptr, SL("onconstruct") TSRMLS_CC) == SUCCESS)) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "onconstruct", NULL, 0);
 		zephir_check_call_status();
 	}

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache;
@@ -29,12 +20,24 @@ use Phalcon\Cache\FrontendInterface;
 abstract class Backend implements BackendInterface
 {
 
-	protected _frontend { get, set };
+	/**
+	 * @var Phalcon\Cache\FrontendInterface
+	 */
+	protected _frontend;
 
+	/**
+	 * @var array
+	 */
 	protected _options { get, set };
 
+	/**
+	 * @var string
+	 */
 	protected _prefix = "";
 
+	/**
+	 * @var string
+	 */
 	protected _lastKey = "" { get, set };
 
 	protected _lastLifetime = null;
@@ -45,11 +48,8 @@ abstract class Backend implements BackendInterface
 
 	/**
 	 * Phalcon\Cache\Backend constructor
-	 *
-	 * @param \Phalcon\Cache\FrontendInterface frontend
-	 * @param array options
 	 */
-	public function __construct(<FrontendInterface> frontend, options = null)
+	public function __construct(<FrontendInterface> frontend, array options = [])
 	{
 		var prefix;
 
@@ -62,6 +62,19 @@ abstract class Backend implements BackendInterface
 
 		let this->_frontend = frontend,
 			this->_options = options;
+	}
+
+	/**
+	 * @var Phalcon\Cache\FrontendInterface
+	 */
+	public function getFrontend() -> <FrontendInterface>
+	{
+		return this->_frontend;
+	}
+
+	public function setFrontend(<FrontendInterface> frontend) -> void
+	{
+		let this->_frontend = frontend;
 	}
 
 	/**
@@ -103,7 +116,7 @@ abstract class Backend implements BackendInterface
 	/**
 	 * Stops the frontend without store any cached content
 	 */
-	public function stop(boolean stopBuffer = true) -> void
+	public function stop(bool stopBuffer = true) -> void
 	{
 		if stopBuffer === true {
 			this->_frontend->stop();
@@ -114,7 +127,7 @@ abstract class Backend implements BackendInterface
 	/**
 	 * Checks whether the last cache is fresh or cached
 	 */
-	public function isFresh() -> boolean
+	public function isFresh() -> bool
 	{
 		return this->_fresh;
 	}
@@ -122,15 +135,13 @@ abstract class Backend implements BackendInterface
 	/**
 	 * Checks whether the cache has starting buffering or not
 	 */
-	public function isStarted() -> boolean
+	public function isStarted() -> bool
 	{
 		return this->_started;
 	}
 
 	/**
 	 * Gets the last lifetime set
-	 *
-	 * @return int
 	 */
 	public function getLifetime() -> int
 	{

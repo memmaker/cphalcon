@@ -1,26 +1,18 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Paginator\Adapter;
 
 use Phalcon\Mvc\Model\Query\Builder;
 use Phalcon\Paginator\Adapter;
+use Phalcon\Paginator\RepositoryInterface;
 use Phalcon\Paginator\Exception;
 use Phalcon\Db;
 
@@ -49,11 +41,6 @@ use Phalcon\Db;
 class QueryBuilder extends Adapter
 {
 	/**
-	 * Configuration of paginator by model
-	 */
-	protected _config;
-
-	/**
 	 * Paginator's data
 	 */
 	protected _builder;
@@ -68,30 +55,24 @@ class QueryBuilder extends Adapter
 	 */
 	public function __construct(array config)
 	{
-		var builder, limit, page, columns;
-
-		let this->_config = config;
+		var builder, columns;
+		
+		if !isset config["limit"] {
+			throw new Exception("Parameter 'limit' is required");
+		}
 
 		if !fetch builder, config["builder"] {
 			throw new Exception("Parameter 'builder' is required");
-		}
-
-		if !fetch limit, config["limit"] {
-			throw new Exception("Parameter 'limit' is required");
 		}
 
 		if fetch columns, config["columns"] {
 		    let this->_columns = columns;
 		}
 
+		parent::__construct(config);
+
 		this->setQueryBuilder(builder);
-		this->setLimit(limit);
-
-		if fetch page, config["page"] {
-			this->setCurrentPage(page);
-		}
 	}
-
 	/**
 	 * Get the current page number
 	 */
@@ -121,11 +102,12 @@ class QueryBuilder extends Adapter
 	/**
 	 * Returns a slice of the resultset to show in the pagination
 	 */
-	public function getPaginate() -> <\stdClass>
+	public function paginate() -> <RepositoryInterface>
 	{
 		var originalBuilder, builder, totalBuilder, totalPages,
-			limit, numberPage, number, query, page, before, items, totalQuery,
-			result, row, rowcount, next, sql, columns, db, hasHaving, hasGroup;
+			limit, numberPage, number, query, previous, items, totalQuery,
+			result, row, rowcount, next, sql, columns, db, hasHaving, hasGroup,
+			model, modelClass, dbService, groups, groupColumn;
 
 		let originalBuilder = this->_builder;
 		let columns = this->_columns;
@@ -161,9 +143,9 @@ class QueryBuilder extends Adapter
 		let query = builder->getQuery();
 
 		if numberPage == 1 {
-			let before = 1;
+			let previous = 1;
 		} else {
-			let before = numberPage - 1;
+			let previous = numberPage - 1;
 		}
 
 		/**
@@ -173,7 +155,7 @@ class QueryBuilder extends Adapter
 
 		let hasHaving = !empty totalBuilder->getHaving();
 
-        var groups = totalBuilder->getGroupBy();
+        let groups = totalBuilder->getGroupBy();
 
 		let hasGroup = !empty groups;
 
@@ -194,7 +176,6 @@ class QueryBuilder extends Adapter
 		 * Change 'COUNT()' parameters, when the query contains 'GROUP BY'
 		 */
 		if hasGroup {
-			var groupColumn;
 			if typeof groups == "array" {
 				let groupColumn = implode(", ", groups);
 			} else {
@@ -202,7 +183,7 @@ class QueryBuilder extends Adapter
 			}
 
 			if !hasHaving {
-			    totalBuilder->groupBy(null)->columns(["COUNT(DISTINCT ".groupColumn.") AS rowcount"]);
+			    totalBuilder->groupBy(null)->columns(["COUNT(DISTINCT ".groupColumn.") AS [rowcount]"]);
 			} else {
 			    totalBuilder->columns(["DISTINCT ".groupColumn]);
 			}
@@ -223,9 +204,17 @@ class QueryBuilder extends Adapter
 		 * If we have having perform native count on temp table
 		 */
 		if hasHaving {
-		    let sql = totalQuery->getSql();
-		    let db = totalBuilder->getDI()->get("db");
-		    let row = db->fetchOne("SELECT COUNT(*) as rowcount FROM (" .  sql["sql"] . ") as T1", Db::FETCH_ASSOC, sql["bind"]),
+		    let sql = totalQuery->getSql(),
+		      modelClass = builder->_models;
+
+			if typeof modelClass == "array" {
+    			let modelClass = array_values(modelClass)[0];
+			}
+
+			let model = new {modelClass}();
+			let dbService = model->getReadConnectionService();
+			let db = totalBuilder->getDI()->get(dbService);
+			let row = db->fetchOne("SELECT COUNT(*) as \"rowcount\" FROM (" .  sql["sql"] . ") as T1", Db::FETCH_ASSOC, sql["bind"]),
 		        rowcount = row ? intval(row["rowcount"]) : 0,
 		        totalPages = intval(ceil(rowcount / limit));
 		} else {
@@ -241,18 +230,15 @@ class QueryBuilder extends Adapter
 			let next = totalPages;
 		}
 
-		let page = new \stdClass(),
-			page->items = items,
-			page->first = 1,
-			page->before = before,
-			page->current = numberPage,
-			page->last = totalPages,
-			page->next = next,
-			page->total_pages = totalPages,
-			page->total_items = rowcount,
-			page->limit = this->_limitRows;
-
-		return page;
+		return this->getRepository([
+			RepositoryInterface::PROPERTY_ITEMS 		: items,
+			RepositoryInterface::PROPERTY_TOTAL_ITEMS 	: rowcount,
+			RepositoryInterface::PROPERTY_LIMIT 		: this->_limitRows,
+			RepositoryInterface::PROPERTY_FIRST_PAGE 	: 1,
+			RepositoryInterface::PROPERTY_PREVIOUS_PAGE : previous,
+			RepositoryInterface::PROPERTY_CURRENT_PAGE 	: numberPage,
+			RepositoryInterface::PROPERTY_NEXT_PAGE 	: next,
+			RepositoryInterface::PROPERTY_LAST_PAGE 	: totalPages
+		]);
 	}
-
 }

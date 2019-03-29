@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db;
@@ -27,125 +18,110 @@ namespace Phalcon\Db;
 interface ColumnInterface
 {
 	/**
-	 * Returns schema's table related to column
-	 *
-	 * @return string
+	 * Restores the internal state of a Phalcon\Db\Column object
 	 */
-	public function getSchemaName();
-
-	/**
-	 * Returns column name
-	 *
-	 * @return string
-	 */
-	public function getName();
-
-	/**
-	 * Returns column type
-	 *
-	 * @return int
-	 */
-	public function getType();
-
-	/**
-	 * Returns column type reference
-	 *
-	 * @return int
-	 */
-	public function getTypeReference();
-
-	/**
-	 * Returns column type values
-	 *
-	 * @return int
-	 */
-	public function getTypeValues();
-
-	/**
-	 * Returns column size
-	 *
-	 * @return int
-	 */
-	public function getSize();
-
-	/**
-	 * Returns column scale
-	 *
-	 * @return int
-	 */
-	public function getScale();
-
-	/**
-	 * Returns true if number column is unsigned
-	 *
-	 * @return boolean
-	 */
-	public function isUnsigned();
-
-	/**
-	 * Not null
-	 *
-	 * @return boolean
-	 */
-	public function isNotNull();
-
-	/**
-	 * Column is part of the primary key?
-	 *
-	 * @return boolean
-	 */
-	public function isPrimary();
-
-	/**
-	 * Auto-Increment
-	 *
-	 * @return boolean
-	 */
-	public function isAutoIncrement();
-
-	/**
-	 * Check whether column have an numeric type
-	 *
-	 * @return boolean
-	 */
-	public function isNumeric();
-
-	/**
-	 * Check whether column have first position in table
-	 *
-	 * @return boolean
-	 */
-	public function isFirst();
+	public static function __set_state(array! data) -> <ColumnInterface>;
 
 	/**
 	 * Check whether field absolute to position in table
 	 *
 	 * @return string
 	 */
-	public function getAfterPosition();
+	public function getAfterPosition() -> string;
 
 	/**
 	 * Returns the type of bind handling
-	 *
-	 * @return int
 	 */
-	public function getBindType();
+	public function getBindType() -> int;
 
 	/**
 	 * Returns default value of column
 	 *
-	 * @return int
+	 * @return mixed|null
 	 */
 	public function getDefault();
 
 	/**
-	 * Check whether column has default value
+	 * Returns column name
+	 *
+	 * @return string
 	 */
-	public function hasDefault() -> boolean;
+	public function getName() -> string;
 
 	/**
-	 * Restores the internal state of a Phalcon\Db\Column object
+	 * Returns column scale
+	 *
+	 * @return int
 	 */
-	public static function __set_state(array! data) -> <ColumnInterface>;
+	public function getScale() -> int;
 
+	/**
+	 * Returns schema's table related to column
+	 *
+	 * @return string
+	 */
+	public function getSchemaName() -> string;
+
+	/**
+	 * Returns column size
+	 *
+	 * @return int
+	 */
+	public function getSize() -> int;
+
+	/**
+	 * Returns column type
+	 *
+	 * @return int|string
+	 */
+	public function getType() -> int;
+
+	/**
+	 * Returns column type reference
+	 *
+	 * @return int
+	 */
+	public function getTypeReference() -> int;
+
+	/**
+	 * Returns column type values
+	 *
+	 * @return array|string
+	 */
+	public function getTypeValues() -> array | string;
+
+
+	/**
+	 * Check whether column has default value
+	 */
+	public function hasDefault() -> bool;
+	/**
+	 * Auto-Increment
+	 */
+	public function isAutoIncrement() -> bool;
+
+	/**
+	 * Check whether column have first position in table
+	 */
+	public function isFirst() -> bool;
+
+	/**
+	 * Not null
+	 */
+	public function isNotNull() -> bool;
+
+	/**
+	 * Check whether column have an numeric type
+	 */
+	public function isNumeric() -> bool;
+
+	/**
+	 * Column is part of the primary key?
+	 */
+	public function isPrimary() -> bool;
+
+	/**
+	 * Returns true if number column is unsigned
+	 */
+	public function isUnsigned() -> bool;
 }

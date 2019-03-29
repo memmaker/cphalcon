@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\Model\Query\BuilderInterface
  *
  * Interface for Phalcon\Mvc\Model\Query\Builder
@@ -21,9 +29,9 @@ ZEPHIR_INIT_CLASS(Phalcon_Mvc_Model_Query_BuilderInterface) {
 
 	ZEPHIR_REGISTER_INTERFACE(Phalcon\\Mvc\\Model\\Query, BuilderInterface, phalcon, mvc_model_query_builderinterface, phalcon_mvc_model_query_builderinterface_method_entry);
 
-	zend_declare_class_constant_string(phalcon_mvc_model_query_builderinterface_ce, SL("OPERATOR_OR"), "or" TSRMLS_CC);
+	zephir_declare_class_constant_string(phalcon_mvc_model_query_builderinterface_ce, SL("OPERATOR_OR"), "or");
 
-	zend_declare_class_constant_string(phalcon_mvc_model_query_builderinterface_ce, SL("OPERATOR_AND"), "and" TSRMLS_CC);
+	zephir_declare_class_constant_string(phalcon_mvc_model_query_builderinterface_ce, SL("OPERATOR_AND"), "and");
 
 	return SUCCESS;
 
@@ -33,7 +41,6 @@ ZEPHIR_INIT_CLASS(Phalcon_Mvc_Model_Query_BuilderInterface) {
  * Sets the columns to be queried
  *
  * @param string|array columns
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, columns);
 
@@ -48,16 +55,11 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getColumns);
  * Sets the models who makes part of the query
  *
  * @param string|array models
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, from);
 
 /**
  * Add a model to take part of the query
- *
- * @param string model
- * @param string alias
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, addFrom);
 
@@ -81,89 +83,52 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, join);
 
 /**
  * Adds an INNER join to the query
- *
- * @param string model
- * @param string conditions
- * @param string alias
- * @param string type
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, innerJoin);
 
 /**
  * Adds a LEFT join to the query
- *
- * @param string model
- * @param string conditions
- * @param string alias
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, leftJoin);
 
 /**
  * Adds a RIGHT join to the query
- *
- * @param string model
- * @param string conditions
- * @param string alias
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, rightJoin);
 
 /**
  * Return join parts of the query
- *
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getJoins);
 
 /**
  * Sets conditions for the query
- *
- * @param string conditions
- * @param array bindParams
- * @param array bindTypes
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, where);
 
 /**
  * Appends a condition to the current conditions using a AND operator
- *
- * @param string conditions
- * @param array bindParams
- * @param array bindTypes
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, andWhere);
 
 /**
  * Appends a condition to the current conditions using an OR operator
- *
- * @param string conditions
- * @param array bindParams
- * @param array bindTypes
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, orWhere);
 
 /**
  * Appends a BETWEEN condition to the current conditions
  *
- * @param string expr
  * @param mixed minimum
  * @param mixed maximum
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, betweenWhere);
 
 /**
  * Appends a NOT BETWEEN condition to the current conditions
  *
- * @param string expr
  * @param mixed minimum
  * @param mixed maximum
- * @return \Phalcon\Mvc\Model\Query\Builder
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, notBetweenWhere);
 
@@ -186,9 +151,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getWhere);
 
 /**
  * Sets an ORDER BY condition clause
- *
- * @param string orderBy
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, orderBy);
 
@@ -201,25 +163,18 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getOrderBy);
 
 /**
  * Sets a HAVING condition clause
- *
- * @param string having
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, having);
 
 /**
  * Returns the HAVING condition clause
- *
- * @return string|array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getHaving);
 
 /**
  * Sets a LIMIT clause
  *
- * @param int limit
  * @param int offset
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, limit);
 
@@ -232,30 +187,75 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getLimit);
 
 /**
  * Sets a LIMIT clause
- *
- * @param string group
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, groupBy);
 
 /**
  * Returns the GROUP BY clause
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getGroupBy);
 
 /**
  * Returns a PHQL statement built based on the builder parameters
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getPhql);
 
 /**
  * Returns the query built
- *
- * @return \Phalcon\Mvc\Model\QueryInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getQuery);
+
+/**
+ * Sets an OFFSET clause
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, offset);
+
+/**
+ * Set default bind parameters
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, setBindParams);
+
+/**
+ * Set default bind types
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, setBindTypes);
+
+/**
+ * Returns default bind params
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getBindParams);
+
+/**
+ * Returns default bind types
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getBindTypes);
+
+/**
+ * Sets SELECT DISTINCT / SELECT ALL flag
+ *
+ *<code>
+ * $builder->distinct("status");
+ * $builder->distinct(null);
+ *</code>
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, distinct);
+
+/**
+ * Returns SELECT DISTINCT / SELECT ALL flag
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getDistinct);
+
+/**
+ * Sets a FOR UPDATE clause
+ *
+ *<code>
+ * $builder->forUpdate(true);
+ *</code>
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, forUpdate);
+
+/**
+ * Returns the current OFFSET clause
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_Query_BuilderInterface, getOffset);
 

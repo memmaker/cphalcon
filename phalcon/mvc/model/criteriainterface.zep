@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -69,39 +60,33 @@ interface CriteriaInterface
 	/**
 	 * Sets the limit parameter to the criteria
 	 *
-	 * @param int limit
 	 * @param int offset
-	 * @return \Phalcon\Mvc\Model\CriteriaInterface
 	 */
 	public function limit(int limit, offset = null) -> <CriteriaInterface>;
 
 	/**
 	 * Sets the "for_update" parameter to the criteria
 	 */
-	public function forUpdate(boolean forUpdate = true) -> <CriteriaInterface>;
+	public function forUpdate(bool forUpdate = true) -> <CriteriaInterface>;
 
 	/**
 	 * Sets the "shared_lock" parameter to the criteria
 	 */
-	public function sharedLock(boolean sharedLock = true) -> <CriteriaInterface>;
+	public function sharedLock(bool sharedLock = true) -> <CriteriaInterface>;
 
 	/**
 	 * Appends a condition to the current conditions using an AND operator
 	 *
-	 * @param string conditions
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\CriteriaInterface
 	 */
 	public function andWhere(string! conditions, bindParams = null, bindTypes = null) -> <CriteriaInterface>;
 
 	/**
 	 * Appends a condition to the current conditions using an OR operator
 	 *
-	 * @param string conditions
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\CriteriaInterface
 	 */
 	public function orWhere(string! conditions, bindParams = null, bindTypes = null) -> <CriteriaInterface>;
 
@@ -112,10 +97,8 @@ interface CriteriaInterface
 	 * $criteria->betweenWhere("price", 100.25, 200.50);
 	 *</code>
 	 *
-	 * @param string expr
 	 * @param mixed minimum
 	 * @param mixed maximum
-	 * @return \Phalcon\Mvc\Model\CriteriaInterface
 	 */
 	public function betweenWhere(string! expr, minimum, maximum) -> <CriteriaInterface>;
 
@@ -126,10 +109,8 @@ interface CriteriaInterface
 	 * $criteria->notBetweenWhere("price", 100.25, 200.50);
 	 *</code>
 	 *
-	 * @param string expr
 	 * @param mixed minimum
 	 * @param mixed maximum
-	 * @return \Phalcon\Mvc\Model\CriteriaInterface
 	 */
 	public function notBetweenWhere(string! expr, minimum, maximum) -> <CriteriaInterface>;
 
@@ -184,14 +165,78 @@ interface CriteriaInterface
 
 	/**
 	 * Returns all the parameters defined in the criteria
-	 *
-	 * @return array
 	 */
-	public function getParams();
+	public function getParams() -> array;
 
 	/**
 	 * Executes a find using the parameters built with the criteria
 	 */
 	public function execute() -> <ResultsetInterface>;
 
+	/**
+	 * Sets SELECT DISTINCT / SELECT ALL flag
+	 */
+	 public function distinct(var distinct) -> <CriteriaInterface>;
+
+	/**
+	 * Adds an INNER join to the query
+	 *
+	 *<code>
+	 * $criteria->innerJoin("Robots");
+	 * $criteria->innerJoin("Robots", "r.id = RobotsParts.robots_id");
+	 * $criteria->innerJoin("Robots", "r.id = RobotsParts.robots_id", "r");
+	 *</code>
+	 */
+	public function innerJoin(string! model, var conditions = null, var alias = null) -> <CriteriaInterface>;
+
+	/**
+	 * Adds a LEFT join to the query
+	 *
+	 *<code>
+	 * $criteria->leftJoin("Robots", "r.id = RobotsParts.robots_id", "r");
+	 *</code>
+	 */
+	public function leftJoin(string! model, var conditions = null, var alias = null) -> <CriteriaInterface>;
+
+	/**
+	 * Adds a RIGHT join to the query
+	 *
+	 *<code>
+	 * $criteria->rightJoin("Robots", "r.id = RobotsParts.robots_id", "r");
+	 *</code>
+	 */
+	public function rightJoin(string! model, conditions = null, alias = null) -> <CriteriaInterface>;
+
+	/**
+	 * Adds the group-by clause to the criteria
+	 */
+	public function groupBy(var group) -> <CriteriaInterface>;
+
+	/**
+	 * Adds the having clause to the criteria
+	 */
+	public function having(var having) -> <CriteriaInterface>;
+
+	/**
+	 * Sets the cache options in the criteria
+	 * This method replaces all previously set cache options
+	 */
+	public function cache(array! cache) -> <CriteriaInterface>;
+
+	/**
+	 * Returns the columns to be queried
+	 *
+	 * @return string|array|null
+	 */
+	public function getColumns() -> string | null;
+
+	/**
+	 * Returns the group clause in the criteria
+	 */
+	public function getGroupBy();
+
+	/**
+	 * Returns the having clause in the criteria
+	 */
+	public function getHaving();
 }

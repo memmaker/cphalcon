@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db\Dialect;
@@ -43,27 +33,34 @@ class Postgresql extends Dialect
 	 */
 	public function getColumnDefinition(<ColumnInterface> column) -> string
 	{
-		var size, columnType, columnSql, typeValues;
+		var columnType, columnSql, typeValues;
 
-		let size = column->getSize();
-		let columnType = column->getType();
-		let columnSql = "";
-
-		if typeof columnType == "string" {
-			let columnSql .= columnType;
-			let columnType = column->getTypeReference();
-		}
+		let columnSql  = this->checkColumnTypeSql(column);
+		let columnType = this->checkColumnType(column);
 
 		switch columnType {
 
-			case Column::TYPE_INTEGER:
+			case Column::TYPE_BIGINTEGER:
 				if empty columnSql {
 					if column->isAutoIncrement() {
-						let columnSql .= "SERIAL";
+						let columnSql .= "BIGSERIAL";
 					} else {
-						let columnSql .= "INT";
+						let columnSql .= "BIGINT";
 					}
 				}
+				break;
+
+			case Column::TYPE_BOOLEAN:
+				if empty columnSql {
+					let columnSql .= "BOOLEAN";
+				}
+				break;
+
+			case Column::TYPE_CHAR:
+				if empty columnSql {
+					let columnSql .= "CHARACTER";
+				}
+				let columnSql .= this->getColumnSize(column);
 				break;
 
 			case Column::TYPE_DATE:
@@ -72,43 +69,17 @@ class Postgresql extends Dialect
 				}
 				break;
 
-			case Column::TYPE_VARCHAR:
-				if empty columnSql {
-					let columnSql .= "CHARACTER VARYING";
-				}
-				let columnSql .= "(" . size . ")";
-				break;
-
-			case Column::TYPE_DECIMAL:
-				if empty columnSql {
-					let columnSql .= "NUMERIC";
-				}
-				let columnSql .= "(" . size . "," . column->getScale() . ")";
-				break;
-
 			case Column::TYPE_DATETIME:
 				if empty columnSql {
 					let columnSql .= "TIMESTAMP";
 				}
 				break;
 
-			case Column::TYPE_TIMESTAMP:
+			case Column::TYPE_DECIMAL:
 				if empty columnSql {
-					let columnSql .= "TIMESTAMP";
+					let columnSql .= "NUMERIC";
 				}
-				break;
-
-			case Column::TYPE_CHAR:
-				if empty columnSql {
-					let columnSql .= "CHARACTER";
-				}
-				let columnSql .= "(" . size . ")";
-				break;
-
-			case Column::TYPE_TEXT:
-				if empty columnSql {
-					let columnSql .= "TEXT";
-				}
+				let columnSql .= this->getColumnSizeAndScale(column);
 				break;
 
 			case Column::TYPE_FLOAT:
@@ -117,12 +88,12 @@ class Postgresql extends Dialect
 				}
 				break;
 
-			case Column::TYPE_BIGINTEGER:
+			case Column::TYPE_INTEGER:
 				if empty columnSql {
 					if column->isAutoIncrement() {
-						let columnSql .= "BIGSERIAL";
+						let columnSql .= "SERIAL";
 					} else {
-						let columnSql .= "BIGINT";
+						let columnSql .= "INT";
 					}
 				}
 				break;
@@ -139,11 +110,25 @@ class Postgresql extends Dialect
 				}
 				break;
 
-			case Column::TYPE_BOOLEAN:
+			case Column::TYPE_TIMESTAMP:
 				if empty columnSql {
-					let columnSql .= "BOOLEAN";
+					let columnSql .= "TIMESTAMP";
 				}
 				break;
+
+			case Column::TYPE_TEXT:
+				if empty columnSql {
+					let columnSql .= "TEXT";
+				}
+				break;
+
+			case Column::TYPE_VARCHAR:
+				if empty columnSql {
+					let columnSql .= "CHARACTER VARYING";
+				}
+				let columnSql .= this->getColumnSize(column);
+				break;
+
 
 			default:
 				if empty columnSql {
@@ -287,7 +272,7 @@ class Postgresql extends Dialect
 	 */
 	public function addPrimaryKey(string! tableName, string! schemaName, <IndexInterface> index) -> string
 	{
-		return "ALTER TABLE " . this->prepareTable(tableName, schemaName) . " ADD CONSTRAINT \"PRIMARY\" PRIMARY KEY (" . this->getColumnList(index->getColumns()) . ")";
+		return "ALTER TABLE " . this->prepareTable(tableName, schemaName) . " ADD CONSTRAINT \"" . tableName . "_PRIMARY\" PRIMARY KEY (" . this->getColumnList(index->getColumns()) . ")";
 	}
 
 	/**
@@ -295,7 +280,7 @@ class Postgresql extends Dialect
 	 */
 	public function dropPrimaryKey(string! tableName, string! schemaName) -> string
 	{
-		return "ALTER TABLE " . this->prepareTable(tableName, schemaName) . " DROP CONSTRAINT \"PRIMARY\"";
+		return "ALTER TABLE " . this->prepareTable(tableName, schemaName) . " DROP CONSTRAINT \"" . tableName . "_PRIMARY\"";
 	}
 
 	/**
@@ -336,12 +321,12 @@ class Postgresql extends Dialect
 	/**
 	 * Generates SQL to create a table
 	 */
-	public function createTable(string! tableName, string! schemaName, array! definition) -> string | array
+	public function createTable(string! tableName, string! schemaName, array! definition) -> string
 	{
 		var temporary, options, table, createLines, columns,
 			column, indexes, index, reference, references, indexName,
 			indexSql, indexSqlAfterCreate, sql, columnLine, indexType,
-			referenceSql, onDelete, onUpdate, defaultValue, primaryColumns,
+			referenceSql, onDelete, onUpdate, primaryColumns,
 			columnDefinition;
 
 		if !fetch columns, definition["columns"] {
@@ -375,12 +360,7 @@ class Postgresql extends Dialect
 			 * Add a Default clause
 			 */
 			if column->hasDefault() {
-				let defaultValue = this->_castDefault(column);
-				if memstr(strtoupper(columnDefinition), "BOOLEAN") {
-					let sql .= " DEFAULT " . defaultValue;
-				} else {
-					let columnLine .= " DEFAULT " . defaultValue;
-				}
+				let columnLine .= " DEFAULT " . this->_castDefault(column);
 			}
 
 			/**
@@ -491,7 +471,7 @@ class Postgresql extends Dialect
 	/**
 	 * Generates SQL to drop a table
 	 */
-	public function dropTable(string! tableName, string schemaName = null, boolean! ifExists = true) -> string
+	public function dropTable(string! tableName, string schemaName = null, bool! ifExists = true) -> string
 	{
 		var table, sql;
 
@@ -523,7 +503,7 @@ class Postgresql extends Dialect
 	/**
 	 * Generates SQL to drop a view
 	 */
-	public function dropView(string! viewName, string schemaName = null, boolean! ifExists = true) -> string
+	public function dropView(string! viewName, string schemaName = null, bool! ifExists = true) -> string
 	{
 		var view, sql;
 
@@ -602,11 +582,8 @@ class Postgresql extends Dialect
 
 	/**
 	 * Generates the SQL to list all views of a schema or user
-	 *
-	 * @param string schemaName
-	 * @return string
 	 */
-	public function listViews(schemaName = null) -> string
+	public function listViews(string schemaName = null) -> string
 	{
 		if schemaName {
 			return "SELECT viewname AS view_name FROM pg_views WHERE schemaname = '" . schemaName . "' ORDER BY view_name";
@@ -627,7 +604,7 @@ class Postgresql extends Dialect
 	 */
 	public function describeReferences(string! table, string schema = null) -> string
 	{
-		var sql = "SELECT DISTINCT tc.table_name as TABLE_NAME, kcu.column_name as COLUMN_NAME, tc.constraint_name as CONSTRAINT_NAME, tc.table_catalog as REFERENCED_TABLE_SCHEMA, ccu.table_name AS REFERENCED_TABLE_NAME, ccu.column_name AS REFERENCED_COLUMN_NAME FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY' AND ";
+		var sql = "SELECT DISTINCT tc.table_name AS TABLE_NAME, kcu.column_name AS COLUMN_NAME, tc.constraint_name AS CONSTRAINT_NAME, tc.table_catalog AS REFERENCED_TABLE_SCHEMA, ccu.table_name AS REFERENCED_TABLE_NAME, ccu.column_name AS REFERENCED_COLUMN_NAME, rc.update_rule AS UPDATE_RULE, rc.delete_rule AS DELETE_RULE FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name JOIN information_schema.referential_constraints rc ON tc.constraint_catalog = rc.constraint_catalog AND tc.constraint_schema = rc.constraint_schema AND tc.constraint_name = rc.constraint_name AND tc.constraint_type = 'FOREIGN KEY' WHERE constraint_type = 'FOREIGN KEY' AND ";
 
 		if schema {
 			let sql .= "tc.table_schema = '" . schema . "' AND tc.table_name='" . table . "'";
@@ -655,7 +632,7 @@ class Postgresql extends Dialect
 			columnType = column->getType();
 
 		if memstr(strtoupper(columnDefinition), "BOOLEAN") {
-			return defaultValue ? "true" : "false";
+			return defaultValue;
 		}
 
 		if memstr(strtoupper(defaultValue), "CURRENT_TIMESTAMP") {
@@ -678,5 +655,14 @@ class Postgresql extends Dialect
 	protected function _getTableOptions(array! definition) -> string
 	{
 		return "";
+	}
+
+	/**
+	 * Returns a SQL modified a shared lock statement. For now this method
+	 * returns the original query
+	 */
+	public function sharedLock(string! sqlQuery) -> string
+	{
+		return sqlQuery;
 	}
 }

@@ -1,26 +1,17 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Events;
 
 use Phalcon\Events\Event;
-use SplPriorityQueue as PriorityQueue;
+use SplPriorityQueue;
 
 /**
  * Phalcon\Events\Manager
@@ -44,9 +35,7 @@ class Manager implements ManagerInterface
 	/**
 	 * Attach a listener to the events manager
 	 *
-	 * @param string eventType
 	 * @param object|callable handler
-	 * @param int priority
 	 */
 	public function attach(string! eventType, var handler, int! priority = 100)
 	{
@@ -61,10 +50,10 @@ class Manager implements ManagerInterface
 			if this->_enablePriorities {
 
 				// Create a SplPriorityQueue to store the events with priorities
-				let priorityQueue = new PriorityQueue();
+				let priorityQueue = new SplPriorityQueue();
 
 				// Extract only the Data // Set extraction flags
-				priorityQueue->setExtractFlags(PriorityQueue::EXTR_DATA);
+				priorityQueue->setExtractFlags(SplPriorityQueue::EXTR_DATA);
 
 				// Append the events to the queue
 				let this->_events[eventType] = priorityQueue;
@@ -88,7 +77,6 @@ class Manager implements ManagerInterface
 	/**
 	 * Detach the listener from the events manager
 	 *
-	 * @param string eventType
 	 * @param object handler
 	 */
 	public function detach(string! eventType, var handler)
@@ -104,10 +92,10 @@ class Manager implements ManagerInterface
 			if typeof priorityQueue == "object" {
 
 				// SplPriorityQueue hasn't method for element deletion, so we need to rebuild queue
-				let newPriorityQueue = new PriorityQueue();
-				newPriorityQueue->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
+				let newPriorityQueue = new SplPriorityQueue();
+				newPriorityQueue->setExtractFlags(SplPriorityQueue::EXTR_DATA);
 
-				priorityQueue->setExtractFlags(PriorityQueue::EXTR_BOTH);
+				priorityQueue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
 				priorityQueue->top();
 
 				while priorityQueue->valid() {
@@ -132,7 +120,7 @@ class Manager implements ManagerInterface
 	/**
 	 * Set if priorities are enabled in the EventsManager
 	 */
-	public function enablePriorities(boolean enablePriorities)
+	public function enablePriorities(bool enablePriorities)
 	{
 		let this->_enablePriorities = enablePriorities;
 	}
@@ -140,7 +128,7 @@ class Manager implements ManagerInterface
 	/**
 	 * Returns if priorities are enabled
 	 */
-	public function arePrioritiesEnabled() -> boolean
+	public function arePrioritiesEnabled() -> bool
 	{
 		return this->_enablePriorities;
 	}
@@ -149,7 +137,7 @@ class Manager implements ManagerInterface
 	 * Tells the event manager if it needs to collect all the responses returned by every
 	 * registered listener in a single fire
 	 */
-	public function collectResponses(boolean collect)
+	public function collectResponses(bool collect)
 	{
 		let this->_collect = collect;
 	}
@@ -158,17 +146,15 @@ class Manager implements ManagerInterface
 	 * Check if the events manager is collecting all all the responses returned by every
 	 * registered listener in a single fire
 	 */
-	public function isCollecting() -> boolean
+	public function isCollecting() -> bool
 	{
 		return this->_collect;
 	}
 
 	/**
 	 * Returns all the responses returned by every handler executed by the last 'fire' executed
-	 *
-	 * @return array
 	 */
-	public function getResponses()
+	public function getResponses() -> array
 	{
 		return this->_responses;
 	}
@@ -191,17 +177,16 @@ class Manager implements ManagerInterface
 	 * Internal handler to call a queue of events
 	 *
 	 * @param \SplPriorityQueue|array queue
-	 * @param \Phalcon\Events\Event event
 	 * @return mixed
 	 */
 	public final function fireQueue(var queue, <EventInterface> event)
 	{
 		var status, arguments, eventName, data, iterator, source, handler;
-		boolean collect, cancelable;
+		bool collect, cancelable;
 
 		if typeof queue != "array" {
 			if typeof queue == "object" {
-				if !(queue instanceof \SplPriorityQueue) {
+				if !(queue instanceof SplPriorityQueue) {
 					throw new Exception(
 						sprintf(
 							"Unexpected value type: expected object of type SplPriorityQueue, %s given",
@@ -229,10 +214,10 @@ class Manager implements ManagerInterface
 		let data = event->getData();
 
 		// Tell if the event is cancelable
-		let cancelable = (boolean) event->isCancelable();
+		let cancelable = (bool) event->isCancelable();
 
 		// Responses need to be traced?
-		let collect = (boolean) this->_collect;
+		let collect = (bool) this->_collect;
 
 		if typeof queue == "object" {
 
@@ -367,13 +352,11 @@ class Manager implements ManagerInterface
 	 *	$eventsManager->fire("db", $connection);
 	 *</code>
 	 *
-	 * @param string eventType
 	 * @param object source
 	 * @param mixed  data
-	 * @param boolean cancelable
 	 * @return mixed
 	 */
-	public function fire(string! eventType, source, data = null, boolean cancelable = true)
+	public function fire(string! eventType, source, data = null, bool cancelable = true)
 	{
 		var events, eventParts, type, eventName, event, status, fireEvents;
 
@@ -434,18 +417,15 @@ class Manager implements ManagerInterface
 	/**
 	 * Check whether certain type of event has listeners
 	 */
-	public function hasListeners(string! type) -> boolean
+	public function hasListeners(string! type) -> bool
 	{
 		return isset this->_events[type];
 	}
 
 	/**
 	 * Returns all the attached listeners of a certain type
-	 *
-	 * @param string type
-	 * @return array
 	 */
-	public function getListeners(string! type)
+	public function getListeners(string! type) -> array
 	{
 		var events, fireEvents;
 		let events = this->_events;

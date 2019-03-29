@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -29,7 +20,6 @@ use Phalcon\Mvc\Model\Transaction\ManagerInterface;
  */
 interface TransactionInterface
 {
-
 	/**
 	 * Sets transaction manager related to the transaction
 	 */
@@ -37,68 +27,48 @@ interface TransactionInterface
 
 	/**
 	 * Starts the transaction
-	 *
-	 * @return boolean
 	 */
-	public function begin();
+	public function begin() -> bool;
 
 	/**
 	 * Commits the transaction
-	 *
-	 * @return boolean
 	 */
-	public function commit();
+	public function commit() -> bool;
 
 	/**
 	 * Rollbacks the transaction
-	 *
-	 * @param  string rollbackMessage
-	 * @param  Phalcon\Mvc\ModelInterface rollbackRecord
-	 * @return boolean
 	 */
-	public function rollback(rollbackMessage = null, rollbackRecord = null);
+	public function rollback(string rollbackMessage = null, <ModelInterface> rollbackRecord = null) -> bool;
 
 	/**
 	 * Returns connection related to transaction
-	 *
-	 * @return string
 	 */
-	public function getConnection();
+	public function getConnection() -> <\Phalcon\Db\AdapterInterface>;
 
 	/**
 	 * Sets if is a reused transaction or new once
-	 *
-	 * @param boolean isNew
 	 */
-	public function setIsNewTransaction(isNew);
+	public function setIsNewTransaction(bool isNew);
 
 	/**
 	 * Sets flag to rollback on abort the HTTP connection
-	 *
-	 * @param boolean rollbackOnAbort
 	 */
-	public function setRollbackOnAbort(rollbackOnAbort);
+	public function setRollbackOnAbort(bool rollbackOnAbort);
 
 	/**
 	 * Checks whether transaction is managed by a transaction manager
-	 *
-	 * @return boolean
 	 */
-	public function isManaged();
+	public function isManaged() -> bool;
 
 	/**
 	 * Returns validations messages from last save try
-	 *
-	 * @return array
 	 */
-	public function getMessages();
+	public function getMessages() -> array;
 
 	/**
 	 * Checks whether internal connection is under an active transaction
-	 *
-	 * @return boolean
 	 */
-	public function isValid();
+	public function isValid() -> bool;
 
 	/**
 	 * Sets object which generates rollback action

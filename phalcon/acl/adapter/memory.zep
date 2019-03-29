@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Acl\Adapter;
@@ -23,13 +14,13 @@ use Phalcon\Acl;
 use Phalcon\Acl\Adapter;
 use Phalcon\Acl\Role;
 use Phalcon\Acl\RoleInterface;
-use Phalcon\Acl\Resource;
+use Phalcon\Acl\Component;
 use Phalcon\Acl\Exception;
 use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Acl\RoleAware;
-use Phalcon\Acl\ResourceAware;
+use Phalcon\Acl\ComponentAware;
 use Phalcon\Acl\RoleInterface;
-use Phalcon\Acl\ResourceInterface;
+use Phalcon\Acl\ComponentInterface;
 
 /**
  * Phalcon\Acl\Adapter\Memory
@@ -52,46 +43,46 @@ use Phalcon\Acl\ResourceInterface;
  *     $acl->addRole($role);
  * }
  *
- * // Private area resources
- * $privateResources = [
+ * // Private area components
+ * $privateComponents = [
  *     "companies" => ["index", "search", "new", "edit", "save", "create", "delete"],
  *     "products"  => ["index", "search", "new", "edit", "save", "create", "delete"],
  *     "invoices"  => ["index", "profile"],
  * ];
  *
- * foreach ($privateResources as $resourceName => $actions) {
- *     $acl->addResource(
- *         new \Phalcon\Acl\Resource($resourceName),
+ * foreach ($privateComponents as $componentName => $actions) {
+ *     $acl->addComponent(
+ *         new \Phalcon\Acl\Component($componentName),
  *         $actions
  *     );
  * }
  *
- * // Public area resources
- * $publicResources = [
+ * // Public area components
+ * $publicComponents = [
  *     "index"   => ["index"],
  *     "about"   => ["index"],
  *     "session" => ["index", "register", "start", "end"],
  *     "contact" => ["index", "send"],
  * ];
  *
- * foreach ($publicResources as $resourceName => $actions) {
- *     $acl->addResource(
- *         new \Phalcon\Acl\Resource($resourceName),
+ * foreach ($publicComponents as $componentName => $actions) {
+ *     $acl->addComponent(
+ *         new \Phalcon\Acl\Component($componentName),
  *         $actions
  *     );
  * }
  *
  * // Grant access to public areas to both users and guests
  * foreach ($roles as $role){
- *     foreach ($publicResources as $resource => $actions) {
- *         $acl->allow($role->getName(), $resource, "*");
+ *     foreach ($publicComponents as $component => $actions) {
+ *         $acl->allow($role->getName(), $component, "*");
  *     }
  * }
  *
  * // Grant access to private area to role Users
- * foreach ($privateResources as $resource => $actions) {
+ * foreach ($privateComponents as $component => $actions) {
  *     foreach ($actions as $action) {
- *         $acl->allow("Users", $resource, $action);
+ *         $acl->allow("Users", $component, $action);
  *     }
  * }
  *</code>
@@ -100,75 +91,190 @@ class Memory extends Adapter
 {
 
 	/**
-	 * Roles Names
-	 *
-	 * @var mixed
-	 */
-	protected _rolesNames;
-
-	/**
-	 * Roles
-	 *
-	 * @var mixed
-	 */
-	protected _roles;
-
-	/**
-	 * Resource Names
-	 *
-	 * @var mixed
-	 */
-	protected _resourcesNames;
-
-	/**
-	 * Resources
-	 *
-	 * @var mixed
-	 */
-	protected _resources;
-
-	/**
 	 * Access
 	 *
 	 * @var mixed
 	 */
-	protected _access;
-
-	/**
-	 * Role Inherits
-	 *
-	 * @var mixed
-	 */
-	protected _roleInherits;
+	protected access;
 
 	/**
 	 * Access List
 	 *
 	 * @var mixed
 	 */
-	protected _accessList;
+	protected accessList;
+
+	/**
+	 * Returns latest function used to acquire access
+	 *
+	 * @var mixed
+	 */
+	protected activeFunction { get };
+
+	/**
+	 * Returns number of additional arguments(excluding role and resource) for active function
+	 *
+	 * @var int
+	 */
+	protected activeFunctionCustomArgumentsCount = 0 { get };
+
+	/**
+	 * Returns latest key used to acquire access
+	 *
+	 * @var string|null
+	 */
+	protected activeKey { get };
 
 	/**
 	 * Function List
 	 *
 	 * @var mixed
 	 */
-	protected _func;
+	protected func;
 
 	/**
 	 * Default action for no arguments is allow
 	 *
 	 * @var mixed
 	 */
-	protected _noArgumentsDefaultAction = Acl::ALLOW;
+	protected noArgumentsDefaultAction = Acl::DENY;
+
+	/**
+	 * Roles
+	 *
+	 * @var mixed
+	 */
+	protected roles;
+
+	/**
+	 * Role Inherits
+	 *
+	 * @var mixed
+	 */
+	protected roleInherits;
+
+	/**
+	 * Roles Names
+	 *
+	 * @var mixed
+	 */
+	protected rolesNames;
+
+	/**
+	 * Components
+	 *
+	 * @var mixed
+	 */
+	protected components;
+
+	/**
+	 * Component Names
+	 *
+	 * @var mixed
+	 */
+	protected componentsNames;
 
 	/**
 	 * Phalcon\Acl\Adapter\Memory constructor
 	 */
 	public function __construct()
 	{
-		let this->_resourcesNames = ["*": true];
-		let this->_accessList = ["*!*": true];
+		let this->componentsNames = ["*": true];
+		let this->accessList = ["*!*": true];
+	}
+
+	/**
+     * Do a role inherit from another existing role
+     *
+     * Example:
+     * <code>
+     *
+     * $acl->addRole("administrator", "consultant");
+     * $acl->addRole("administrator", ["consultant", "consultant2"]);
+     * </code>
+     *
+     * @param  array|string         accessInherits
+     * @param  RoleInterface|string|array role
+     */
+	public function addInherit(string roleName, var roleToInherits) -> bool
+	{
+		var roleInheritName, rolesNames, roleToInherit, checkRoleToInherit,
+		 checkRoleToInherits, usedRoleToInherits, roleToInheritList, usedRoleToInherit;
+
+		let rolesNames = this->rolesNames;
+		if !isset rolesNames[roleName] {
+			throw new Exception("Role '" . roleName . "' does not exist in the role list");
+		}
+
+		if !isset this->roleInherits[roleName] {
+            let this->roleInherits[roleName] = [];
+        }
+		/**
+		 * Type conversion
+         */
+        if typeof roleToInherits != "array" {
+            let roleToInheritList = [roleToInherits];
+        }else{
+            let roleToInheritList = roleToInherits;
+        }
+        /**
+         * inherits
+         */
+        for roleToInherit in roleToInheritList {
+            if typeof roleToInherit == "object" && roleToInherit instanceof RoleInterface {
+                let roleInheritName = roleToInherit->getName();
+            } else {
+                let roleInheritName = roleToInherit;
+            }
+            /**
+             * Check if the role to inherit is repeat
+             */
+            if in_array(roleInheritName, this->roleInherits[roleName]) {
+                continue;
+            }
+            /**
+             * Check if the role to inherit is valid
+             */
+            if !isset rolesNames[roleInheritName] {
+                throw new Exception("Role '" . roleInheritName . "' (to inherit) does not exist in the role list");
+            }
+
+            if roleName == roleInheritName {
+                return false;
+            }
+            /**
+             * Deep check if the role to inherit is valid
+             */
+            if isset this->roleInherits[roleInheritName] {
+                let checkRoleToInherits = [];
+                for usedRoleToInherit in this->roleInherits[roleInheritName] {
+                    array_push(checkRoleToInherits,usedRoleToInherit);
+                }
+                let usedRoleToInherits = [];
+                while !empty checkRoleToInherits {
+                    let checkRoleToInherit = array_shift(checkRoleToInherits);
+                    
+                    if isset usedRoleToInherits[checkRoleToInherit] {
+                        continue;
+                    }
+                    let usedRoleToInherits[checkRoleToInherit]=true;
+                    if roleName == checkRoleToInherit {
+                        throw new Exception("Role '" . roleInheritName . "' (to inherit) is infinite loop ");
+                    }
+                    /**
+                     * Push inherited roles
+                     */
+                    if isset this->roleInherits[checkRoleToInherit] {
+                        for usedRoleToInherit in this->roleInherits[checkRoleToInherit] {
+                            array_push(checkRoleToInherits,usedRoleToInherit);
+                        }
+                    }
+                }
+            }
+
+            let this->roleInherits[roleName][] = roleInheritName;
+        }
+		return true;
 	}
 
 	/**
@@ -182,12 +288,13 @@ class Memory extends Adapter
 	 * );
 	 *
 	 * $acl->addRole("administrator", "consultant");
+	 * $acl->addRole("administrator", ["consultant", "consultant2"]);
 	 * </code>
 	 *
 	 * @param  array|string         accessInherits
-	 * @param  RoleInterface|string role
+	 * @param  RoleInterface|string|array role
 	 */
-	public function addRole(role, accessInherits = null) -> boolean
+	public function addRole(role, accessInherits = null) -> bool
 	{
 		var roleName, roleObject;
 
@@ -201,12 +308,12 @@ class Memory extends Adapter
 			throw new Exception("Role must be either an string or implement RoleInterface");
 		}
 
-		if isset this->_rolesNames[roleName] {
+		if isset this->rolesNames[roleName] {
 			return false;
 		}
 
-		let this->_roles[] = roleObject;
-		let this->_rolesNames[roleName] = true;
+		let this->roles[] = roleObject;
+		let this->rolesNames[roleName] = true;
 
 		if accessInherits != null {
 			return this->addInherit(roleName, accessInherits);
@@ -216,94 +323,31 @@ class Memory extends Adapter
 	}
 
 	/**
-	 * Do a role inherit from another existing role
-	 */
-	public function addInherit(string roleName, var roleToInherit) -> boolean
-	{
-		var roleInheritName, rolesNames, deepInheritName;
-
-		let rolesNames = this->_rolesNames;
-		if !isset rolesNames[roleName] {
-			throw new Exception("Role '" . roleName . "' does not exist in the role list");
-		}
-
-		if typeof roleToInherit == "object" && roleToInherit instanceof RoleInterface {
-			let roleInheritName = roleToInherit->getName();
-		} else {
-			let roleInheritName = roleToInherit;
-		}
-
-		/**
-		 * Deep inherits
-		 */
-		if isset this->_roleInherits[roleInheritName] {
-			for deepInheritName in this->_roleInherits[roleInheritName] {
-				this->addInherit(roleName, deepInheritName);
-			}
-		}
-
-		/**
-		 * Check if the role to inherit is valid
-		 */
-		if !isset rolesNames[roleInheritName] {
-			throw new Exception("Role '" . roleInheritName . "' (to inherit) does not exist in the role list");
-		}
-
-		if roleName == roleInheritName {
-			return false;
-		}
-
-		if !isset this->_roleInherits[roleName] {
-			let this->_roleInherits[roleName] = true;
-		}
-
-		let this->_roleInherits[roleName][] = roleInheritName;
-
-		return true;
-	}
-
-	/**
-	 * Check whether role exist in the roles list
-	 */
-	public function isRole(string roleName) -> boolean
-	{
-		return isset this->_rolesNames[roleName];
-	}
-
-	/**
-	 * Check whether resource exist in the resources list
-	 */
-	public function isResource(string resourceName) -> boolean
-	{
-		return isset this->_resourcesNames[resourceName];
-	}
-
-	/**
-	 * Adds a resource to the ACL list
+	 * Adds a component to the ACL list
 	 *
 	 * Access names can be a particular action, by example
 	 * search, update, delete, etc or a list of them
 	 *
 	 * Example:
 	 * <code>
-	 * // Add a resource to the the list allowing access to an action
-	 * $acl->addResource(
-	 *     new Phalcon\Acl\Resource("customers"),
+	 * // Add a component to the the list allowing access to an action
+	 * $acl->addComponent(
+	 *     new Phalcon\Acl\Component("customers"),
 	 *     "search"
 	 * );
 	 *
-	 * $acl->addResource("customers", "search");
+	 * $acl->addComponent("customers", "search");
 	 *
-	 * // Add a resource  with an access list
-	 * $acl->addResource(
-	 *     new Phalcon\Acl\Resource("customers"),
+	 * // Add a component  with an access list
+	 * $acl->addComponent(
+	 *     new Phalcon\Acl\Component("customers"),
 	 *     [
 	 *         "create",
 	 *         "search",
 	 *     ]
 	 * );
 	 *
-	 * $acl->addResource(
+	 * $acl->addComponent(
 	 *     "customers",
 	 *     [
 	 *         "create",
@@ -312,40 +356,40 @@ class Memory extends Adapter
 	 * );
 	 * </code>
 	 *
-	 * @param   Phalcon\Acl\Resource|string resourceValue
+	 * @param   Phalcon\Acl\Component|string componentValue
 	 * @param   array|string accessList
 	 */
-	public function addResource(var resourceValue, var accessList) -> boolean
+	public function addComponent(var componentValue, var accessList) -> bool
 	{
-		var resourceName, resourceObject;
+		var componentName, componentObject;
 
-		if typeof resourceValue == "object" && resourceValue instanceof ResourceInterface {
-			let resourceName   = resourceValue->getName();
-			let resourceObject = resourceValue;
+		if typeof componentValue == "object" && componentValue instanceof ComponentInterface {
+			let componentName   = componentValue->getName();
+			let componentObject = componentValue;
 		 } else {
-			let resourceName   = resourceValue;
-			let resourceObject = new $Resource(resourceName);
+			let componentName   = componentValue;
+			let componentObject = new Component(componentName);
 		 }
 
-		 if !isset this->_resourcesNames[resourceName] {
-			let this->_resources[] = resourceObject;
-			let this->_resourcesNames[resourceName] = true;
+		 if !isset this->componentsNames[componentName] {
+			let this->components[] = componentObject;
+			let this->componentsNames[componentName] = true;
 		 }
 
-		 return this->addResourceAccess(resourceName, accessList);
+		 return this->addComponentAccess(componentName, accessList);
 	}
 
 	/**
-	 * Adds access to resources
+	 * Adds access to components
 	 *
 	 * @param array|string accessList
 	 */
-	public function addResourceAccess(string resourceName, var accessList) -> boolean
+	public function addComponentAccess(string componentName, var accessList) -> bool
 	{
 		var accessName, accessKey, exists;
 
-		if !isset this->_resourcesNames[resourceName] {
-			throw new Exception("Resource '" . resourceName . "' does not exist in ACL");
+		if !isset this->componentsNames[componentName] {
+			throw new Exception("Component '" . componentName . "' does not exist in ACL");
 		}
 
 		if typeof accessList != "array" && typeof accessList != "string" {
@@ -355,15 +399,15 @@ class Memory extends Adapter
 		let exists = true;
 		if typeof accessList == "array" {
 			for accessName in accessList {
-				let accessKey = resourceName . "!" . accessName;
-				if !isset this->_accessList[accessKey] {
-					let this->_accessList[accessKey] = exists;
+				let accessKey = componentName . "!" . accessName;
+				if !isset this->accessList[accessKey] {
+					let this->accessList[accessKey] = exists;
 				}
 			}
 		} else {
-			let accessKey = resourceName . "!" . accessList;
-			if !isset this->_accessList[accessKey] {
-				let this->_accessList[accessKey] = exists;
+			let accessKey = componentName . "!" . accessList;
+			if !isset this->accessList[accessKey] {
+				let this->accessList[accessKey] = exists;
 			}
 		}
 
@@ -371,90 +415,7 @@ class Memory extends Adapter
 	}
 
 	/**
-	 * Removes an access from a resource
-	 *
-	 * @param array|string accessList
-	 */
-	public function dropResourceAccess(string resourceName, var accessList)
-	{
-		var accessName, accessKey;
-
-		if typeof accessList == "array" {
-			for accessName in accessList {
-				let accessKey = resourceName . "!" . accessName;
-				if isset this->_accessList[accessKey] {
-					unset this->_accessList[accessKey];
-				}
-			}
-		} else {
-			if typeof accessList == "string" {
-				let accessKey = resourceName . "!" . accessName;
-				if isset this->_accessList[accessKey] {
-					unset this->_accessList[accessKey];
-				}
-			}
-		}
-	 }
-
-	/**
-	 * Checks if a role has access to a resource
-	 */
-	protected function _allowOrDeny(string roleName, string resourceName, var access, var action, var func = null)
-	{
-		var accessList, accessName, accessKey;
-
-		if !isset this->_rolesNames[roleName] {
-			throw new Exception("Role '" . roleName . "' does not exist in ACL");
-		}
-
-		if !isset this->_resourcesNames[resourceName] {
-			throw new Exception("Resource '" . resourceName . "' does not exist in ACL");
-		}
-
-		let accessList = this->_accessList;
-
-		if typeof access == "array" {
-
-			for accessName in access {
-				let accessKey = resourceName . "!" . accessName;
-				if !isset accessList[accessKey] {
-					throw new Exception("Access '" . accessName . "' does not exist in resource '" . resourceName . "'");
-				}
-			}
-
-			for accessName in access {
-
-				let accessKey = roleName . "!" .resourceName . "!" . accessName;
-				let this->_access[accessKey] = action;
-				if func != null {
-				    let this->_func[accessKey] = func;
-				}
-			}
-
-		} else {
-
-			if access != "*" {
-				let accessKey = resourceName . "!" . access;
-				if !isset accessList[accessKey] {
-					throw new Exception("Access '" . access . "' does not exist in resource '" . resourceName . "'");
-				}
-			}
-
-			let accessKey = roleName . "!" . resourceName . "!" . access;
-
-			/**
-			 * Define the access action for the specified accessKey
-			 */
-			let this->_access[accessKey] = action;
-			if func != null {
-				let this->_func[accessKey] = func;
-			}
-
-		}
-	}
-
-	/**
-	 * Allow access to a role on a resource
+	 * Allow access to a role on a component
 	 *
 	 * You can use '*' as wildcard
 	 *
@@ -469,25 +430,25 @@ class Memory extends Adapter
 	 * //Allow access to any role to browse on products
 	 * $acl->allow("*", "products", "browse");
 	 *
-	 * //Allow access to any role to browse on any resource
+	 * //Allow access to any role to browse on any component
 	 * $acl->allow("*", "*", "browse");
 	 * </code>
 	 */
-	public function allow(string roleName, string resourceName, var access, var func = null)
+	public function allow(string roleName, string componentName, var access, var func = null) -> void
 	{
 		var innerRoleName;
 
 		if roleName != "*" {
-			return this->_allowOrDeny(roleName, resourceName, access, Acl::ALLOW, func);
+			this->allowOrDeny(roleName, componentName, access, Acl::ALLOW, func);
 		} else {
-			for innerRoleName, _ in this->_rolesNames {
-				this->_allowOrDeny(innerRoleName, resourceName, access, Acl::ALLOW, func);
+			for innerRoleName, _ in this->rolesNames {
+				this->allowOrDeny(innerRoleName, componentName, access, Acl::ALLOW, func);
 			}
 		}
 	}
 
 	/**
-	 * Deny access to a role on a resource
+	 * Deny access to a role on a component
 	 *
 	 * You can use '*' as wildcard
 	 *
@@ -502,45 +463,96 @@ class Memory extends Adapter
 	 * //Deny access to any role to browse on products
 	 * $acl->deny("*", "products", "browse");
 	 *
-	 * //Deny access to any role to browse on any resource
+	 * //Deny access to any role to browse on any component
 	 * $acl->deny("*", "*", "browse");
 	 * </code>
 	 */
-	public function deny(string roleName, string resourceName, var access, var func = null)
+	public function deny(string roleName, string componentName, var access, var func = null) -> void
 	{
 		var innerRoleName;
 
 		if roleName != "*" {
-			return this->_allowordeny(roleName, resourceName, access, Acl::DENY, func);
+			this->allowOrDeny(roleName, componentName, access, Acl::DENY, func);
 		} else {
-			for innerRoleName, _ in this->_rolesNames {
-				this->_allowordeny(innerRoleName, resourceName, access, Acl::DENY, func);
+			for innerRoleName, _ in this->rolesNames {
+				this->allowOrDeny(innerRoleName, componentName, access, Acl::DENY, func);
 			}
 		}
 	}
 
 	/**
-	 * Check whether a role is allowed to access an action from a resource
+	 * Removes an access from a component
+	 *
+	 * @param array|string accessList
+	 */
+	public function dropComponentAccess(string componentName, var accessList) -> void
+	{
+		var accessName, accessKey;
+
+		if typeof accessList == "array" {
+			for accessName in accessList {
+				let accessKey = componentName . "!" . accessName;
+				if isset this->accessList[accessKey] {
+					unset this->accessList[accessKey];
+				}
+			}
+		} else {
+			if typeof accessList == "string" {
+				let accessKey = componentName . "!" . accessName;
+				if isset this->accessList[accessKey] {
+					unset this->accessList[accessKey];
+				}
+			}
+		}
+	 }
+
+	/**
+	 * Returns the default ACL access level for no arguments provided in
+	 * isAllowed action if there exists func for accessKey
+	 */
+	public function getNoArgumentsDefaultAction() -> int
+	{
+		return this->noArgumentsDefaultAction;
+	}
+
+	/**
+	 * Return an array with every role registered in the list
+	 */
+	public function getRoles() -> <RoleInterface[]>
+	{
+		return this->roles;
+	}
+
+	/**
+	 * Return an array with every component registered in the list
+	 */
+	public function getComponents() -> <ComponentInterface[]>
+	{
+		return this->components;
+	}
+	
+	/**
+	 * Check whether a role is allowed to access an action from a component
 	 *
 	 * <code>
-	 * //Does andres have access to the customers resource to create?
+	 * //Does andres have access to the customers component to create?
 	 * $acl->isAllowed("andres", "Products", "create");
 	 *
-	 * //Do guests have access to any resource to edit?
+	 * //Do guests have access to any component to edit?
 	 * $acl->isAllowed("guests", "*", "edit");
 	 * </code>
 	 *
 	 * @param  RoleInterface|RoleAware|string roleName
-	 * @param  ResourceInterface|ResourceAware|string resourceName
+	 * @param  ComponentInterface|ComponentAware|string componentName
 	 */
-	public function isAllowed(var roleName, var resourceName, string access, array parameters = null) -> boolean
+	public function isAllowed(var roleName, var componentName, string access, array parameters = null) -> bool
 	{
 		var eventsManager, accessList, accessKey,
-			haveAccess = null, roleInherits, inheritedRole, rolesNames,
-			inheritedRoles, funcAccess = null, resourceObject = null, roleObject = null, funcList,
+			haveAccess = null, rolesNames,
+			funcAccess = null, componentObject = null, roleObject = null, funcList,
 			reflectionFunction, reflectionParameters, parameterNumber, parametersForFunction,
 			numberOfRequiredParameters, userParametersSizeShouldBe, reflectionClass, parameterToCheck,
-			reflectionParameter;
+			reflectionParameter, hasRole = false, hasComponent = false;
 
 		if typeof roleName == "object" {
 			if roleName instanceof RoleAware {
@@ -553,24 +565,27 @@ class Memory extends Adapter
 			}
 		}
 
-		if typeof resourceName == "object" {
-			if resourceName instanceof ResourceAware {
-				let resourceObject = resourceName;
-				let resourceName = resourceObject->getResourceName();
-			} elseif resourceName instanceof ResourceInterface {
-				let resourceName = resourceName->getName();
+		if typeof componentName == "object" {
+			if componentName instanceof ComponentAware {
+				let componentObject = componentName;
+				let componentName = componentObject->getComponentName();
+			} elseif componentName instanceof ComponentInterface {
+				let componentName = componentName->getName();
 			} else {
-				throw new Exception("Object passed as resourceName must implement Phalcon\\Acl\\ResourceAware or Phalcon\\Acl\\ResourceInterface");
+				throw new Exception("Object passed as componentName must implement Phalcon\\Acl\\ComponentAware or Phalcon\\Acl\\ComponentInterface");
 			}
-
 		}
 
-		let this->_activeRole = roleName;
-		let this->_activeResource = resourceName;
-		let this->_activeAccess = access;
-		let accessList = this->_access;
-		let eventsManager = <EventsManager> this->_eventsManager;
-		let funcList = this->_func;
+		let this->activeRole = roleName;
+		let this->activeComponent = componentName;
+		let this->activeAccess = access;
+		let this->activeKey = null;
+        let this->activeFunction = null;
+        let this->activeFunctionCustomArgumentsCount = 0;
+
+		let accessList = this->access;
+		let eventsManager = <EventsManager> this->eventsManager;
+		let funcList = this->func;
 
 		if typeof eventsManager == "object" {
 			if eventsManager->fire("acl:beforeCheckAccess", this) === false {
@@ -581,120 +596,45 @@ class Memory extends Adapter
 		/**
 		 * Check if the role exists
 		 */
-		let rolesNames = this->_rolesNames;
+		let rolesNames = this->rolesNames;
 		if !isset rolesNames[roleName] {
-			return (this->_defaultAccess == Acl::ALLOW);
+			return (this->defaultAccess == Acl::ALLOW);
 		}
-
-		let accessKey = roleName . "!" . resourceName . "!" . access;
 
 		/**
-		 * Check if there is a direct combination for role-resource-access
+		 * Check if there is a direct combination for role-component-access
 		 */
-		if isset accessList[accessKey] {
-			let haveAccess = accessList[accessKey];
-		}
+		let accessKey = this->canAccess(roleName, componentName, access);
 
-		fetch funcAccess, funcList[accessKey];
+		if accessKey != false && isset accessList[accessKey] {
+			let haveAccess = accessList[accessKey];
+			fetch funcAccess, funcList[accessKey];
+		}
 
 		/**
 		 * Check in the inherits roles
 		 */
-		if haveAccess == null {
-
-			let roleInherits = this->_roleInherits;
-			if fetch inheritedRoles, roleInherits[roleName] {
-				if typeof inheritedRoles == "array" {
-					for inheritedRole in inheritedRoles {
-						let accessKey = inheritedRole . "!" . resourceName . "!" . access;
-
-						/**
-						 * Check if there is a direct combination in one of the inherited roles
-						 */
-						if isset accessList[accessKey] {
-							let haveAccess = accessList[accessKey];
-						}
-						fetch funcAccess, funcList[accessKey];
-					}
-				}
-			}
-		}
-
-		/**
-		 * If access wasn't found yet, try role-resource-*
-		 */
-		if haveAccess == null {
-
-			let accessKey =  roleName . "!" . resourceName . "!*";
-
-			/**
-			 * In the direct role
-			 */
-			if isset accessList[accessKey] {
-				let haveAccess = accessList[accessKey];
-				fetch funcAccess, funcList[accessKey];
-			} else {
-				if typeof inheritedRoles == "array" {
-					for inheritedRole in inheritedRoles {
-						let accessKey = inheritedRole . "!" . resourceName . "!*";
-
-						/**
-						 * In the inherited roles
-						 */
-						fetch funcAccess, funcList[accessKey];
-						if isset accessList[accessKey] {
-							let haveAccess = accessList[accessKey];
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		/**
-		 * If access wasn't found yet, try role-*-*
-		 */
-		if haveAccess == null {
-
-			let accessKey =  roleName . "!*!*";
-
-			/**
-			 * Try in the direct role
-			 */
-			if isset accessList[accessKey] {
-				let haveAccess = accessList[accessKey];
-				fetch funcAccess, funcList[accessKey];
-			} else {
-				if typeof inheritedRoles == "array" {
-					for inheritedRole in inheritedRoles {
-						let accessKey = inheritedRole . "!*!*";
-
-						/**
-						 * In the inherited roles
-						 */
-						fetch funcAccess, funcList[accessKey];
-						if isset accessList[accessKey] {
-							let haveAccess = accessList[accessKey];
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		let this->_accessGranted = haveAccess;
+		let this->accessGranted = haveAccess;
 		if typeof eventsManager == "object" {
 			eventsManager->fire("acl:afterCheckAccess", this);
 		}
 
+		let this->activeKey = accessKey;
+		let this->activeFunction = funcAccess;
+
 		if haveAccess == null {
-			return this->_defaultAccess == Acl::ALLOW;
+			/**
+			 * Change activeKey to most narrow if there was no access for any patterns found
+			 */
+			let this->activeKey = roleName . "!" . componentName . "!" . access;
+
+			return this->defaultAccess == Acl::ALLOW;
 		}
 
 		/**
 		 * If we have funcAccess then do all the checks for it
 		 */
-		if funcAccess !== null {
+		if is_callable(funcAccess) {
 			let reflectionFunction = new \ReflectionFunction(funcAccess);
 			let reflectionParameters = reflectionFunction->getParameters();
 			let parameterNumber = count(reflectionParameters);
@@ -714,16 +654,18 @@ class Memory extends Adapter
 
 				if reflectionClass !== null {
 					// roleObject is this class
-					if roleObject !== null && reflectionClass->isInstance(roleObject) {
+					if roleObject !== null && reflectionClass->isInstance(roleObject) && !hasRole {
+						let hasRole = true;
 						let parametersForFunction[] = roleObject;
 						let userParametersSizeShouldBe--;
 
 						continue;
 					}
 
-					// resourceObject is this class
-					if resourceObject !== null && reflectionClass->isInstance(resourceObject) {
-						let parametersForFunction[] = resourceObject;
+					// componentObject is this class
+					if componentObject !== null && reflectionClass->isInstance(componentObject) && !hasComponent {
+						let hasComponent = true;
+						let parametersForFunction[] = componentObject;
 						let userParametersSizeShouldBe--;
 
 						continue;
@@ -732,7 +674,7 @@ class Memory extends Adapter
 					// This is some user defined class, check if his parameter is instance of it
 					if isset parameters[parameterToCheck] && typeof parameters[parameterToCheck] == "object" && !reflectionClass->isInstance(parameters[parameterToCheck]) {
 						throw new Exception(
-							"Your passed parameter doesn't have the same class as the parameter in defined function when check " . roleName . " can " . access . " " . resourceName . ". Class passed: " . get_class(parameters[parameterToCheck])." , Class in defined function: " . reflectionClass->getName() . "."
+							"Your passed parameter doesn't have the same class as the parameter in defined function when check " . roleName . " can " . access . " " . componentName . ". Class passed: " . get_class(parameters[parameterToCheck])." , Class in defined function: " . reflectionClass->getName() . "."
 						);
 					}
 				}
@@ -743,9 +685,11 @@ class Memory extends Adapter
 				}
 			}
 
+			let this->activeFunctionCustomArgumentsCount = userParametersSizeShouldBe;
+
 			if count(parameters) > userParametersSizeShouldBe {
 				trigger_error(
-					"Number of parameters in array is higher than the number of parameters in defined function when check " . roleName . " can " . access . " " . resourceName . ". Remember that more parameters than defined in function will be ignored.",
+					"Number of parameters in array is higher than the number of parameters in defined function when check " . roleName . " can " . access . " " . componentName . ". Remember that more parameters than defined in function will be ignored.",
 					E_USER_WARNING
 				);
 			}
@@ -754,10 +698,12 @@ class Memory extends Adapter
 			if count(parametersForFunction) == 0 {
 				if numberOfRequiredParameters > 0 {
 					trigger_error(
-						"You didn't provide any parameters when check " . roleName . " can " . access . " "  . resourceName . ". We will use default action when no arguments."
+						"You didn't provide any parameters when '" . roleName .
+						"' can '" . access . "' '"  . componentName .
+						"'. We will use default action when no arguments."
 					);
 
-					return haveAccess == Acl::ALLOW && this->_noArgumentsDefaultAction == Acl::ALLOW;
+					return haveAccess == Acl::ALLOW && this->noArgumentsDefaultAction == Acl::ALLOW;
 				}
 
 				// Number of required parameters == 0 so call funcAccess without any arguments
@@ -771,7 +717,8 @@ class Memory extends Adapter
 
 			// We don't have enough parameters
 			throw new Exception(
-				"You didn't provide all necessary parameters for defined function when check " . roleName . " can " . access . " " . resourceName
+				"You didn't provide all necessary parameters for defined function when check " .
+				roleName . " can " . access . " " . componentName
 			);
 		}
 
@@ -779,37 +726,168 @@ class Memory extends Adapter
 	}
 
 	/**
+	 * Check whether role exist in the roles list
+	 */
+	public function isRole(string roleName) -> bool
+	{
+		return isset this->rolesNames[roleName];
+	}
+
+	/**
+	 * Check whether component exist in the components list
+	 */
+	public function isComponent(string componentName) -> bool
+	{
+		return isset this->componentsNames[componentName];
+	}
+
+	/**
 	 * Sets the default access level (Phalcon\Acl::ALLOW or Phalcon\Acl::DENY)
 	 * for no arguments provided in isAllowed action if there exists func for
 	 * accessKey
 	 */
-	public function setNoArgumentsDefaultAction(int defaultAccess)
+	public function setNoArgumentsDefaultAction(int defaultAccess) -> void
 	{
-		let this->_noArgumentsDefaultAction = defaultAccess;
+		let this->noArgumentsDefaultAction = defaultAccess;
 	}
 
 	/**
-	 * Returns the default ACL access level for no arguments provided in
-	 * isAllowed action if there exists func for accessKey
+	 * Checks if a role has access to a component
 	 */
-	public function getNoArgumentsDefaultAction() -> int
+	private function allowOrDeny(string roleName, string componentName, var access, var action, var func = null) -> void
 	{
-		return this->_noArgumentsDefaultAction;
+		var accessList, accessName, accessKey;
+
+		if !isset this->rolesNames[roleName] {
+			throw new Exception("Role '" . roleName . "' does not exist in ACL");
+		}
+
+		if !isset this->componentsNames[componentName] {
+			throw new Exception("Component '" . componentName . "' does not exist in ACL");
+		}
+
+		let accessList = this->accessList;
+
+		if typeof access == "array" {
+
+			for accessName in access {
+				let accessKey = componentName . "!" . accessName;
+				if !isset accessList[accessKey] {
+					throw new Exception("Access '" . accessName . "' does not exist in component '" . componentName . "'");
+				}
+			}
+
+			for accessName in access {
+
+				let accessKey = roleName . "!" .componentName . "!" . accessName;
+				let this->access[accessKey] = action;
+				if func != null {
+				    let this->func[accessKey] = func;
+				}
+			}
+
+		} else {
+
+			if access != "*" {
+				let accessKey = componentName . "!" . access;
+				if !isset accessList[accessKey] {
+					throw new Exception("Access '" . access . "' does not exist in component '" . componentName . "'");
+				}
+			}
+
+			let accessKey = roleName . "!" . componentName . "!" . access;
+
+			/**
+			 * Define the access action for the specified accessKey
+			 */
+			let this->access[accessKey] = action;
+			if func != null {
+				let this->func[accessKey] = func;
+			}
+		}
 	}
 
 	/**
-	 * Return an array with every role registered in the list
+	 * Check whether a role is allowed to access an action from a component
 	 */
-	public function getRoles() -> <RoleInterface[]>
-	{
-		return this->_roles;
-	}
+	private function canAccess(string roleName, string componentName, string access) -> string | bool
+    {
+        var accessList, accessKey,checkRoleToInherit,
+        	checkRoleToInherits, usedRoleToInherits,
+        	usedRoleToInherit;
 
-	/**
-	 * Return an array with every resource registered in the list
-	 */
-	public function getResources() -> <ResourceInterface[]>
-	{
-		return this->_resources;
-	}
+		let accessList = this->access;
+
+        let accessKey = roleName . "!" . componentName . "!" . access;
+
+		/**
+		 * Check if there is a direct combination for role-component-access
+		 */
+		if isset accessList[accessKey] {
+			return accessKey;
+		}
+		/**
+         * Check if there is a direct combination for role-*-*
+         */
+        let accessKey = roleName . "!" . componentName . "!*";
+        if isset accessList[accessKey] {
+            return accessKey;
+        }
+        /**
+         * Check if there is a direct combination for role-*-*
+         */
+        let accessKey = roleName . "!*!*";
+        if isset accessList[accessKey] {
+            return accessKey;
+        }
+        /**
+         * Deep check if the role to inherit is valid
+         */
+        if isset this->roleInherits[roleName] {
+            let checkRoleToInherits = [];
+            for usedRoleToInherit in this->roleInherits[roleName] {
+                array_push(checkRoleToInherits,usedRoleToInherit);
+            }
+            let usedRoleToInherits = [];
+            while !empty checkRoleToInherits {
+                let checkRoleToInherit = array_shift(checkRoleToInherits);
+
+                if isset usedRoleToInherits[checkRoleToInherit] {
+                    continue;
+                }
+                let usedRoleToInherits[checkRoleToInherit]=true;
+
+                let accessKey = checkRoleToInherit . "!" . componentName . "!" . access;
+                /**
+                 * Check if there is a direct combination in one of the inherited roles
+                 */
+                if isset accessList[accessKey] {
+                    return accessKey;
+                }
+                /**
+                 * Check if there is a direct combination for role-*-*
+                 */
+                let accessKey = checkRoleToInherit . "!" . componentName . "!*";
+                if isset accessList[accessKey] {
+                    return accessKey;
+                }
+                /**
+                 * Check if there is a direct combination for role-*-*
+                 */
+                let accessKey = checkRoleToInherit . "!*!*";
+                if isset accessList[accessKey] {
+                    return accessKey;
+                }
+                /**
+                 * Push inherited roles
+                 */
+                if isset this->roleInherits[checkRoleToInherit] {
+                    for usedRoleToInherit in this->roleInherits[checkRoleToInherit] {
+                        array_push(checkRoleToInherits,usedRoleToInherit);
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

@@ -1,25 +1,16 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc;
 
-use Phalcon\Mvc\Model\MessageInterface;
+use Phalcon\Messages\MessageInterface;
 
 /**
  * Phalcon\Mvc\CollectionInterface
@@ -85,18 +76,18 @@ interface CollectionInterface
 	/**
 	 * Fires an event, implicitly calls behaviors and listeners in the events manager are notified
 	 */
-	public function fireEvent(string! eventName) -> boolean;
+	public function fireEvent(string! eventName) -> bool;
 
 	/**
 	 * Fires an event, implicitly listeners in the events manager are notified
-	 * This method stops if one of the callbacks/listeners returns boolean false
+	 * This method stops if one of the callbacks/listeners returns bool false
 	 */
-	public function fireEventCancel(string! eventName) -> boolean;
+	public function fireEventCancel(string! eventName) -> bool;
 
 	/**
 	 * Check whether validation process has generated any messages
 	 */
-	public function validationHasFailed() -> boolean;
+	public function validationHasFailed() -> bool;
 
 	/**
 	 * Returns all the validation messages
@@ -111,42 +102,32 @@ interface CollectionInterface
 	/**
 	 * Creates/Updates a collection based on the values in the attributes
 	 */
-	public function save() -> boolean;
+	public function save() -> bool;
 
 	/**
 	 * Find a document by its id
 	 *
 	 * @param string id
-	 * @return \Phalcon\Mvc\Collection
 	 */
-	public static function findById(id) -> <CollectionInterface>;
+	public static function findById(var id) -> <CollectionInterface> | null;
 
 	/**
 	 * Allows to query the first record that match the specified conditions
-	 *
-	 * @param array parameters
-	 * @return array
 	 */
-	public static function findFirst(array parameters = null);
+	public static function findFirst(array parameters = null) -> array;
 
 	/**
 	 * Allows to query a set of records that match the specified conditions
-	 *
-	 * @param 	array parameters
-	 * @return  array
 	 */
-	public static function find(array parameters = null);
+	public static function find(array parameters = null) -> array;
 
 	/**
 	 * Perform a count over a collection
-	 *
-	 * @param array parameters
-	 * @return array
 	 */
-	public static function count(array parameters = null);
+	public static function count(array parameters = null) -> int;
 
 	/**
 	 * Deletes a model instance. Returning true on success or false otherwise
 	 */
-	public function delete() -> boolean;
+	public function delete() -> bool;
 }

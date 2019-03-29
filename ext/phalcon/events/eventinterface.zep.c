@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Events\EventInterface
  *
  * Interface for Phalcon\Events\Event class
@@ -32,7 +40,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Events_EventInterface, getData);
 
 /**
  * Sets event data
- * @param mixed data
  */
 ZEPHIR_DOC_METHOD(Phalcon_Events_EventInterface, setData);
 

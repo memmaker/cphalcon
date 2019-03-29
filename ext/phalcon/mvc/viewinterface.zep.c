@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\ViewInterface
  *
  * Interface for Phalcon\Mvc\View
@@ -118,11 +126,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewInterface, getControllerName);
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewInterface, getActionName);
 
 /**
- * Gets extra parameters of the action rendered
- */
-ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewInterface, getParams);
-
-/**
  * Starts rendering process enabling the output buffering
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewInterface, start);
@@ -134,10 +137,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewInterface, registerEngines);
 
 /**
  * Executes render process from dispatching data
- *
- * @param string controllerName
- * @param string actionName
- * @param array params
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewInterface, render);
 

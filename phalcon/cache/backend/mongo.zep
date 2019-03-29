@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache\Backend;
@@ -66,11 +57,8 @@ class Mongo extends Backend
 
 	/**
 	 * Phalcon\Cache\Backend\Mongo constructor
-	 *
-	 * @param \Phalcon\Cache\FrontendInterface frontend
-	 * @param array options
 	 */
-	public function __construct(<FrontendInterface> frontend, options = null)
+	public function __construct(<FrontendInterface> frontend, array options = [])
 	{
 		if !isset options["mongo"] {
 			if !isset options["server"] {
@@ -153,7 +141,7 @@ class Mongo extends Backend
 	/**
 	 * Returns a cached content
 	 */
-	public function get(string keyName, int lifetime = null) -> var | null
+	public function get(string keyName, var lifetime = null) -> var | null
 	{
 		var frontend, prefixedKey, conditions,  document, cachedContent;
 
@@ -186,9 +174,8 @@ class Mongo extends Backend
 	 * @param int|string keyName
 	 * @param string content
 	 * @param int lifetime
-	 * @param boolean stopBuffer
 	 */
-	public function save(keyName = null, content = null, lifetime = null, boolean stopBuffer = true) -> boolean
+	public function save(keyName = null, content = null, lifetime = null, bool stopBuffer = true) -> bool
 	{
 		var lastkey, frontend, cachedContent, tmp, ttl,
 			collection, timestamp, conditions, document, preparedContent,
@@ -271,9 +258,8 @@ class Mongo extends Backend
 	 * Deletes a value from the cache by its key
 	 *
 	 * @param int|string keyName
-	 * @return boolean
 	 */
-	public function delete(keyName) -> boolean
+	public function delete(var keyName) -> bool
 	{
 		this->_getCollection()->remove(["key": this->_prefix . keyName]);
 
@@ -325,7 +311,7 @@ class Mongo extends Backend
 	 * @param string keyName
 	 * @param int lifetime
 	 */
-	public function exists(keyName = null, lifetime = null) -> boolean
+	public function exists(var keyName = null, int lifetime = null) -> bool
 	{
 		var lastKey;
 
@@ -429,7 +415,7 @@ class Mongo extends Backend
 	/**
 	 * Immediately invalidates all existing items.
 	 */
-	public function flush() -> boolean
+	public function flush() -> bool
 	{
 		this->_getCollection()->remove();
 

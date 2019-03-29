@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\Model\BehaviorInterface
  *
  * Interface for Phalcon\Mvc\Model\Behavior
@@ -32,10 +40,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_BehaviorInterface, notify);
 
 /**
  * Calls a method when it's missing in the model
- *
- * @param \Phalcon\Mvc\ModelInterface model
- * @param string method
- * @param array arguments
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_BehaviorInterface, missingMethod);
 

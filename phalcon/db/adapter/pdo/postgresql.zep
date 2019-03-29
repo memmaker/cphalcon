@@ -1,29 +1,23 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
-*/
+/**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Phalcon\Db\Adapter\Pdo;
 
-use Phalcon\Db\Column;
-use Phalcon\Db\RawValue;
+use Phalcon\Db;
 use Phalcon\Db\Adapter\Pdo as PdoAdapter;
+use Phalcon\Db\Column;
+use Phalcon\Db\ColumnInterface;
 use Phalcon\Db\Exception;
+use Phalcon\Db\RawValue;
+use Phalcon\Db\Reference;
+use Phalcon\Db\ReferenceInterface;
 
 /**
  * Phalcon\Db\Adapter\Pdo\Postgresql
@@ -47,15 +41,35 @@ use Phalcon\Db\Exception;
 class Postgresql extends PdoAdapter
 {
 
+	protected _dialectType = "postgresql";
+
 	protected _type = "pgsql";
 
-	protected _dialectType = "postgresql";
+	/**
+	 * Returns PDO adapter DSN defaults as a key-value map.
+	 */
+	protected function getDsnDefaults() -> array
+	{
+		return [];
+	}
+
+	/**
+	 * Constructor for Phalcon\Db\Adapter\Pdo\Postgresql
+	 */
+	public function __construct(array! descriptor)
+	{
+		if isset descriptor["charset"] {
+			trigger_error("Postgres does not allow the charset to be changed in the DSN.");
+		}
+
+		parent::__construct(descriptor);
+	}
 
 	/**
 	 * This method is automatically called in Phalcon\Db\Adapter\Pdo constructor.
 	 * Call it when you need to restore a database connection.
 	 */
-	public function connect(array descriptor = null) -> boolean
+	public function connect(array descriptor = null) -> bool
 	{
 		var schema, sql, status;
 
@@ -86,6 +100,46 @@ class Postgresql extends PdoAdapter
 	}
 
 	/**
+	 * Creates a table
+	 */
+	public function createTable(string! tableName, string! schemaName, array! definition) -> bool
+	{
+		var sql,queries,query,exception,columns;
+
+		if !fetch columns, definition["columns"] {
+			throw new Exception("The table must contain at least one column");
+		}
+
+		if !count(columns) {
+			throw new Exception("The table must contain at least one column");
+		}
+
+		let sql = this->_dialect->createTable(tableName, schemaName, definition);
+
+		let queries = explode(";",sql);
+
+		if count(queries) > 1 {
+			try {
+				this->{"begin"}();
+				for query in queries {
+					if empty query {
+						continue;
+					}
+					this->{"query"}(query . ";");
+				}
+				return this->{"commit"}();
+			} catch \Throwable, exception {
+
+				this->{"rollback"}();
+				 throw exception;
+			 }
+		} else {
+			return this->{"execute"}(queries[0] . ";");
+		}
+		return true;
+	}
+
+	/**
 	 * Returns an array of Phalcon\Db\Column objects describing a table
 	 *
 	 * <code>
@@ -94,7 +148,7 @@ class Postgresql extends PdoAdapter
 	 * );
 	 * </code>
 	 */
-	public function describeColumns(string table, string schema = null) -> <Column[]>
+	public function describeColumns(string table, string schema = null) -> <ColumnInterface[]>
 	{
 		var columns, columnType, field, definition,
 			oldColumn, columnName, charSize, numericSize, numericScale;
@@ -105,7 +159,7 @@ class Postgresql extends PdoAdapter
 		 * We're using FETCH_NUM to fetch the columns
 		 * 0:name, 1:type, 2:size, 3:numericsize, 4: numericscale, 5: null, 6: key, 7: extra, 8: position, 9 default
 		 */
-		for field in this->fetchAll(this->_dialect->describeColumns(table, schema), \Phalcon\Db::FETCH_NUM) {
+		for field in this->fetchAll(this->_dialect->describeColumns(table, schema), Db::FETCH_NUM) {
 
 			/**
 			 * By default the bind types is two
@@ -120,114 +174,259 @@ class Postgresql extends PdoAdapter
 				numericSize = field[3],
 				numericScale = field[4];
 
-			if memstr(columnType, "smallint(1)") {
+			/**
+			 * The order of these IF statements matters. Since we are using memstr
+			 * to figure out whether a particular string exists in the columnType
+			 * we will end up with false positives if the order changes.
+			 *
+			 * For instance if we have a `varchar` column and we check for `char`
+			 * first, then that will match. Therefore we have firs the IF
+			 * statements that are "unique" and further down the ones that can
+			 * appear a substrings of the columnType above them.
+			 */
+
+			switch true {
 				/**
-				 * Smallint(1) is boolean
+				 * BOOL
 				 */
-				let definition["type"] = Column::TYPE_BOOLEAN,
-					definition["bindType"] = Column::BIND_PARAM_BOOL;
-			} elseif memstr(columnType, "bigint") {
+				 case memstr(columnType, "boolean"):
+					/**
+					 * tinyint(1) is boolean
+					 */
+					let definition["type"] = Column::TYPE_BOOLEAN,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_BOOL;
+					break;
+
 				/**
-				 * Bigint
+				 * BIGINT
 				 */
-				let definition["type"] = Column::TYPE_BIGINTEGER,
-					definition["isNumeric"] = true,
-					definition["bindType"] = Column::BIND_PARAM_INT;
-			} elseif memstr(columnType, "int") {
+				case memstr(columnType, "bigint"):
+					let definition["type"] = Column::TYPE_BIGINTEGER,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_INT;
+					break;
+
 				/**
-				 * Int
+				 * MEDIUMINT
 				 */
-				let definition["type"] = Column::TYPE_INTEGER,
-					definition["isNumeric"] = true,
-					definition["size"] = numericSize,
-					definition["bindType"] = Column::BIND_PARAM_INT;
-			} elseif memstr(columnType, "varying") {
+				case memstr(columnType, "mediumint"):
+					let definition["type"] = Column::TYPE_MEDIUMINTEGER,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_INT;
+					break;
+
 				/**
-				 * Varchar
+				 * SMALLINT
 				 */
-				let definition["type"] = Column::TYPE_VARCHAR,
-					definition["size"] = charSize;
-			} elseif memstr(columnType, "date") {
+				case memstr(columnType, "smallint"):
+					let definition["type"] = Column::TYPE_SMALLINTEGER,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_INT;
+					break;
+
 				/**
-				 * Special type for datetime
+				 * TINYINT
 				 */
-				let definition["type"] = Column::TYPE_DATE,
-					definition["size"] = 0;
-			} elseif memstr(columnType, "timestamp") {
+				case memstr(columnType, "tinyint"):
+					/**
+					 * Smallint/Bigint/Integers/Int are int
+					 */
+					let definition["type"] = Column::TYPE_TINYINTEGER,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_INT;
+					break;
+
 				/**
-				 * Timestamp
+				 * INT
 				 */
-				let definition["type"] = Column::TYPE_TIMESTAMP;
-			} elseif memstr(columnType, "numeric") {
+				case memstr(columnType, "int"):
+					let definition["type"] = Column::TYPE_INTEGER,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_INT;
+
+					break;
+
 				/**
-				 * Numeric
+				 * BIT
 				 */
-				let definition["type"] = Column::TYPE_DECIMAL,
-					definition["isNumeric"] = true,
-					definition["size"] = numericSize,
-					definition["scale"] = numericScale,
-					definition["bindType"] = Column::BIND_PARAM_DECIMAL;
-			} elseif memstr(columnType, "char") {
+				case memstr(columnType, "bit"):
+					let definition["type"] = Column::TYPE_BIT,
+						definition["size"] = numericSize;
+					break;
+
 				/**
-				 * Chars are chars
+				 * ENUM
 				 */
-				let definition["type"] = Column::TYPE_CHAR,
-					definition["size"] = charSize;
-			} elseif memstr(columnType, "timestamp") {
+				case memstr(columnType, "enum"):
+					let definition["type"] = Column::TYPE_ENUM;
+					break;
+
+
 				/**
-				 * Date
+				 * DATE
 				 */
-				let definition["type"] = Column::TYPE_DATETIME,
-					definition["size"] = 0;
-			} elseif memstr(columnType, "text") {
+				case memstr(columnType, "datetime"):
+					let definition["type"] = Column::TYPE_DATETIME,
+						definition["size"] = 0;
+					break;
+
 				/**
-				 * Text are varchars
+				 * DATETIME
 				 */
-				let definition["type"] = Column::TYPE_TEXT,
-					definition["size"] = charSize;
-			} elseif memstr(columnType, "float") {
+				case memstr(columnType, "date"):
+					let definition["type"] = Column::TYPE_DATE,
+						definition["size"] = 0;
+					break;
+
 				/**
-				 * Float/Smallfloats/Decimals are float
+				 * NUMERIC -> DECIMAL - This will need to be a string so as not
+				 * to lose the decimals
 				 */
-				let definition["type"] = Column::TYPE_FLOAT,
-					definition["isNumeric"] = true,
-					definition["size"] = numericSize,
-					definition["bindType"] = Column::BIND_PARAM_DECIMAL;
-			} elseif memstr(columnType, "bool") {
+				case memstr(columnType, "decimal"):
+				case memstr(columnType, "numeric"):
+					let definition["type"] = Column::TYPE_DECIMAL,
+						definition["size"] = numericSize,
+						definition["isNumeric"] = true,
+						definition["bindType"] = Column::BIND_PARAM_DECIMAL;
+					break;
+
 				/**
-				 * Boolean
+				 * DOUBLE
 				 */
-				let definition["type"] = Column::TYPE_BOOLEAN,
-					definition["size"] = 0,
-					definition["bindType"] = Column::BIND_PARAM_BOOL;
-			} elseif memstr(columnType, "jsonb") {
+				case memstr(columnType, "double precision"):
+					let definition["type"] = Column::TYPE_DOUBLE,
+						definition["isNumeric"] = true,
+						definition["size"] = numericSize,
+						definition["bindType"] = Column::BIND_PARAM_DECIMAL;
+					break;
+
 				/**
-				 * Jsonb
+				 * FLOAT
 				 */
-				let definition["type"] = Column::TYPE_JSONB;
-			} elseif memstr(columnType, "json") {
+				case memstr(columnType, "float"):
+				case memstr(columnType, "real"):
+					let definition["type"] = Column::TYPE_FLOAT,
+						definition["isNumeric"] = true,
+						definition["size"] = numericSize,
+						definition["bindType"] = Column::BIND_PARAM_DECIMAL;
+					break;
+
 				/**
-				 * Json
+				 * MEDIUMBLOB
 				 */
-				let definition["type"] = Column::TYPE_JSON;
-			} elseif memstr(columnType, "uuid") {
+				case memstr(columnType, "mediumblob"):
+					let definition["type"] = Column::TYPE_TEXT;
+					break;
+
+				/**
+				 * LONGBLOB
+				 */
+				case memstr(columnType, "longblob"):
+					let definition["type"] = Column::TYPE_LONGBLOB;
+					break;
+
+				/**
+				 * TINYBLOB
+				 */
+				case memstr(columnType, "tinyblob"):
+					let definition["type"] = Column::TYPE_TINYBLOB;
+					break;
+
+				/**
+				 * BLOB
+				 */
+				case memstr(columnType, "blob"):
+					let definition["type"] = Column::TYPE_BLOB;
+					break;
+
+				/**
+				 * TIMESTAMP
+				 */
+				case memstr(columnType, "timestamp"):
+					let definition["type"] = Column::TYPE_TIMESTAMP;
+					break;
+
+				/**
+				 * TIME
+				 */
+				case memstr(columnType, "time"):
+					let definition["type"] = Column::TYPE_TIME;
+					break;
+
+				/**
+				 * JSONB
+				 */
+				case memstr(columnType, "jsonb"):
+					let definition["type"] = Column::TYPE_JSONB;
+					break;
+
+				/**
+				 * JSON
+				 */
+				case memstr(columnType, "json"):
+					let definition["type"] = Column::TYPE_JSON;
+					break;
+
+				/**
+				 * LONGTEXT
+				 */
+				case memstr(columnType, "longtext"):
+					let definition["type"] = Column::TYPE_LONGTEXT;
+					break;
+
+				/**
+				 * MEDIUMTEXT
+				 */
+				case memstr(columnType, "mediumtext"):
+					let definition["type"] = Column::TYPE_MEDIUMTEXT;
+					break;
+
+				/**
+				 * TINYTEXT
+				 */
+				case memstr(columnType, "tinytext"):
+					let definition["type"] = Column::TYPE_TINYTEXT;
+					break;
+
+				/**
+				 * TEXT
+				 */
+				case memstr(columnType, "text"):
+					let definition["type"] = Column::TYPE_TEXT;
+					break;
+
+				/**
+				 * VARCHAR
+				 */
+				case memstr(columnType, "varying"):
+				case memstr(columnType, "varchar"):
+					let definition["type"] = Column::TYPE_VARCHAR,
+						definition["size"] = charSize;
+					break;
+
+				/**
+				 * CHAR
+				 */
+				case memstr(columnType, "char"):
+					let definition["type"] = Column::TYPE_CHAR,
+						definition["size"] = charSize;
+					break;
+
 				/**
 				 * UUID
 				 */
-				let definition["type"] = Column::TYPE_CHAR,
-					definition["size"] = 36;
-			} else {
-				/**
-				 * By default is string
-				 */
-				let definition["type"] = Column::TYPE_VARCHAR;
-			}
+				case memstr(columnType, "uuid"):
+					let definition["type"] = Column::TYPE_CHAR,
+						definition["size"] = 36;
+					break;
 
-			/**
-			 * Check if the column is unsigned, only MySQL support this
-			 */
-			if memstr(columnType, "unsigned") {
-				let definition["unsigned"] = true;
+				/**
+				 * Default
+				 */
+				default:
+					let definition["type"] = Column::TYPE_VARCHAR;
+					break;
 			}
 
 			/**
@@ -282,85 +481,69 @@ class Postgresql extends PdoAdapter
 	}
 
 	/**
-	 * Creates a table
+	 * Lists table references
+	 *
+	 *<code>
+	 * print_r(
+	 *     $connection->describeReferences("robots_parts")
+	 * );
+	 *</code>
 	 */
-	public function createTable(string! tableName, string! schemaName, array! definition) -> boolean
+	public function describeReferences(string! table, string! schema = null) -> <ReferenceInterface[]>
 	{
-		var sql,queries,query,exception,columns;
+		var references, reference,
+			arrayReference, constraintName, referenceObjects, name,
+			referencedSchema, referencedTable, columns, referencedColumns,
+			referenceUpdate, referenceDelete;
 
-		if !fetch columns, definition["columns"] {
-			throw new Exception("The table must contain at least one column");
+		let references = [];
+
+		for reference in this->fetchAll(this->_dialect->describeReferences(table, schema), Db::FETCH_NUM) {
+
+			let constraintName = reference[2];
+			if !isset references[constraintName] {
+				let referencedSchema  = reference[3];
+				let referencedTable   = reference[4];
+				let referenceUpdate   = reference[6];
+				let referenceDelete   = reference[7];
+				let columns           = [];
+				let referencedColumns = [];
+
+			} else {
+				let referencedSchema  = references[constraintName]["referencedSchema"];
+				let referencedTable   = references[constraintName]["referencedTable"];
+				let columns           = references[constraintName]["columns"];
+				let referencedColumns = references[constraintName]["referencedColumns"];
+				let referenceUpdate   = references[constraintName]["onUpdate"];
+				let referenceDelete   = references[constraintName]["onDelete"];
+			}
+
+			let columns[] = reference[1],
+				referencedColumns[] = reference[5];
+
+			let references[constraintName] = [
+				"referencedSchema"  : referencedSchema,
+				"referencedTable"   : referencedTable,
+				"columns"           : columns,
+				"referencedColumns" : referencedColumns,
+				"onUpdate"          : referenceUpdate,
+				"onDelete"          : referenceDelete
+			];
 		}
 
-		if !count(columns) {
-			throw new Exception("The table must contain at least one column");
+		let referenceObjects = [];
+		for name, arrayReference in references {
+			let referenceObjects[name] = new Reference(name, [
+				"referencedSchema"  : arrayReference["referencedSchema"],
+				"referencedTable"   : arrayReference["referencedTable"],
+				"columns"           : arrayReference["columns"],
+				"referencedColumns" : arrayReference["referencedColumns"],
+				"onUpdate"          : arrayReference["onUpdate"],
+				"onDelete"          : arrayReference["onDelete"]
+			]);
 		}
 
-		let sql = this->_dialect->createTable(tableName, schemaName, definition);
-
-		let queries = explode(";",sql);
-
-		if count(queries) > 1 {
-			try {
-				this->{"begin"}();
-				for query in queries {
-					if empty query {
-						continue;
-					}
-					this->{"query"}(query . ";");
-				}
-				return this->{"commit"}();
-			} catch \Exception, exception {
-
-				this->{"rollback"}();
-				 throw exception;
-			 }
-		} else {
-			return this->{"execute"}(queries[0] . ";");
-		}
-		return true;
-	}
-
-	/**
-	 * Modifies a table column based on a definition
-	 */
-	public function modifyColumn(string! tableName, string! schemaName, <\Phalcon\Db\ColumnInterface> column, <\Phalcon\Db\ColumnInterface> currentColumn = null) -> boolean
-	{
-		var sql,queries,query,exception;
-
-		let sql = this->_dialect->modifyColumn(tableName, schemaName, column, currentColumn);
-		let queries = explode(";",sql);
-
-		if count(queries) > 1 {
-			try {
-
-				this->{"begin"}();
-				for query in queries {
-					if empty query {
-						continue;
-					}
-					this->{"query"}(query . ";");
-				}
-				return this->{"commit"}();
-
-			} catch \Exception, exception {
-
-				this->{"rollback"}();
-				 throw exception;
-			 }
-
-		} else {
-			return !empty sql ? this->{"execute"}(queries[0] . ";") : true;
-		}
-		return true;
-	}
-
-	/**
-	 * Check whether the database system requires an explicit value for identity columns
-	 */
-	public function useExplicitIdValue() -> boolean
-	{
-		return true;
+		return referenceObjects;
 	}
 
 	/**
@@ -389,9 +572,51 @@ class Postgresql extends PdoAdapter
 	}
 
 	/**
+	 * Modifies a table column based on a definition
+	 */
+	public function modifyColumn(string! tableName, string! schemaName, <ColumnInterface> column, <ColumnInterface> currentColumn = null) -> bool
+	{
+		var sql,queries,query,exception;
+
+		let sql = this->_dialect->modifyColumn(tableName, schemaName, column, currentColumn);
+		let queries = explode(";",sql);
+
+		if count(queries) > 1 {
+			try {
+
+				this->{"begin"}();
+				for query in queries {
+					if empty query {
+						continue;
+					}
+					this->{"query"}(query . ";");
+				}
+				return this->{"commit"}();
+
+			} catch \Throwable, exception {
+
+				this->{"rollback"}();
+				 throw exception;
+			 }
+
+		} else {
+			return !empty sql ? this->{"execute"}(queries[0] . ";") : true;
+		}
+		return true;
+	}
+
+	/**
 	 * Check whether the database system requires a sequence to produce auto-numeric values
 	 */
-	public function supportSequences() -> boolean
+	public function supportSequences() -> bool
+	{
+		return true;
+	}
+
+	/**
+	 * Check whether the database system requires an explicit value for identity columns
+	 */
+	public function useExplicitIdValue() -> bool
 	{
 		return true;
 	}

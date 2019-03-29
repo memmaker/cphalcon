@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Http\Response;
@@ -33,6 +24,14 @@ class Headers implements HeadersInterface
 	/**
 	 * Sets a header to be sent at the end of the request
 	 */
+	public function has(string name) -> bool
+	{
+		return isset(this->_headers[name]);
+	}
+
+	/**
+	 * Sets a header to be sent at the end of the request
+	 */
 	public function set(string name, string value)
 	{
 		let this->_headers[name] = value;
@@ -41,7 +40,7 @@ class Headers implements HeadersInterface
 	/**
 	 * Gets a header value from the internal bag
 	 */
-	public function get(string name) -> string | boolean
+	public function get(string name) -> string | bool
 	{
 		var headers, headerValue;
 		let headers = this->_headers;
@@ -76,7 +75,7 @@ class Headers implements HeadersInterface
 	/**
 	 * Sends the headers to the client
 	 */
-	public function send() -> boolean
+	public function send() -> bool
 	{
 		var header, value;
 		if !headers_sent() {
@@ -115,7 +114,7 @@ class Headers implements HeadersInterface
 	/**
 	 * Restore a \Phalcon\Http\Response\Headers object
 	 */
-	public static function __set_state(array! data) -> <Headers>
+	public static function __set_state(array! data) -> <HeadersInterface>
 	{
 		var headers, key, value, dataHeaders;
 		let headers = new self();

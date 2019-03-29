@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc;
@@ -80,11 +71,33 @@ class Application extends BaseApplication
 
 	protected _implicitView = true;
 
+	protected _sendHeaders = true;
+
+	protected _sendCookies = true;
+
+	/**
+	 * Enables or disables sending headers by each request handling
+	 */
+	public function sendHeadersOnHandleRequest(bool sendHeaders) -> <Application>
+	{
+		let this->_sendHeaders = sendHeaders;
+		return this;
+	}
+
+	/**
+	 * Enables or disables sending cookies by each request handling
+	 */
+	public function sendCookiesOnHandleRequest(bool sendCookies) -> <Application>
+	{
+		let this->_sendCookies = sendCookies;
+		return this;
+	}
+
 	/**
 	 * By default. The view is implicitly buffering all the output
 	 * You can full disable the view component using this method
 	 */
-	public function useImplicitView(boolean implicitView) -> <Application>
+	public function useImplicitView(bool implicitView) -> <Application>
 	{
 		let this->_implicitView = implicitView;
 		return this;
@@ -93,7 +106,7 @@ class Application extends BaseApplication
 	/**
 	 * Handles a MVC request
 	 */
-	public function handle(string uri = null) -> <ResponseInterface> | boolean
+	public function handle(string! uri) -> <ResponseInterface> | bool
 	{
 		var dependencyInjector, eventsManager, router, dispatcher, response, view,
 			module, moduleObject, moduleName, className, path,
@@ -347,8 +360,7 @@ class Application extends BaseApplication
 							 */
 							view->render(
 								dispatcher->getControllerName(),
-								dispatcher->getActionName(),
-								dispatcher->getParams()
+								dispatcher->getActionName()
 							);
 						}
 					}
@@ -389,10 +401,18 @@ class Application extends BaseApplication
 		}
 
 		/**
-		 * Headers and Cookies are automatically sent
+		 * Check whether send headers or not (by default yes)
 		 */
-		response->sendHeaders();
-		response->sendCookies();
+		if this->_sendHeaders  {
+			response->sendHeaders();
+		}
+
+		/**
+		 * Check whether send cookies or not (by default yes)
+		 */
+		if this->_sendCookies {
+			response->sendCookies();
+		}
 
 		/**
 		 * Return the response

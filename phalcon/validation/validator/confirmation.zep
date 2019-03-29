@@ -1,26 +1,17 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Validation\Validator;
 
+use Phalcon\Messages\Message;
 use Phalcon\Validation;
-use Phalcon\Validation\Message;
 use Phalcon\Validation\Exception;
 use Phalcon\Validation\Validator;
 
@@ -30,7 +21,10 @@ use Phalcon\Validation\Validator;
  * Checks that two values have the same value
  *
  * <code>
+ * use Phalcon\Validation;
  * use Phalcon\Validation\Validator\Confirmation;
+ *
+ * $validator = new Validation();
  *
  * $validator->add(
  *     "password",
@@ -68,7 +62,7 @@ class Confirmation extends Validator
 	/**
 	 * Executes the validation
 	 */
-	public function validate(<Validation> validation, string! field) -> boolean
+	public function validate(<Validation> validation, var field) -> bool
 	{
 		var fieldWith, value, valueWith, message, label, labelWith, replacePairs, code;
 
@@ -114,7 +108,7 @@ class Confirmation extends Validator
 	/**
 	 * Compare strings
 	 */
-	protected final function compare(string a, string b) -> boolean
+	protected final function compare(string a, string b) -> bool
 	{
 		if this->getOption("ignoreCase", false) {
 

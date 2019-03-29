@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Events;
@@ -50,26 +41,23 @@ class Event implements EventInterface
 	/**
 	 * Is event propagation stopped?
 	 *
-	 * @var boolean
+	 * @var bool
 	 */
 	protected _stopped = false;
 
 	/**
 	 * Is event cancelable?
 	 *
-	 * @var boolean
+	 * @var bool
 	 */
 	protected _cancelable = true;
 
 	/**
 	 * Phalcon\Events\Event constructor
 	 *
-	 * @param string type
 	 * @param object source
-	 * @param mixed data
-	 * @param boolean cancelable
 	 */
-	public function __construct(string! type, source, data = null, boolean cancelable = true)
+	public function __construct(string! type, source, var data = null, bool cancelable = true)
 	{
 		let this->_type = type,
 			this->_source = source;
@@ -85,9 +73,8 @@ class Event implements EventInterface
 
 	/**
 	 * Sets event data.
-	 * @param mixed data
 	 */
-	public function setData(data = null) -> <EventInterface>
+	public function setData(var data = null) -> <EventInterface>
 	{
 		let this->_data = data;
 
@@ -127,7 +114,7 @@ class Event implements EventInterface
 	/**
 	 * Check whether the event is currently stopped.
 	 */
-	public function isStopped() -> boolean
+	public function isStopped() -> bool
 	{
 		return this->_stopped;
 	}
@@ -141,7 +128,7 @@ class Event implements EventInterface
 	 * }
 	 * </code>
 	 */
-	public function isCancelable() -> boolean
+	public function isCancelable() -> bool
 	{
 		return this->_cancelable;
 	}

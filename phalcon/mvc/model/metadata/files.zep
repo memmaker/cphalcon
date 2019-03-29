@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\MetaData;
@@ -28,7 +19,7 @@ use Phalcon\Mvc\Model\Exception;
  * Stores model meta-data in PHP files.
  *
  *<code>
- * $metaData = new \Phalcon\Mvc\Model\Metadata\Files(
+ * $metaData = new \Phalcon\Mvc\Model\MetaData\Files(
  *     [
  *         "metaDataDir" => "app/cache/metadata/",
  *     ]
@@ -50,20 +41,16 @@ class Files extends MetaData
 	public function __construct(options = null)
 	{
 		var metaDataDir;
-		if typeof options == "array" {
-			if fetch metaDataDir, options["metaDataDir"] {
-				let this->_metaDataDir = metaDataDir;
-			}
+
+		if fetch metaDataDir, options["metaDataDir"] {
+			let this->_metaDataDir = metaDataDir;
 		}
 	}
 
 	/**
 	 * Reads meta-data from files
-	 *
-	 * @param string key
-	 * @return mixed
 	 */
-	public function read(string! key)
+	public function read(string! key) -> array | null
 	{
 		var path;
 		let path = this->_metaDataDir . prepare_virtual_path(key, "_") . ".php";
@@ -75,11 +62,8 @@ class Files extends MetaData
 
 	/**
 	 * Writes the meta-data to files
-	 *
-	 * @param string key
-	 * @param array data
 	 */
-	public function write(string! key, var data) -> void
+	public function write(string! key, array data) -> void
 	{
 		var path;
 

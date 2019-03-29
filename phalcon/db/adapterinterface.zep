@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db;
@@ -27,250 +18,24 @@ namespace Phalcon\Db;
 interface AdapterInterface
 {
 	/**
-	 * Returns the first row in a SQL query result
-	 *
-	 * @param string sqlQuery
-	 * @param int fetchMode
-	 * @param int placeholders
-	 * @return array
-	 */
-	public function fetchOne(string! sqlQuery, fetchMode = 2, placeholders = null);
-
-	/**
-	 * Dumps the complete result of a query into an array
-	 *
-	 * @param string sqlQuery
-	 * @param int fetchMode
-	 * @param int placeholders
-	 * @return array
-	 */
-	public function fetchAll(string! sqlQuery, fetchMode = 2, placeholders = null);
-
-	/**
-	 * Inserts data into a table using custom RDBMS SQL syntax
-	 *
-	 * @param 	string table
-	 * @param 	array values
-	 * @param 	array fields
-	 * @param 	array dataTypes
-	 * @return 	boolean
-	 */
-	public function insert(var table, array! values, fields = null, dataTypes = null);
-
-	/**
-	 * Updates data on a table using custom RDBMS SQL syntax
-	 *
-	 * @param 	string table
-	 * @param 	array fields
-	 * @param 	array values
-	 * @param 	string whereCondition
-	 * @param 	array dataTypes
-	 * @return 	boolean
-	 */
-	public function update(var table, fields, values, whereCondition = null, dataTypes = null);
-
-	/**
-	 * Deletes data from a table using custom RDBMS SQL syntax
-	 *
-	 * @param  string table
-	 * @param  string whereCondition
-	 * @param  array placeholders
-	 * @param  array dataTypes
-	 * @return boolean
-	 */
-	public function delete(var table, whereCondition = null, placeholders = null, dataTypes = null);
-
-	/**
-	 * Gets a list of columns
-	 *
-	 * @param	array columnList
-	 * @return	string
-	 */
-	public function getColumnList(columnList);
-
-	/**
-	 * Appends a LIMIT clause to sqlQuery argument
-	 *
-	 * @param  	string sqlQuery
-	 * @param 	int number
-	 * @return 	string
-	 */
-	public function limit(var sqlQuery, number);
-
-	/**
-	 * Generates SQL checking for the existence of a schema.table
-	 */
-	public function tableExists(string! tableName, string! schemaName = null) -> boolean;
-
-	/**
-	 * Generates SQL checking for the existence of a schema.view
-	 */
-	public function viewExists(string! viewName, string! schemaName = null) -> boolean;
-
-	/**
-	 * Returns a SQL modified with a FOR UPDATE clause
-	 */
-	public function forUpdate(string! sqlQuery) -> string;
-
-	/**
-	 * Returns a SQL modified with a LOCK IN SHARE MODE clause
-	 */
-	public function sharedLock(string! sqlQuery) -> string;
-
-	/**
-	 * Creates a table
-	 */
-	public function createTable(string! tableName, string! schemaName, array! definition) -> boolean;
-
-	/**
-	 * Drops a table from a schema/database
-	 */
-	public function dropTable(string! tableName, string! schemaName = null, boolean ifExists = true) -> boolean;
-
-	/**
-	 * Creates a view
-	 */
-	public function createView(string! viewName, array! definition, string schemaName = null) -> boolean;
-
-	/**
-	 * Drops a view
-	 */
-	public function dropView(string! viewName, string! schemaName = null, boolean ifExists = true) -> boolean;
-
-	/**
 	 * Adds a column to a table
 	 */
-	public function addColumn(string! tableName, string! schemaName, <ColumnInterface> column) -> boolean;
-
-	/**
-	 * Modifies a table column based on a definition
-	 */
-	public function modifyColumn(string! tableName, string! schemaName, <ColumnInterface> column, <ColumnInterface> currentColumn = null) -> boolean;
-
-	/**
-	 * Drops a column from a table
-	 */
-	public function dropColumn(string! tableName, string! schemaName, string columnName) -> boolean;
+	public function addColumn(string! tableName, string! schemaName, <ColumnInterface> column) -> bool;
 
 	/**
 	 * Adds an index to a table
 	 */
-	public function addIndex(string! tableName, string! schemaName, <IndexInterface> index) -> boolean;
-
-	/**
-	 * Drop an index from a table
-	 */
-	public function dropIndex(string! tableName, string! schemaName, string indexName) -> boolean;
-
-	/**
-	 * Adds a primary key to a table
-	 */
-	public function addPrimaryKey(string! tableName, string! schemaName, <IndexInterface> index) -> boolean;
-
-	/**
-	 * Drops primary key from a table
-	 */
-	public function dropPrimaryKey(string! tableName, string! schemaName) -> boolean;
+	public function addIndex(string! tableName, string! schemaName, <IndexInterface> index) -> bool;
 
 	/**
 	 * Adds a foreign key to a table
 	 */
-	public function addForeignKey(string! tableName, string! schemaName, <ReferenceInterface> reference) -> boolean;
+	public function addForeignKey(string! tableName, string! schemaName, <ReferenceInterface> reference) -> bool;
 
 	/**
-	 * Drops a foreign key from a table
+	 * Adds a primary key to a table
 	 */
-	public function dropForeignKey(string! tableName, string! schemaName, string referenceName) -> boolean;
-
-	/**
-	 * Returns the SQL column definition from a column
-	 */
-	public function getColumnDefinition(<ColumnInterface> column) -> string;
-
-	 /**
-	 * List all tables on a database
-	 */
-	public function listTables(string! schemaName = null) -> array;
-
-	/**
-	 * List all views on a database
-	 */
-	public function listViews(string! schemaName = null) -> array;
-
-	/**
-	 * Return descriptor used to connect to the active database
-	 *
-	 * @return array
-	 */
-	public function getDescriptor();
-
-	/**
-	 * Gets the active connection unique identifier
-	 *
-	 * @return string
-	 */
-	public function getConnectionId();
-
-	/**
-	 * Active SQL statement in the object
-	 */
-	public function getSQLStatement() -> string;
-
-	/**
-	 * Active SQL statement in the object without replace bound parameters
-	 */
-	public function getRealSQLStatement() -> string;
-
-	/**
-	 * Active SQL statement in the object
-	 *
-	 * @return array
-	 */
-	public function getSQLVariables();
-
-	/**
-	 * Active SQL statement in the object
-	 *
-	 * @return array
-	 */
-	public function getSQLBindTypes();
-
-	/**
-	 * Returns type of database system the adapter is used for
-	 *
-	 * @return string
-	 */
-	public function getType();
-
-	/**
-	 * Returns the name of the dialect used
-	 *
-	 * @return string
-	 */
-	public function getDialectType();
-
-	/**
-	 * Returns internal dialect instance
-	 */
-	public function getDialect() -> <DialectInterface>;
-
-	/**
-	 * This method is automatically called in \Phalcon\Db\Adapter\Pdo constructor.
-	 * Call it when you need to restore a database connection
-	 */
-	public function connect(array descriptor = null) -> boolean;
-
-	/**
-	 * Sends SQL statements to the database server returning the success state.
-	 * Use this method only when the SQL statement sent to the server return rows
-	 */
-	public function query(string! sqlStatement, var placeholders = null, var dataTypes = null) -> <ResultInterface> | boolean;
-
-	/**
-	 * Sends SQL statements to the database server returning the success state.
-	 * Use this method only when the SQL statement sent to the server doesn't return any rows
-	 */
-	public function execute(string! sqlStatement, var placeholders = null, var dataTypes = null) -> boolean;
+	public function addPrimaryKey(string! tableName, string! schemaName, <IndexInterface> index) -> bool;
 
 	/**
 	 * Returns the number of affected rows by the last INSERT/UPDATE/DELETE reported by the database system
@@ -278,56 +43,55 @@ interface AdapterInterface
 	public function affectedRows() -> int;
 
 	/**
+	 * Starts a transaction in the connection
+	 */
+	public function begin(bool nesting = true) -> bool;
+
+	/**
 	 * Closes active connection returning success. Phalcon automatically closes
 	 * and destroys active connections within Phalcon\Db\Pool
 	 */
-	public function close() -> boolean;
-
-	/**
-	 * Escapes a column/table/schema name
-	 *
-	 * @param string identifier
-	 * @return string
-	 */
-	public function escapeIdentifier(identifier) -> string;
-
-	/**
-	 * Escapes a value to avoid SQL injections
-	 */
-	public function escapeString(string! str) -> string;
-
-	/**
-	 * Returns insert id for the auto_increment column inserted in the last SQL statement
-	 *
-	 * @param string sequenceName
-	 * @return int
-	 */
-	public function lastInsertId(sequenceName = null);
-
-	/**
-	 * Starts a transaction in the connection
-	 */
-	public function begin(boolean nesting = true) -> boolean;
-
-	/**
-	 * Rollbacks the active transaction in the connection
-	 */
-	public function rollback(boolean nesting = true) -> boolean;
+	public function close() -> bool;
 
 	/**
 	 * Commits the active transaction in the connection
 	 */
-	public function commit(boolean nesting = true) -> boolean;
+	public function commit(bool nesting = true) -> bool;
 
 	/**
-	 * Checks whether connection is under database transaction
+	 * This method is automatically called in \Phalcon\Db\Adapter\Pdo constructor.
+	 * Call it when you need to restore a database connection
 	 */
-	public function isUnderTransaction() -> boolean;
+	public function connect(array descriptor = null) -> bool;
 
 	/**
-	 * Return internal PDO handler
+	 * Creates a new savepoint
 	 */
-	public function getInternalHandler() -> <\Pdo>;
+	public function createSavepoint(string! name) -> bool;
+
+	/**
+	 * Creates a table
+	 */
+	public function createTable(string! tableName, string! schemaName, array! definition) -> bool;
+
+	/**
+	 * Creates a view
+	 */
+	public function createView(string! viewName, array! definition, string schemaName = null) -> bool;
+
+	/**
+	 * Deletes data from a table using custom RDBMS SQL syntax
+	 *
+	 * @param  string whereCondition
+	 * @param  array placeholders
+	 * @param  array dataTypes
+	 */
+	public function delete(string table, whereCondition = null, placeholders = null, dataTypes = null) -> bool;
+
+	/**
+	 * Returns an array of Phalcon\Db\Column objects describing a table
+	 */
+	public function describeColumns(string! table, string schema = null) -> <ColumnInterface[]>;
 
 	/**
 	 * Lists table indexes
@@ -340,14 +104,123 @@ interface AdapterInterface
 	public function describeReferences(string! table, string schema = null) -> <ReferenceInterface[]>;
 
 	/**
-	 * Gets creation options from a table
+	 * Drops a column from a table
 	 */
-	public function tableOptions(string! tableName, string schemaName = null) -> array;
+	public function dropColumn(string! tableName, string! schemaName, string columnName) -> bool;
 
 	/**
-	 * Check whether the database system requires an explicit value for identity columns
+	 * Drops a foreign key from a table
 	 */
-	public function useExplicitIdValue() -> boolean;
+	public function dropForeignKey(string! tableName, string! schemaName, string referenceName) -> bool;
+
+	/**
+	 * Drop an index from a table
+	 */
+	public function dropIndex(string! tableName, string! schemaName, string indexName) -> bool;
+
+	/**
+	 * Drops primary key from a table
+	 */
+	public function dropPrimaryKey(string! tableName, string! schemaName) -> bool;
+
+	/**
+	 * Drops a table from a schema/database
+	 */
+	public function dropTable(string! tableName, string! schemaName = null, bool ifExists = true) -> bool;
+
+	/**
+	 * Drops a view
+	 */
+	public function dropView(string! viewName, string! schemaName = null, bool ifExists = true) -> bool;
+
+	/**
+	 * Escapes a column/table/schema name
+	 *
+	 * @param string identifier
+	 */
+	public function escapeIdentifier(identifier) -> string;
+
+	/**
+	 * Escapes a value to avoid SQL injections
+	 */
+	public function escapeString(string! str) -> string;
+
+	/**
+	 * Sends SQL statements to the database server returning the success state.
+	 * Use this method only when the SQL statement sent to the server doesn't return any rows
+	 */
+	public function execute(string! sqlStatement, var placeholders = null, var dataTypes = null) -> bool;
+
+	/**
+	 * Dumps the complete result of a query into an array
+	 *
+	 * @param int placeholders
+	 */
+	public function fetchAll(string! sqlQuery, int fetchMode = 2, placeholders = null) -> array;
+
+	/**
+	 * Returns the n'th field of first row in a SQL query result
+	 *
+	 *<code>
+	 * // Getting count of robots
+	 * $robotsCount = $connection->fetchColumn("SELECT count(*) FROM robots");
+	 * print_r($robotsCount);
+	 *
+	 * // Getting name of last edited robot
+	 * $robot = $connection->fetchColumn(
+	 *     "SELECT id, name FROM robots order by modified desc",
+	 *     1
+	 * );
+	 * print_r($robot);
+	 *</code>
+	 *
+	 * @param  int|string column
+	 */
+	public function fetchColumn(string sqlQuery, array placeholders = [], var column = 0) -> string | bool;
+
+	/**
+	 * Returns the first row in a SQL query result
+	 *
+	 * @param int placeholders
+	 */
+	public function fetchOne(string! sqlQuery, int fetchMode = 2, placeholders = null) -> array;
+
+	/**
+	 * Returns a SQL modified with a FOR UPDATE clause
+	 */
+	public function forUpdate(string! sqlQuery) -> string;
+
+	/**
+	 * Returns the SQL column definition from a column
+	 */
+	public function getColumnDefinition(<ColumnInterface> column) -> string;
+
+	/**
+	 * Gets a list of columns
+	 *
+	 * @param	array columnList
+	 */
+	public function getColumnList(var columnList) -> string;
+
+	/**
+	 * Gets the active connection unique identifier
+	 */
+	public function getConnectionId() -> string;
+
+	/**
+	 * Return descriptor used to connect to the active database
+	 */
+	public function getDescriptor() -> array;
+
+	/**
+	 * Returns internal dialect instance
+	 */
+	public function getDialect() -> <DialectInterface>;
+
+	/**
+	 * Returns the name of the dialect used
+	 */
+	public function getDialectType() -> string;
 
 	/**
 	 * Return the default identity value to insert in an identity column
@@ -355,34 +228,9 @@ interface AdapterInterface
 	public function getDefaultIdValue() -> <RawValue>;
 
 	/**
-	 * Check whether the database system requires a sequence to produce auto-numeric values
+	 * Return internal PDO handler
 	 */
-	public function supportSequences() -> boolean;
-
-	/**
-	 * Creates a new savepoint
-	 */
-	public function createSavepoint(string! name) -> boolean;
-
-	/**
-	 * Releases given savepoint
-	 */
-	public function releaseSavepoint(string! name) -> boolean;
-
-	/**
-	 * Rollbacks given savepoint
-	 */
-	public function rollbackSavepoint(string! name) -> boolean;
-
-	/**
-	 * Set if nested transactions should use savepoints
-	 */
-	public function setNestedTransactionsWithSavepoints(boolean nestedTransactionsWithSavepoints) -> <AdapterInterface>;
-
-	/**
-	 * Returns if nested transactions should use savepoints
-	 */
-	public function isNestedTransactionsWithSavepoints() -> boolean;
+	public function getInternalHandler() -> <\Pdo>;
 
 	/**
 	 * Returns the savepoint name to use for nested transactions
@@ -390,8 +238,186 @@ interface AdapterInterface
 	public function getNestedTransactionSavepointName() -> string;
 
 	/**
-	 * Returns an array of Phalcon\Db\Column objects describing a table
+	 * Active SQL statement in the object without replace bound parameters
 	 */
-	public function describeColumns(string! table, string schema = null) -> <ColumnInterface[]>;
+	public function getRealSQLStatement() -> string;
+
+	/**
+	 * Active SQL statement in the object
+	 */
+	public function getSQLStatement() -> string;
+
+	/**
+	 * Active SQL statement in the object
+	 */
+	public function getSQLBindTypes() -> array;
+
+	/**
+	 * Active SQL statement in the object
+	 */
+	public function getSQLVariables() -> array;
+
+	/**
+	 * Returns type of database system the adapter is used for
+	 */
+	public function getType() -> string;
+
+	/**
+	 * Inserts data into a table using custom RDBMS SQL syntax
+	 *
+	 * @param 	array fields
+	 * @param 	array dataTypes
+	 */
+	public function insert(string table, array! values, fields = null, dataTypes = null) -> bool;
+
+	/**
+	 * Inserts data into a table using custom RBDM SQL syntax
+	 *
+	 * <code>
+	 * // Inserting a new robot
+	 * $success = $connection->insertAsDict(
+	 *     "robots",
+	 *     [
+	 *         "name" => "Astro Boy",
+	 *         "year" => 1952,
+	 *     ]
+	 * );
+	 *
+	 * // Next SQL sentence is sent to the database system
+	 * INSERT INTO `robots` (`name`, `year`) VALUES ("Astro boy", 1952);
+	 * </code>
+	 *
+	 * @param 	array data
+	 * @param 	array dataTypes
+	 */
+	public function insertAsDict(string table, data, var dataTypes = null) -> bool;
+
+	/**
+	 * Returns if nested transactions should use savepoints
+	 */
+	public function isNestedTransactionsWithSavepoints() -> bool;
+
+	/**
+	 * Checks whether connection is under database transaction
+	 */
+	public function isUnderTransaction() -> bool;
+
+	/**
+	 * Returns insert id for the auto_increment column inserted in the last SQL statement
+	 *
+	 * @param string sequenceName
+	 * @return int
+	 */
+	public function lastInsertId(sequenceName = null);
+
+	/**
+	 * Appends a LIMIT clause to sqlQuery argument
+	 */
+	public function limit(string! sqlQuery, int number) -> string;
+
+	/**
+	 * List all tables on a database
+	 */
+	public function listTables(string! schemaName = null) -> array;
+
+	/**
+	 * List all views on a database
+	 */
+	public function listViews(string! schemaName = null) -> array;
+
+	/**
+	 * Modifies a table column based on a definition
+	 */
+	public function modifyColumn(string! tableName, string! schemaName, <ColumnInterface> column, <ColumnInterface> currentColumn = null) -> bool;
+
+	/**
+	 * Sends SQL statements to the database server returning the success state.
+	 * Use this method only when the SQL statement sent to the server return rows
+	 */
+	public function query(string! sqlStatement, var placeholders = null, var dataTypes = null) -> <ResultInterface> | bool;
+
+	/**
+	 * Releases given savepoint
+	 */
+	public function releaseSavepoint(string! name) -> bool;
+
+	/**
+	 * Rollbacks the active transaction in the connection
+	 */
+	public function rollback(bool nesting = true) -> bool;
+
+	/**
+	 * Rollbacks given savepoint
+	 */
+	public function rollbackSavepoint(string! name) -> bool;
+
+	/**
+	 * Returns a SQL modified with a LOCK IN SHARE MODE clause
+	 */
+	public function sharedLock(string! sqlQuery) -> string;
+
+	/**
+	 * Set if nested transactions should use savepoints
+	 */
+	public function setNestedTransactionsWithSavepoints(bool nestedTransactionsWithSavepoints) -> <AdapterInterface>;
+
+	/**
+	 * Check whether the database system requires a sequence to produce auto-numeric values
+	 */
+	public function supportSequences() -> bool;
+
+	/**
+	 * Generates SQL checking for the existence of a schema.table
+	 */
+	public function tableExists(string! tableName, string! schemaName = null) -> bool;
+
+	/**
+	 * Gets creation options from a table
+	 */
+	public function tableOptions(string! tableName, string schemaName = null) -> array;
+
+	/**
+	 * Updates data on a table using custom RDBMS SQL syntax
+	 *
+	 * @param 	array fields
+	 * @param 	array values
+	 * @param 	string whereCondition
+	 * @param 	array dataTypes
+	 */
+	public function update(string table, fields, values, whereCondition = null, dataTypes = null) -> bool;
+
+	/**
+	 * Updates data on a table using custom RBDM SQL syntax
+	 * Another, more convenient syntax
+	 *
+	 * <code>
+	 * // Updating existing robot
+	 * $success = $connection->updateAsDict(
+	 *     "robots",
+	 *     [
+	 *         "name" => "New Astro Boy",
+	 *     ],
+	 *     "id = 101"
+	 * );
+	 *
+	 * // Next SQL sentence is sent to the database system
+	 * UPDATE `robots` SET `name` = "Astro boy" WHERE id = 101
+	 * </code>
+	 *
+	 * @param 	array data
+	 * @param 	string whereCondition
+	 * @param 	array dataTypes
+	 */
+	public function updateAsDict(string table, var data, var whereCondition = null, var dataTypes = null) -> bool;
+
+	/**
+	 * Check whether the database system requires an explicit value for identity columns
+	 */
+	public function useExplicitIdValue() -> bool;
+
+	/**
+	 * Generates SQL checking for the existence of a schema.view
+	 */
+	public function viewExists(string! viewName, string! schemaName = null) -> bool;
 
 }

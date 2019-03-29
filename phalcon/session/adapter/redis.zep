@@ -1,157 +1,94 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Session\Adapter;
 
-use Phalcon\Session\Adapter;
-use Phalcon\Cache\Backend\Redis;
+use Phalcon\Cache\Backend\Redis as CacheRedis;
 use Phalcon\Cache\Frontend\None as FrontendNone;
+use Phalcon\Helper\Arr;
 
 /**
- * Phalcon\Session\Adapter\Redis
+ * Phalcon\Session\Adapter\Noop
  *
- * This adapter store sessions in Redis
+ * This is an "empty" or null adapter. It can be used for testing or any
+ * other purpose that no session needs to be invoked
  *
  * <code>
+ * <?php
+ *
+ * use Phalcon\Session\Manager;
  * use Phalcon\Session\Adapter\Redis;
  *
- * $session = new Redis(
+ * $session = new Manager();
+ * $adapter = new Redis(
  *     [
- *         "uniqueId"   => "my-private-app",
  *         "host"       => "localhost",
  *         "port"       => 6379,
  *         "auth"       => "foobared",
  *         "persistent" => false,
- *         "lifetime"   => 3600,
- *         "prefix"     => "my",
- *         "index"      => 1,
+ *         "index"      => 0,
  *     ]
  * );
  *
- * $session->start();
- *
- * $session->set("var", "some-value");
- *
- * echo $session->get("var");
+ * $session->setHandler($adapter);
  * </code>
  */
-class Redis extends Adapter
+ class Redis extends Noop
 {
-	protected _redis = null { get };
-
-	protected _lifetime = 8600 { get };
-
-	/**
-	 * Phalcon\Session\Adapter\Redis constructor
-	 */
-	public function __construct(array options = [])
+	public function __construct(array! options = [])
 	{
-		var lifetime;
+		var options, params;
 
-		if !isset options["host"] {
-			let options["host"] = "127.0.0.1";
-		}
+	    parent::__construct(options);
 
-		if !isset options["port"] {
-			let options["port"] = 6379;
-		}
+	    let options              = this->options,
+	        params               = [],
+	        params["host"]       = Arr::get(options, "host", "127.0.0.1"),
+		    params["port"]       = Arr::get(options, "port", 6379),
+		    params["index"]      = Arr::get(options, "index", 0),
+		    params["persistent"] = Arr::get(options, "persistent", false),
+		    this->ttl            = Arr::get(options, "ttl", this->ttl);
 
-		if !isset options["persistent"] {
-			let options["persistent"] = false;
-		}
-
-		if fetch lifetime, options["lifetime"] {
-			let this->_lifetime = lifetime;
-		}
-
-		let this->_redis = new Redis(
-			new FrontendNone(["lifetime": this->_lifetime]),
-			options
+		let this->connection = new CacheRedis(
+			new FrontendNone(
+				[
+					"lifetime" : this->ttl
+				]
+			),
+			params
 		);
-
-		session_set_save_handler(
-			[this, "open"],
-			[this, "close"],
-			[this, "read"],
-			[this, "write"],
-			[this, "destroy"],
-			[this, "gc"]
-		);
-
-		parent::__construct(options);
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function open() -> boolean
+	public function destroy(var id) -> bool
 	{
-		return true;
-	}
+		var name = this->getPrefixedName(id);
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function close() -> boolean
-	{
-		return true;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function read(sessionId) -> string
-	{
-		return (string) this->_redis->get(sessionId, this->_lifetime);
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function write(string sessionId, string data) -> boolean
-	{
-		return this->_redis->save(sessionId, data, this->_lifetime);
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function destroy(string sessionId = null) -> boolean
-	{
-		var id;
-
-		if sessionId === null {
-			let id = this->getId();
-		} else {
-			let id = sessionId;
+		if (true !== empty(name) && this->connection->exists(name)) {
+			return (bool) this->connection->delete(name);
 		}
 
-		this->removeSessionData();
-
-		return this->_redis->exists(id) ? this->_redis->delete(id) : true;
+		return true;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function gc() -> boolean
+	public function read(var id) -> string
 	{
-		return true;
+		var name = this->getPrefixedName(id),
+		    data = this->connection->get(name, this->ttl);
+
+		return data;
+	}
+
+	public function write(var id, var data) -> bool
+	{
+		var name = this->getPrefixedName(id);
+
+		return this->connection->save(name, data, this->ttl);
 	}
 }

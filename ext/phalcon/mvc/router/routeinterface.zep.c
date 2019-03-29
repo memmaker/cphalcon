@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\Router\RouteInterface
  *
  * Interface for Phalcon\Mvc\Router\Route
@@ -89,6 +97,11 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Router_RouteInterface, getPaths);
  * Returns the paths using positions as keys and names as values
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Router_RouteInterface, getReversedPaths);
+
+/**
+ * Adds a converter to perform an additional transformation for certain parameter.
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Router_RouteInterface, convert);
 
 /**
  * Returns the HTTP methods that constraint matching the route

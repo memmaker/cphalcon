@@ -1,23 +1,16 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Http\Response;
+
+use Phalcon\Http\CookieInterface;
 
 /**
  * Phalcon\Http\Response\CookiesInterface
@@ -30,38 +23,38 @@ interface CookiesInterface
 	/**
 	 * Set if cookies in the bag must be automatically encrypted/decrypted
 	 */
-	public function useEncryption(boolean useEncryption) -> <CookiesInterface>;
+	public function useEncryption(bool useEncryption) -> <CookiesInterface>;
 
 	/**
 	 * Returns if the bag is automatically encrypting/decrypting cookies
 	 */
-	public function isUsingEncryption() -> boolean;
+	public function isUsingEncryption() -> bool;
 
 	/**
 	 * Sets a cookie to be sent at the end of the request
 	 */
-	public function set(string! name, value = null, int expire = 0, string path = "/", boolean secure = null, string! domain = null, boolean httpOnly = null) -> <CookiesInterface>;
+	public function set(string! name, value = null, int expire = 0, string path = "/", bool secure = null, string! domain = null, bool httpOnly = null) -> <CookiesInterface>;
 
 	/**
 	 * Gets a cookie from the bag
 	 */
-	public function get(string! name) -> <\Phalcon\Http\Cookie>;
+	public function get(string! name) -> <CookieInterface>;
 
 	/**
 	 * Check if a cookie is defined in the bag or exists in the _COOKIE superglobal
 	 */
-	public function has(string! name) -> boolean;
+	public function has(string! name) -> bool;
 
 	/**
 	 * Deletes a cookie by its name
 	 * This method does not removes cookies from the _COOKIE superglobal
 	 */
-	public function delete(string! name) -> boolean;
+	public function delete(string! name) -> bool;
 
 	/**
 	 * Sends the cookies to the client
 	 */
-	public function send() -> boolean;
+	public function send() -> bool;
 
 	/**
 	 * Reset set cookies

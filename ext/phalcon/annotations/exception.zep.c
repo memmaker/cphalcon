@@ -15,13 +15,21 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Annotations\Exception
  *
  * Class for exceptions thrown by Phalcon\Annotations
  */
 ZEPHIR_INIT_CLASS(Phalcon_Annotations_Exception) {
 
-	ZEPHIR_REGISTER_CLASS_EX(Phalcon\\Annotations, Exception, phalcon, annotations_exception, zend_exception_get_default(TSRMLS_C), NULL, 0);
+	ZEPHIR_REGISTER_CLASS_EX(Phalcon\\Annotations, Exception, phalcon, annotations_exception, phalcon_exception_ce, NULL, 0);
 
 	return SUCCESS;
 

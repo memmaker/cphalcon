@@ -17,6 +17,14 @@
 
 
 /**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+/**
  * Loads Session Adapter class using 'adapter' option
  *
  *<code>
@@ -48,17 +56,20 @@ ZEPHIR_INIT_CLASS(Phalcon_Session_Factory) {
 PHP_METHOD(Phalcon_Session_Factory, load) {
 
 	zend_long ZEPHIR_LAST_CALL_STATUS;
-	zval *config, *_0;
+	zval *config, config_sub, _0;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&config_sub);
+	ZVAL_UNDEF(&_0);
 
 	ZEPHIR_MM_GROW();
 	zephir_fetch_params(1, 1, 0, &config);
 
 
 
-	ZEPHIR_INIT_VAR(_0);
-	ZVAL_STRING(_0, "Phalcon\\Session\\Adapter", ZEPHIR_TEMP_PARAM_COPY);
-	ZEPHIR_RETURN_CALL_SELF("loadclass", NULL, 0, _0, config);
-	zephir_check_temp_parameter(_0);
+	ZEPHIR_INIT_VAR(&_0);
+	ZVAL_STRING(&_0, "Phalcon\\Session\\Adapter");
+	ZEPHIR_RETURN_CALL_SELF("loadclass", NULL, 0, &_0, config);
 	zephir_check_call_status();
 	RETURN_MM();
 

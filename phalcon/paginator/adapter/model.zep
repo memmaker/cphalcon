@@ -1,27 +1,18 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Vladimir Metelitsa <green.cat@me.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Paginator\Adapter;
 
 use Phalcon\Paginator\Exception;
 use Phalcon\Paginator\Adapter;
+use Phalcon\Paginator\RepositoryInterface;
 
 /**
  * Phalcon\Paginator\Adapter\Model
@@ -44,38 +35,14 @@ use Phalcon\Paginator\Adapter;
  */
 class Model extends Adapter
 {
-
-	/**
-	 * Configuration of paginator by model
-	 */
-	protected _config = null;
-
-	/**
-	 * Phalcon\Paginator\Adapter\Model constructor
-	 */
-	public function __construct(array! config)
-	{
-		var page, limit;
-
-		let this->_config = config;
-
-		if fetch limit, config["limit"] {
-			let this->_limitRows = limit;
-		}
-
-		if fetch page, config["page"] {
-			let this->_page = page;
-		}
-	}
-
 	/**
 	 * Returns a slice of the resultset to show in the pagination
 	 */
-	public function getPaginate() -> <\stdClass>
+	public function paginate() -> <RepositoryInterface>
 	{
-		var config, items, pageItems, page;
+		var config, items, pageItems;
 		int pageNumber, show, n, start, lastShowPage,
-			i, next, totalPages, before;
+			i, next, totalPages, previous;
 
 		let show       = (int) this->_limitRows,
 			config     = this->_config,
@@ -136,22 +103,20 @@ class Model extends Adapter
 		}
 
 		if pageNumber > 1 {
-			let before = pageNumber - 1;
+			let previous = pageNumber - 1;
 		} else {
-			let before = 1;
+			let previous = 1;
 		}
 
-		let page = new \stdClass(),
-			page->items = pageItems,
-			page->first = 1,
-			page->before =  before,
-			page->current = pageNumber,
-			page->last = totalPages,
-			page->next = next,
-			page->total_pages = totalPages,
-			page->total_items = n,
-			page->limit = this->_limitRows;
-
-		return page;
+		return this->getRepository([
+			RepositoryInterface::PROPERTY_ITEMS 		: pageItems,
+			RepositoryInterface::PROPERTY_TOTAL_ITEMS 	: n,
+			RepositoryInterface::PROPERTY_LIMIT 		: this->_limitRows,
+			RepositoryInterface::PROPERTY_FIRST_PAGE 	: 1,
+			RepositoryInterface::PROPERTY_PREVIOUS_PAGE : previous,
+			RepositoryInterface::PROPERTY_CURRENT_PAGE 	: pageNumber,
+			RepositoryInterface::PROPERTY_NEXT_PAGE 	: next,
+			RepositoryInterface::PROPERTY_LAST_PAGE 	: totalPages
+		]);
 	}
 }

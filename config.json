@@ -10,13 +10,12 @@
     "name": "phalcon",
     "description": "Web framework delivered as a C-extension for PHP",
     "author": "Phalcon Team and contributors",
-    "version": "3.2.1",
+    "version": "4.0.0-alpha.3",
     "verbose": false,
     "optimizer-dirs": [
         "optimizers"
     ],
     "prototype-dir": {
-        "php7": "prototypes/php7"
     },
     "constants-sources": [
         "ext/phalcon/mvc/model/query/scanner.h",
@@ -31,9 +30,7 @@
         "phalcon/mvc/model/query/parser.c",
         "phalcon/mvc/view/engine/volt/parser.c",
         "phalcon/mvc/view/engine/volt/scanner.c",
-        "phalcon/assets/filters/jsminifier.c",
-        "phalcon/assets/filters/cssminifier.c",
-        "phalcon/mvc/url/utils.c"
+        "phalcon/url/utils.c"
     ],
     "globals": {
         "db.escape_identifiers": {
@@ -105,6 +102,10 @@
             "default": true
         },
         "orm.disable_assign_setters": {
+            "type": "bool",
+            "default": false
+        },
+        "orm.case_insensitive_column_map": {
             "type": "bool",
             "default": false
         }

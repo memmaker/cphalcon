@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Acl;
@@ -30,47 +21,50 @@ use Phalcon\Events\EventsAwareInterface;
 abstract class Adapter implements AdapterInterface, EventsAwareInterface
 {
 	/**
-	 * Events manager
-	 * @var mixed
+	 * Active access which the list is checking if some role can access it
+	 *
+	 * @var string
 	 */
-	protected _eventsManager;
-
-	/**
-	 * Default access
-	 * @var bool
-	 */
-	protected _defaultAccess = true;
+	protected activeAccess { get };
 
 	/**
 	 * Access Granted
 	 * @var bool
 	 */
-	protected _accessGranted = false;
+	protected accessGranted = false;
 
 	/**
-	 * Role which the list is checking if it's allowed to certain resource/access
+	 * Role which the list is checking if it's allowed to certain component/access
+	 *
+	 * @var string
+	 */
+	protected activeRole { get };
+
+	/**
+	 * Component which the list is checking if some role can access it
+	 *
+	 * @var string
+	 */
+	protected activeComponent { get };
+
+	/**
+	 * Default access
+	 * @var bool
+	 */
+	protected defaultAccess = false;
+
+	/**
+	 * Events manager
 	 * @var mixed
 	 */
-	protected _activeRole { get };
+	protected eventsManager;
 
 	/**
-	 * Resource which the list is checking if some role can access it
-	 * @var mixed
+	 * Returns the default ACL access level
 	 */
-	protected _activeResource { get };
-
-	/**
-	 * Active access which the list is checking if some role can access it
-	 * @var mixed
-	 */
-	protected _activeAccess { get };
-
-	/**
-	 * Sets the events manager
-	 */
-	public function setEventsManager(<ManagerInterface> eventsManager)
+	public function getDefaultAction() -> int
 	{
-		let this->_eventsManager = eventsManager;
+		return this->defaultAccess;
 	}
 
 	/**
@@ -78,7 +72,7 @@ abstract class Adapter implements AdapterInterface, EventsAwareInterface
 	 */
 	public function getEventsManager() -> <ManagerInterface>
 	{
-		return this->_eventsManager;
+		return this->eventsManager;
 	}
 
 	/**
@@ -86,14 +80,14 @@ abstract class Adapter implements AdapterInterface, EventsAwareInterface
 	 */
 	public function setDefaultAction(int defaultAccess)
 	{
-		let this->_defaultAccess = defaultAccess;
+		let this->defaultAccess = defaultAccess;
 	}
 
 	/**
-	 * Returns the default ACL access level
+	 * Sets the events manager
 	 */
-	public function getDefaultAction() -> int
+	public function setEventsManager(<ManagerInterface> eventsManager)
 	{
-		return this->_defaultAccess;
+		let this->eventsManager = eventsManager;
 	}
 }

@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cli;
@@ -78,7 +68,7 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 	/**
 	 * Phalcon\Cli\Router constructor
 	 */
-	public function __construct(boolean defaultRoutes = true)
+	public function __construct(bool defaultRoutes = true)
 	{
 		var routes;
 
@@ -386,9 +376,7 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 	 * $router->add("/about", "About::main");
 	 *</code>
 	 *
-	 * @param string pattern
-	 * @param string/array paths
-	 * @return \Phalcon\Cli\Router\Route
+	 * @param string|array paths
 	 */
 	public function add(string! pattern, paths = null) -> <RouteInterface>
 	{
@@ -425,10 +413,8 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 
 	/**
 	 * Returns processed extra params
-	 *
-	 * @return array
 	 */
-	public function getParams()
+	public function getParams() -> array
 	{
 		return this->_params;
 	}
@@ -443,10 +429,8 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 
 	/**
 	 * Returns the sub expressions in the regular expression matched
-	 *
-	 * @return array
 	 */
-	public function getMatches()
+	public function getMatches() -> array
 	{
 		return this->_matches;
 	}
@@ -454,7 +438,7 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 	/**
 	 * Checks if the router matches any of the defined routes
 	 */
-	public function wasMatched() -> boolean
+	public function wasMatched() -> bool
 	{
 		return this->_wasMatched;
 	}
@@ -471,9 +455,8 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 	 * Returns a route object by its id
 	 *
 	 * @param int id
-	 * @return \Phalcon\Cli\Router\Route
 	 */
-	public function getRouteById(var id) -> <RouteInterface> | boolean
+	public function getRouteById(var id) -> <RouteInterface> | bool
 	{
 		var route;
 
@@ -488,7 +471,7 @@ class Router implements \Phalcon\Di\InjectionAwareInterface
 	/**
 	 * Returns a route object by its name
 	 */
-	public function getRouteByName(string! name) -> <RouteInterface> | boolean
+	public function getRouteByName(string! name) -> <RouteInterface> | bool
 	{
 		var route;
 

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Router;
@@ -82,22 +73,13 @@ class Annotations extends Router
 	/**
 	 * Produce the routing parameters from the rewrite information
 	 */
-	public function handle(string! uri = null)
+	public function handle(string! uri)
 	{
-		var realUri, annotationsService, handlers, controllerSuffix,
+		var annotationsService, handlers, controllerSuffix,
 			scope, prefix, dependencyInjector, handler, controllerName,
 			lowerControllerName, namespaceName, moduleName, sufixed, handlerAnnotations,
 			classAnnotations, annotations, annotation, methodAnnotations, method,
 			collection;
-
-		if !uri {
-			/**
-			 * If 'uri' isn't passed as parameter it reads $_GET["_url"]
-			 */
-			let realUri = this->getRewriteUri();
-		} else {
-			let realUri = uri;
-		}
 
 		let dependencyInjector = <DiInterface> this->_dependencyInjector;
 		if typeof dependencyInjector != "object" {
@@ -121,7 +103,7 @@ class Annotations extends Router
 			 */
 			let prefix = scope[0];
 
-			if !empty prefix && !starts_with(realUri, prefix) {
+			if !empty prefix && !starts_with(uri, prefix) {
 				continue;
 			}
 
@@ -202,7 +184,7 @@ class Annotations extends Router
 		/**
 		 * Call the parent handle method()
 		 */
-		parent::handle(realUri);
+		parent::handle(uri);
 	}
 
 	/**

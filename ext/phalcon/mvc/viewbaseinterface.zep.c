@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\ViewInterface
  *
  * Interface for Phalcon\Mvc\View and Phalcon\Mvc\View\Simple
@@ -42,9 +50,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewBaseInterface, setParamToView);
 
 /**
  * Adds parameters to views
- *
- * @param string key
- * @param mixed value
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_ViewBaseInterface, setVar);
 

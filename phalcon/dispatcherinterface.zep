@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
@@ -38,9 +29,19 @@ interface DispatcherInterface
 	public function getActionSuffix() -> string;
 
 	/**
+	 * Gets the default handler suffix
+	 */
+	public function getHandlerSuffix() -> string;
+
+	/**
 	 * Sets the default namespace
 	 */
 	public function setDefaultNamespace(string defaultNamespace);
+
+	/**
+	 * Sets the default suffix for the handler
+	 */
+	public function setHandlerSuffix(string handlerSuffix);
 
 	/**
 	 * Sets the default action name
@@ -82,39 +83,32 @@ interface DispatcherInterface
 	/**
 	 * Set a param by its name or numeric index
 	 *
-	 * @param  mixed param
 	 * @param  mixed value
 	 */
-	public function setParam(param, value);
+	public function setParam(var param, value);
 
 	/**
 	 * Gets a param by its name or numeric index
 	 *
-	 * @param  mixed param
 	 * @param  string|array filters
 	 * @return mixed
 	 */
-	public function getParam(param, filters = null);
+	public function getParam(var param, filters = null);
 
 	/**
 	 * Check if a param exists
-	 *
-	 * @param  mixed param
-	 * @return boolean
 	 */
-	public function hasParam(param) -> boolean;
+	public function hasParam(var param) -> bool;
 
 	/**
 	 * Checks if the dispatch loop is finished or has more pendent controllers/tasks to dispatch
 	 */
-	public function isFinished() -> boolean;
+	public function isFinished() -> bool;
 
 	/**
 	 * Returns value returned by the latest dispatched action
-	 *
-	 * @return mixed
 	 */
-	public function getReturnedValue();
+	public function getReturnedValue() -> var;
 
 	/**
 	 * Dispatches a handle action taking into account the routing parameters

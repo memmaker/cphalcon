@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Collection;
@@ -164,7 +155,7 @@ class Manager implements InjectionAwareInterface, EventsAwareInterface
 	/**
 	 * Check whether a model is already initialized
 	 */
-	public function isInitialized(string! modelName) -> boolean
+	public function isInitialized(string! modelName) -> bool
 	{
 		return isset this->_initialized[strtolower(modelName)];
 	}
@@ -204,7 +195,7 @@ class Manager implements InjectionAwareInterface, EventsAwareInterface
 	/**
 	 * Sets whether a model must use implicit objects ids
 	 */
-	public function useImplicitObjectIds(<CollectionInterface> model, boolean useImplicitObjectIds) -> void
+	public function useImplicitObjectIds(<CollectionInterface> model, bool useImplicitObjectIds) -> void
 	{
 		let this->_implicitObjectsIds[get_class(model)] = useImplicitObjectIds;
 	}
@@ -212,7 +203,7 @@ class Manager implements InjectionAwareInterface, EventsAwareInterface
 	/**
 	 * Checks if a model is using implicit object ids
 	 */
-	public function isUsingImplicitObjectIds(<CollectionInterface> model) -> boolean
+	public function isUsingImplicitObjectIds(<CollectionInterface> model) -> bool
 	{
 		var implicit;
 
@@ -229,7 +220,6 @@ class Manager implements InjectionAwareInterface, EventsAwareInterface
 	/**
 	 * Returns the connection related to a model
 	 *
-	 * @param \Phalcon\Mvc\CollectionInterface $model
 	 * @return \Mongo
 	 */
 	public function getConnection(<CollectionInterface> model)
@@ -321,7 +311,7 @@ class Manager implements InjectionAwareInterface, EventsAwareInterface
 	 * This method expects that the endpoint listeners/behaviors returns true
 	 * meaning that at least one was implemented
 	 */
-	public function missingMethod(<CollectionInterface> model, string! eventName, var data) -> boolean
+	public function missingMethod(<CollectionInterface> model, string! eventName, var data) -> bool
 	{
 		var behaviors, modelsBehaviors, result, eventsManager, behavior;
 

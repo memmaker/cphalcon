@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\View;
@@ -126,12 +117,10 @@ class Simple extends Injectable implements ViewBaseInterface
 
 	/**
 	 * Loads registered template engines, if none is registered it will use Phalcon\Mvc\View\Engine\Php
-	 *
-	 * @return array
 	 */
-	protected function _loadTemplateEngines()
+	protected function _loadTemplateEngines() -> array
 	{
-		var engines, dependencyInjector, registeredEngines, arguments, extension,
+		var engines, di, registeredEngines, extension,
 			engineService, engineObject;
 
 		/**
@@ -140,7 +129,7 @@ class Simple extends Injectable implements ViewBaseInterface
 		let engines = this->_engines;
 		if engines === false {
 
-			let dependencyInjector = this->_dependencyInjector;
+			let di = this->_dependencyInjector;
 
 			let engines = [];
 
@@ -151,18 +140,13 @@ class Simple extends Injectable implements ViewBaseInterface
 				 * We use Phalcon\Mvc\View\Engine\Php as default
 				 * Use .phtml as extension for the PHP engine
 				 */
-				let engines[".phtml"] = new PhpEngine(this, dependencyInjector);
+				let engines[".phtml"] = new PhpEngine(this, di);
 
 			} else {
 
-				if typeof dependencyInjector != "object" {
+				if typeof di != "object" {
 					throw new Exception("A dependency injector container is required to obtain the application services");
 				}
-
-				/**
-				 * Arguments for instantiated engines
-				 */
-				let arguments = [this, dependencyInjector];
 
 				for extension, engineService in registeredEngines {
 
@@ -171,7 +155,8 @@ class Simple extends Injectable implements ViewBaseInterface
 						 * Engine can be a closure
 						 */
 						if engineService instanceof \Closure {
-							let engineObject = call_user_func_array(engineService, arguments);
+							let engineService = \Closure::bind(engineService, di);
+							let engineObject = call_user_func(engineService, this);
 						} else {
 							let engineObject = engineService;
 						}
@@ -180,7 +165,7 @@ class Simple extends Injectable implements ViewBaseInterface
 						 * Engine can be a string representing a service in the DI
 						 */
 						if typeof engineService == "string" {
-							let engineObject = dependencyInjector->getShared(engineService, arguments);
+							let engineObject = di->getShared(engineService, [this]);
 						} else {
 							throw new Exception("Invalid template engine registration for extension: " . extension);
 						}
@@ -201,7 +186,6 @@ class Simple extends Injectable implements ViewBaseInterface
 	/**
 	 * Tries to render the view with every engine registered in the component
 	 *
-	 * @param string path
 	 * @param array  params
 	 */
 	protected final function _internalRender(string! path, params)
@@ -295,7 +279,6 @@ class Simple extends Injectable implements ViewBaseInterface
 	/**
 	 * Renders a view
 	 *
-	 * @param  string path
 	 * @param  array  params
 	 */
 	public function render(string! path, params = null) -> string
@@ -473,10 +456,8 @@ class Simple extends Injectable implements ViewBaseInterface
 
 	/**
 	 * Returns the cache options
-	 *
-	 * @return array
 	 */
-	public function getCacheOptions()
+	public function getCacheOptions() -> array
 	{
 		return this->_cacheOptions;
 	}
@@ -576,7 +557,7 @@ class Simple extends Injectable implements ViewBaseInterface
 	 * );
 	 *</code>
 	 */
-	public function setVars(array! params, boolean merge = true) -> <Simple>
+	public function setVars(array! params, bool merge = true) -> <Simple>
 	{
 		if merge && typeof this->_viewParams == "array" {
 			let this->_viewParams = array_merge(this->_viewParams, params);
@@ -614,10 +595,8 @@ class Simple extends Injectable implements ViewBaseInterface
 
 	/**
 	 * Returns parameters to views
-	 *
-	 * @return array
 	 */
-	public function getParamsToView()
+	public function getParamsToView() -> array
 	{
 		return this->_viewParams;
 	}
@@ -645,10 +624,8 @@ class Simple extends Injectable implements ViewBaseInterface
 
 	/**
 	 * Returns the path of the view that is currently rendered
-	 *
-	 * @return string
 	 */
-	public function getActiveRenderPath()
+	public function getActiveRenderPath() -> string
 	{
 		return this->_activeRenderPath;
 	}

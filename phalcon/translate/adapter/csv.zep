@@ -1,19 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Author: Ivan Zubok <chi_no@ukr.net>                                    |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Translate\Adapter;
@@ -47,13 +39,8 @@ class Csv extends Adapter implements \ArrayAccess
 
 	/**
 	* Load translates from file
-	*
-	* @param string file
-	* @param int length
-	* @param string delimiter
-	* @param string enclosure
 	*/
-	private function _load(file, length, delimiter, enclosure) -> void
+	private function _load(string file, int length, string delimiter, string enclosure) -> void
 	{
 		var data, fileHandler;
 
@@ -97,7 +84,7 @@ class Csv extends Adapter implements \ArrayAccess
 	/**
 	 * Check whether is defined a translation key in the internal array
 	 */
-	public function exists(string! index) -> boolean
+	public function exists(string! index) -> bool
 	{
 		return isset this->_translate[index];
 	}

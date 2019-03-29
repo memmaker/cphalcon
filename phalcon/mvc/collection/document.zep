@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Collection;
@@ -32,11 +23,8 @@ class Document implements EntityInterface, \ArrayAccess
 {
 	/**
 	 * Checks whether an offset exists in the document
-	 *
-	 * @param int index
-	 * @return boolean
 	 */
-	public function offsetExists(string! index) -> boolean
+	public function offsetExists(var index) -> bool
 	{
 		return isset this->{index};
 	}
@@ -44,7 +32,7 @@ class Document implements EntityInterface, \ArrayAccess
 	/**
 	 * Returns the value of a field using the ArrayAccess interfase
 	 */
-	public function offsetGet(string! index)
+	public function offsetGet(var index) -> var
 	{
 		var value;
 		if fetch value, this->{index} {
@@ -56,17 +44,15 @@ class Document implements EntityInterface, \ArrayAccess
 	/**
 	 * Change a value using the ArrayAccess interface
 	 */
-	public function offsetSet(string! index, value) -> void
+	public function offsetSet(var index, value) -> void
 	{
 		let this->{index} = value;
 	}
 
 	/**
 	 * Rows cannot be changed. It has only been implemented to meet the definition of the ArrayAccess interface
-	 *
-	 * @param string offset
 	 */
-	public function offsetUnset(offset)
+	public function offsetUnset(var index) -> void
 	{
 		throw new Exception("The index does not exist in the row");
 	}
@@ -77,11 +63,8 @@ class Document implements EntityInterface, \ArrayAccess
 	 *<code>
 	 *  echo $robot->readAttribute("name");
 	 *</code>
-	 *
-	 * @param string attribute
-	 * @return mixed
 	 */
-	public function readAttribute(attribute)
+	public function readAttribute(string! attribute) -> var | null
 	{
 		var value;
 		if fetch value, this->{attribute} {
@@ -96,21 +79,16 @@ class Document implements EntityInterface, \ArrayAccess
 	 *<code>
 	 *  $robot->writeAttribute("name", "Rosey");
 	 *</code>
-	 *
-	 * @param string attribute
-	 * @param mixed value
 	 */
-	public function writeAttribute(string! attribute, value) -> void
+	public function writeAttribute(string! attribute, var value) -> void
 	{
 		let this->{attribute} = value;
 	}
 
 	/**
 	 * Returns the instance as an array representation
-	 *
-	 * @return array
 	 */
-	public function toArray()
+	public function toArray() -> array
 	{
 		return get_object_vars(this);
 	}

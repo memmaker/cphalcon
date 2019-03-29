@@ -1,26 +1,17 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Validation\Validator;
 
+use Phalcon\Messages\Message;
 use Phalcon\Validation;
-use Phalcon\Validation\Message;
 use Phalcon\Validation\Validator;
 
 /**
@@ -29,7 +20,10 @@ use Phalcon\Validation\Validator;
  * Checks if a value has a correct file
  *
  * <code>
+ * use Phalcon\Validation;
  * use Phalcon\Validation\Validator\File as FileValidator;
+ *
+ * $validator = new Validation();
  *
  * $validator->add(
  *     "file",
@@ -95,7 +89,7 @@ class File extends Validator
 	/**
 	 * Executes the validation
 	 */
-	public function validate(<Validation> validation, string! field) -> boolean
+	public function validate(<Validation> validation, var field) -> bool
 	{
 		var value, message, label, replacePairs, types, byteUnits, unit, maxSize, matches, bytes, mime, tmp, width,
 			height, minResolution, maxResolution, minWidth, maxWidth, minHeight, maxHeight, fieldTypes, code,
@@ -107,7 +101,8 @@ class File extends Validator
 
 		// Upload is larger than PHP allowed size (post_max_size or upload_max_filesize)
 		if _SERVER["REQUEST_METHOD"] == "POST" && empty _POST && empty _FILES && _SERVER["CONTENT_LENGTH"] > 0 || isset value["error"] && value["error"] === UPLOAD_ERR_INI_SIZE {
-			let message = this->prepareMessage(validation, field, "FileIniSize", "messageIniSize");
+			let message = this->prepareMessage(validation, field, "FileIniSize", "messageIniSize"),
+			    replacePairs = [":field": label];
 
 			validation->appendMessage(
 				new Message(
@@ -122,7 +117,8 @@ class File extends Validator
 		}
 
 		if !isset value["error"] || !isset value["tmp_name"] || value["error"] !== UPLOAD_ERR_OK || !is_uploaded_file(value["tmp_name"]) {
-			let message = this->prepareMessage(validation, field, "FileEmpty", "messageEmpty");
+			let message = this->prepareMessage(validation, field, "FileEmpty", "messageEmpty"),
+			    replacePairs = [":field": label];
 
 			validation->appendMessage(
 				new Message(
@@ -137,7 +133,8 @@ class File extends Validator
 		}
 
 		if !isset value["name"] || !isset value["type"] || !isset value["size"] {
-			let message = this->prepareMessage(validation, field, "FileValid", "messageValid");
+			let message = this->prepareMessage(validation, field, "FileValid", "messageValid"),
+			    replacePairs = [":field": label];
 
 			validation->appendMessage(
 				new Message(
@@ -155,7 +152,7 @@ class File extends Validator
 
 			let byteUnits = ["B": 0, "K": 10, "M": 20, "G": 30, "T": 40, "KB": 10, "MB": 20, "GB": 30, "TB": 40],
 				maxSize = this->getOption("maxSize"),
-				matches = NULL,
+				matches = null,
 				unit = "B";
 
 			if typeof maxSize == "array" {
@@ -171,7 +168,8 @@ class File extends Validator
 			let bytes = floatval(matches[1]) * pow(2, byteUnits[unit]);
 
 			if floatval(value["size"]) > floatval(bytes) {
-				let message = this->prepareMessage(validation, field, "FileSize", "messageSize");
+				let message = this->prepareMessage(validation, field, "FileSize", "messageSize"),
+					replacePairs = [":field": label, ":max": maxSize];
 
 				validation->appendMessage(
 					new Message(
@@ -293,7 +291,7 @@ class File extends Validator
 	/**
 	 * Check on empty
 	 */
-	public function isAllowEmpty(<Validation> validation, string! field) -> boolean
+	public function isAllowEmpty(<Validation> validation, string! field) -> bool
 	{
 		var value;
 		let value = validation->getValue(field);

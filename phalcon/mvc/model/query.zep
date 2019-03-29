@@ -1,27 +1,19 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Kenji Minamoto <kenji.minamoto@gmail.com>                     |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
 
 use Phalcon\Db\Column;
 use Phalcon\Db\RawValue;
+use Phalcon\Db\ResultInterface;
+use Phalcon\Db\AdapterInterface;
 use Phalcon\DiInterface;
 use Phalcon\Mvc\Model\Row;
 use Phalcon\Mvc\ModelInterface;
@@ -36,6 +28,8 @@ use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\Model\Resultset\Simple;
 use Phalcon\Di\InjectionAwareInterface;
 use Phalcon\Mvc\Model\RelationInterface;
+use Phalcon\Mvc\Model\TransactionInterface;
+use Phalcon\Db\DialectInterface;
 
 /**
  * Phalcon\Mvc\Model\Query
@@ -58,6 +52,34 @@ use Phalcon\Mvc\Model\RelationInterface;
  *     echo "Price: ", $row->cars->price, "\n";
  *     echo "Taxes: ", $row->taxes, "\n";
  * }
+ *
+ * // with transaction
+ * use Phalcon\Mvc\Model\Query;
+ * use Phalcon\Mvc\Model\Transaction;
+ *
+ * // $di needs to have the service "db" registered for this to work
+ * $di = Phalcon\Di\FactoryDefault::getDefault();
+ *
+ * $phql = 'SELECT * FROM robot';
+ *
+ * $myTransaction = new Transaction($di);
+ * $myTransaction->begin();
+ *
+ * $newRobot = new Robot();
+ * $newRobot->setTransaction($myTransaction);
+ * $newRobot->type = "mechanical";
+ * $newRobot->name = "Astro Boy";
+ * $newRobot->year = 1952;
+ * $newRobot->save();
+ *
+ * $queryWithTransaction = new Query($phql, $di);
+ * $queryWithTransaction->setTransaction($myTransaction);
+ *
+ * $resultWithEntries = $queryWithTransaction->execute();
+ *
+ * $queryWithOutTransaction = new Query($phql, $di);
+ * $resultWithOutEntries = $queryWithTransaction->execute()
+ *
  *</code>
  */
 class Query implements QueryInterface, InjectionAwareInterface
@@ -87,7 +109,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	protected _sqlAliasesModelsInstances;
 
-	protected _sqlColumnAliases;
+	protected _sqlColumnAliases = [];
 
 	protected _modelsInstances;
 
@@ -105,6 +127,15 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	protected _sharedLock;
 
+	protected _nestingLevel = -1;
+
+	/**
+	 * TransactionInterface so that the query can wrap a transaction
+	 * around batch updates and intermediate selects within the transaction.
+	 * however if a model got a transaction set inside it will use the local transaction instead of this one
+	 */
+	protected _transaction { get };
+
 	static protected _irPhqlCache;
 
 	const TYPE_SELECT = 309;
@@ -117,15 +148,12 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Phalcon\Mvc\Model\Query constructor
-	 *
-	 * @param string phql
-	 * @param \Phalcon\DiInterface dependencyInjector
 	 */
-	public function __construct(phql = null, <DiInterface> dependencyInjector = null, options = null)
+	public function __construct(string phql = null, <DiInterface> dependencyInjector = null, array options = [])
 	{
 		var enableImplicitJoins;
 
-		if typeof phql != "null" {
+		if phql !== null {
 			let this->_phql = phql;
 		}
 
@@ -133,7 +161,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			this->setDI(dependencyInjector);
 		}
 
-		if typeof options == "array" && fetch enableImplicitJoins, options["enable_implicit_joins"] {
+		if fetch enableImplicitJoins, options["enable_implicit_joins"] {
 			let this->_enableImplicitJoins = enableImplicitJoins == true;
 		} else {
 			let this->_enableImplicitJoins = globals_get("orm.enable_implicit_joins");
@@ -174,7 +202,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Tells to the query if only the first row in the resultset must be returned
 	 */
-	public function setUniqueRow(boolean uniqueRow) -> <Query>
+	public function setUniqueRow(bool uniqueRow) -> <QueryInterface>
 	{
 		let this->_uniqueRow = uniqueRow;
 		return this;
@@ -183,7 +211,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Check if the query is programmed to get only the first row in the resultset
 	 */
-	public function getUniqueRow() -> boolean
+	public function getUniqueRow() -> bool
 	{
 		return this->_uniqueRow;
 	}
@@ -193,18 +221,25 @@ class Query implements QueryInterface, InjectionAwareInterface
 	 */
 	protected final function _getQualified(array! expr) -> array
 	{
-		var columnName, sqlColumnAliases, metaData, sqlAliases,
+		var columnName, nestingLevel, sqlColumnAliases, metaData, sqlAliases,
 			source, sqlAliasesModelsInstances, realColumnName, columnDomain,
 			model, models, columnMap, hasModel, className;
 		int number;
 
 		let columnName = expr["name"];
 
+		let nestingLevel = this->_nestingLevel;
+
 		/**
 		 * Check if the qualified name is a column alias
 		 */
-		let sqlColumnAliases = this->_sqlColumnAliases;
-		if isset sqlColumnAliases[columnName] {
+		if isset this->_sqlColumnAliases[nestingLevel] {
+			let sqlColumnAliases = this->_sqlColumnAliases[nestingLevel];
+		} else {
+			let sqlColumnAliases = [];
+		}
+
+		if isset sqlColumnAliases[columnName] && (!isset expr["domain"] || empty expr["domain"]) {
 			return [
 				"type": "qualified",
 				"name": columnName
@@ -434,12 +469,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Resolves an expression from its intermediate code into a string
-	 *
-	 * @param array expr
-	 * @param boolean quoting
-	 * @return string
 	 */
-	protected final function _getExpression(var expr, boolean quoting = true) -> string
+	protected final function _getExpression(array expr, bool quoting = true) -> string
 	{
 		var exprType, exprLeft, exprRight, left = null, right = null, listItems, exprListItem,
 			exprReturn, tempNotQuoting, value, escapedValue, exprValue,
@@ -911,11 +942,9 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Resolves a table in a SELECT statement checking if the model exists
 	 *
-	 * @param \Phalcon\Mvc\Model\ManagerInterface manager
-	 * @param array qualifiedName
 	 * @return string
 	 */
-	protected final function _getTable(<ManagerInterface> manager, qualifiedName)
+	protected final function _getTable(<ManagerInterface> manager, array qualifiedName)
 	{
 		var modelName, model, source, schema;
 
@@ -937,7 +966,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Resolves a JOIN clause checking if the associated models exist
 	 */
-	protected final function _getJoin(<ManagerInterface> manager, var join) -> array
+	protected final function _getJoin(<ManagerInterface> manager, array join) -> array
 	{
 		var qualified, modelName, realModelName, nsAlias,
 			source, model, schema;
@@ -955,7 +984,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 					let realModelName = modelName;
 				}
 
-				let model = manager->load(realModelName, true),
+				let model = manager->load(realModelName),
 					source = model->getSource(),
 					schema = model->getSchema();
 
@@ -973,11 +1002,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Resolves a JOIN type
-	 *
-	 * @param array join
-	 * @return string
 	 */
-	protected final function _getJoinType(join) -> string
+	protected final function _getJoinType(array join) -> string
 	{
 		var type;
 
@@ -1009,14 +1035,9 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Resolves joins involving has-one/belongs-to/has-many relations
 	 *
-	 * @param string joinType
 	 * @param string joinSource
-	 * @param string modelAlias
-	 * @param string joinAlias
-	 * @param \Phalcon\Mvc\Model\RelationInterface relation
-	 * @return array
 	 */
-	protected final function _getSingleJoin(string! joinType, joinSource, modelAlias, joinAlias, <RelationInterface> relation) -> array
+	protected final function _getSingleJoin(string! joinType, joinSource, string modelAlias, string joinAlias, <RelationInterface> relation) -> array
 	{
 		var fields, referencedFields, sqlJoinConditions = null,
 			sqlJoinPartialConditions, position, field, referencedField;
@@ -1108,14 +1129,9 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Resolves joins involving many-to-many relations
 	 *
-	 * @param string joinType
 	 * @param string joinSource
-	 * @param string modelAlias
-	 * @param string joinAlias
-	 * @param \Phalcon\Mvc\Model\RelationInterface relation
-	 * @return array
 	 */
-	protected final function _getMultiJoin(joinType, joinSource, modelAlias, joinAlias, <RelationInterface> relation) -> array
+	protected final function _getMultiJoin(string! joinType, joinSource, string modelAlias, string joinAlias, <RelationInterface> relation) -> array
 	{
 		var sqlJoins, fields, referencedFields,
 			intermediateModelName, intermediateModel, intermediateSource,
@@ -1281,11 +1297,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Processes the JOINs in the query returning an internal representation for the database dialect
-	 *
-	 * @param array select
-	 * @return array
 	 */
-	protected final function _getJoins(var select)
+	protected final function _getJoins(array select) -> array
 	{
 		var models, sqlAliases, sqlAliasesModels, sqlModelsAliases, sqlAliasesModelsInstances,
 			modelsInstances, fromModels, sqlJoins, joinModels, joinSources, joinTypes, joinPreCondition,
@@ -1630,8 +1643,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Returns a processed order clause for a SELECT statement
 	 *
-	 * @param array|string $order
-	 * @return array
+	 * @param array|string order
 	 */
 	protected final function _getOrderClause(order) -> array
 	{
@@ -1745,6 +1757,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 			throw new Exception("Corrupted SELECT AST");
 		}
 
+		let this->_nestingLevel++;
+
 		/**
 		 * sqlModels is an array of the models to be used in the query
 		 */
@@ -1829,7 +1843,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			}
 
 			// Load a model instance from the models manager
-			let model = manager->load(realModelName, true);
+			let model = manager->load(realModelName);
 
 			// Define a complete schema/source
 			let schema = model->getSchema(),
@@ -1909,7 +1923,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 					let selectColumns[] = [
 						"type":   PHQL_T_DOMAINALL,
-    					"column": joinAlias,
+						"column": joinAlias,
 						"eager":  alias,
 						"eagerType": eagerType,
 						"balias": bestAlias
@@ -2009,6 +2023,9 @@ class Query implements QueryInterface, InjectionAwareInterface
 					 * "balias" is the best alias chosen for the column
 					 */
 					if fetch alias, sqlColumn["balias"] {
+						if isset column["column"]["domain"] {
+							let alias = column["column"]["domain"] . "_" . alias;
+						}
 						let sqlColumns[alias] = sqlColumn;
 					} else {
 						if sqlColumn["type"] == "scalar" {
@@ -2022,7 +2039,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 				let position++;
 			}
 		}
-		let this->_sqlColumnAliases = sqlColumnAliases;
+		let this->_sqlColumnAliases[this->_nestingLevel] = sqlColumnAliases;
 
 		// sqlSelect is the final prepared SELECT
 		let sqlSelect = [
@@ -2078,6 +2095,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 				this->_sqlAliasesModelsInstances = tempSqlAliasesModelsInstances;
 		}
 
+		let this->_nestingLevel--;
+
 		return sqlSelect;
 	}
 
@@ -2089,7 +2108,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 		var ast, qualifiedName, nsAlias, manager, modelName, model, source, schema,
 			exprValues, exprValue, sqlInsert, metaData, fields,
 			sqlFields, field, name, realModelName;
-		boolean notQuoting;
+		bool notQuoting;
 
 		let ast = this->_ast;
 
@@ -2119,7 +2138,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			let realModelName = modelName;
 		}
 
-		let model = manager->load(realModelName, true),
+		let model = manager->load(realModelName),
 			source = model->getSource(),
 			schema = model->getSchema();
 
@@ -2182,7 +2201,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			table, qualifiedName, modelName, model, source, schema, alias,
 			sqlFields, sqlValues, updateValues, updateValue, exprColumn, sqlUpdate,
 			where, limit;
-		boolean notQuoting;
+		bool notQuoting;
 
 		let ast = this->_ast;
 
@@ -2234,7 +2253,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			/**
 			 * Load a model instance from the models manager
 			 */
-			let model = manager->load(realModelName, true),
+			let model = manager->load(realModelName),
 				source = model->getSource(),
 				schema = model->getSchema();
 
@@ -2370,7 +2389,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			/**
 			 * Load a model instance from the models manager
 			 */
-			let model = manager->load(realModelName, true),
+			let model = manager->load(realModelName),
 				source = model->getSource(),
 				schema = model->getSchema();
 
@@ -2515,7 +2534,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Executes the SELECT intermediate representation producing a Phalcon\Mvc\Model\Resultset
 	 */
-	protected final function _executeSelect(var intermediate, var bindParams, var bindTypes, boolean simulate = false) -> <ResultsetInterface> | array
+	protected final function _executeSelect(array intermediate, var bindParams, var bindTypes, bool simulate = false) -> <ResultsetInterface> | array
 	{
 
 		var manager, modelName, models, model, connection, connectionTypes,
@@ -2524,7 +2543,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			columnAlias, sqlAlias, dialect, sqlSelect, bindCounts,
 			processed, wildcard, value, processedTypes, typeWildcard, result,
 			resultData, cache, resultObject, columns1, typesColumnMap, wildcardValue, resultsetClassName;
-		boolean haveObjects, haveScalars, isComplex, isSimpleStd, isKeepingSnapshots;
+		bool haveObjects, haveScalars, isComplex, isSimpleStd, isKeepingSnapshots;
 		int numberObjects;
 
 		let manager = this->_manager;
@@ -2539,25 +2558,18 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 			// Load model if it is not loaded
 			if !fetch model, this->_modelsInstances[modelName] {
-				let model = manager->load(modelName, true),
+				let model = manager->load(modelName),
 					this->_modelsInstances[modelName] = model;
 			}
 
-			// Get database connection
-			if method_exists(model, "selectReadConnection") {
-				// use selectReadConnection() if implemented in extended Model class
-				let connection = model->selectReadConnection(intermediate, bindParams, bindTypes);
-				if typeof connection != "object" {
-					throw new Exception("'selectReadConnection' didn't return a valid connection");
-				}
-			} else {
-				let connection = model->getReadConnection();
-			}
+			let connection = this->getReadConnection(model, intermediate, bindParams, bindTypes);
 
-			// More than one type of connection is not allowed
-			let connectionTypes[connection->getType()] = true;
-			if count(connectionTypes) == 2 {
-				throw new Exception("Cannot use models of different database systems in the same query");
+			if typeof connection == "object" {
+				// More than one type of connection is not allowed
+				let connectionTypes[connection->getType()] = true;
+				if count(connectionTypes) == 2 {
+					throw new Exception("Cannot use models of different database systems in the same query");
+				}
 			}
 		}
 
@@ -2648,7 +2660,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 						columns1[aliasCopy]["columnMap"] = columnMap;
 
 					// Check if the model keeps snapshots
-					let isKeepingSnapshots = (boolean) manager->isKeepingSnapshots(instance);
+					let isKeepingSnapshots = (bool) manager->isKeepingSnapshots(instance);
 					if isKeepingSnapshots {
 						let columns1[aliasCopy]["keepSnapshots"] = isKeepingSnapshots;
 					}
@@ -2760,7 +2772,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 		/**
 		 * Check if the query has data
 		 */
-		if result->numRows(result) {
+		if result instanceof ResultInterface && result->numRows() {
 			let resultData = result;
 		} else {
 			let resultData = false;
@@ -2821,7 +2833,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 				/**
 				 * Check if the model keeps snapshots
 				 */
-				let isKeepingSnapshots = (boolean) manager->isKeepingSnapshots(resultObject);
+				let isKeepingSnapshots = (bool) manager->isKeepingSnapshots(resultObject);
 			}
 
 			if resultObject instanceof ModelInterface && method_exists(resultObject, "getResultsetClass") {
@@ -2832,7 +2844,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 						throw new Exception("Resultset class \"" . resultsetClassName . "\" not found");
 					}
 
-					if ! in_array("Phalcon\\Mvc\\Model\\ResultsetInterface", class_implements(resultsetClassName)) {
+					if ! is_subclass_of(resultsetClassName, "Phalcon\\Mvc\\Model\\ResultsetInterface") {
 						throw new Exception("Resultset class \"" . resultsetClassName . "\" must be an implementation of Phalcon\\Mvc\\Model\\ResultsetInterface");
 					}
 
@@ -2855,37 +2867,25 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Executes the INSERT intermediate representation producing a Phalcon\Mvc\Model\Query\Status
 	 *
-	 * @param array intermediate
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\StatusInterface
 	 */
-	protected final function _executeInsert(var intermediate, var bindParams, var bindTypes) -> <StatusInterface>
+	protected final function _executeInsert(array intermediate, var bindParams, var bindTypes) -> <StatusInterface>
 	{
 		var modelName, manager, connection, metaData, attributes,
 			fields, columnMap, dialect, insertValues, number, value, model,
 			values, exprValue, insertValue, wildcard, fieldName, attributeName,
 			insertModel;
-		boolean automaticFields;
+		bool automaticFields;
 
 		let modelName = intermediate["model"];
 
 		let manager = this->_manager;
 		if !fetch model, this->_modelsInstances[modelName] {
-			let model = manager->load(modelName, true);
+			let model = manager->load(modelName);
 		}
 
-		/**
-		 * Get the model connection
-		 */
-		if method_exists(model, "selectWriteConnection") {
-			let connection = model->selectWriteConnection(intermediate, bindParams, bindTypes);
-			if typeof connection != "object" {
-				throw new Exception("'selectWriteConnection' didn't return a valid connection");
-			}
-		} else {
-			let connection = model->getWriteConnection();
-		}
+		let connection = this->getWriteConnection(model, intermediate, bindParams, bindTypes);
 
 		let metaData = this->_metaData, attributes = metaData->getAttributes(model);
 
@@ -2977,27 +2977,26 @@ class Query implements QueryInterface, InjectionAwareInterface
 		}
 
 		/**
-		 * Get a base model from the Models Manager
-		 * Clone the base model
+		 * Get model from the Models Manager
 		 */
-		let insertModel = clone manager->load(modelName);
+		let insertModel = manager->load(modelName);
+
+		insertModel->assign(insertValues);
 
 		/**
 		 * Call 'create' to ensure that an insert is performed
 		 * Return the insert status
 		 */
-		return new Status(insertModel->create(insertValues), insertModel);
+		return new Status(insertModel->create(), insertModel);
 	}
 
 	/**
 	 * Executes the UPDATE intermediate representation producing a Phalcon\Mvc\Model\Query\Status
 	 *
-	 * @param array intermediate
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\StatusInterface
 	 */
-	protected final function _executeUpdate(var intermediate, var bindParams, var bindTypes) -> <StatusInterface>
+	protected final function _executeUpdate(array intermediate, var bindParams, var bindTypes) -> <StatusInterface>
 	{
 		var models, modelName, model, connection, dialect,
 			fields, values, updateValues, fieldName, value,
@@ -3019,14 +3018,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			let model = this->_manager->load(modelName);
 		}
 
-		if method_exists(model, "selectWriteConnection") {
-			let connection = model->selectWriteConnection(intermediate, bindParams, bindTypes);
-			if typeof connection != "object" {
-				throw new Exception("'selectWriteConnection' didn't return a valid connection");
-			}
-		} else {
-			let connection = model->getWriteConnection();
-		}
+		let connection = this->getWriteConnection(model, intermediate, bindParams, bindTypes);
 
 		let dialect = connection->getDialect();
 
@@ -3109,14 +3101,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			return new Status(true);
 		}
 
-		if method_exists(model, "selectWriteConnection") {
-			let connection = model->selectWriteConnection(intermediate, bindParams, bindTypes);
-			if typeof connection != "object" {
-				throw new Exception("'selectWriteConnection' didn't return a valid connection");
-			}
-		} else {
-			let connection = model->getWriteConnection();
-		}
+		let connection = this->getWriteConnection(model, intermediate, bindParams, bindTypes);
 
 		/**
 		 * Create a transaction in the write connection
@@ -3130,10 +3115,12 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 			let record = records->current();
 
+			record->assign(updateValues);
+
 			/**
 			 * We apply the executed values to every record found
 			 */
-			if !record->update(updateValues) {
+			if !record->update() {
 
 				/**
 				 * Rollback the transaction on failure
@@ -3157,12 +3144,10 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Executes the DELETE intermediate representation producing a Phalcon\Mvc\Model\Query\Status
 	 *
-	 * @param array intermediate
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\StatusInterface
 	 */
-	protected final function _executeDelete(var intermediate, var bindParams, var bindTypes) -> <StatusInterface>
+	protected final function _executeDelete(array intermediate, var bindParams, var bindTypes) -> <StatusInterface>
 	{
 		var models, modelName, model, records, connection, record;
 
@@ -3193,23 +3178,12 @@ class Query implements QueryInterface, InjectionAwareInterface
 			return new Status(true);
 		}
 
-		if method_exists(model, "selectWriteConnection") {
-			let connection = model->selectWriteConnection(intermediate, bindParams, bindTypes);
-			if typeof connection != "object" {
-				throw new Exception("'selectWriteConnection' didn't return a valid connection");
-			}
-		} else {
-			let connection = model->getWriteConnection();
-		}
+		let connection = this->getWriteConnection(model, intermediate, bindParams, bindTypes);
 
 		/**
 		 * Create a transaction in the write connection
 		 */
 		connection->begin();
-
-		//for record in iterator(records) {
-
-
 		records->rewind();
 
 		while records->valid() {
@@ -3246,14 +3220,10 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Query the records on which the UPDATE/DELETE operation well be done
 	 *
-	 * @param \Phalcon\Mvc\ModelInterface model
-	 * @param array intermediate
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\ResultsetInterface
 	 */
-	protected final function _getRelatedRecords(<ModelInterface> model, var intermediate, var bindParams, var bindTypes)
-	 -> <ResultsetInterface>
+	protected final function _getRelatedRecords(<ModelInterface> model, array intermediate, var bindParams, var bindTypes) -> <ResultsetInterface>
 	{
 		var selectIr, whereConditions, limitConditions, query;
 
@@ -3344,7 +3314,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 			}
 
 			let result = cache->get(key, lifetime);
-			if result !== null {
+			if !empty result {
 
 				if typeof result != "object" {
 					throw new Exception("Cache didn't return a valid resultset");
@@ -3463,9 +3433,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 	 *
 	 * @param array bindParams
 	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\ModelInterface
 	 */
-	public function getSingleResult(var bindParams = null, var bindTypes = null)
+	public function getSingleResult(var bindParams = null, var bindTypes = null) -> <ModelInterface>
 	{
 		/**
 		 * The query is already programmed to return just one row
@@ -3480,7 +3449,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Sets the type of PHQL statement to be executed
 	 */
-	public function setType(int type) -> <Query>
+	public function setType(int type) -> <QueryInterface>
 	{
 		let this->_type = type;
 		return this;
@@ -3497,7 +3466,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Set default bind parameters
 	 */
-	public function setBindParams(array! bindParams, boolean merge = false) -> <Query>
+	public function setBindParams(array! bindParams, bool merge = false) -> <QueryInterface>
 	{
 		var currentBindParams;
 
@@ -3517,10 +3486,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Returns default bind params
-	 *
-	 * @return array
 	 */
-	public function getBindParams()
+	public function getBindParams() -> array
 	{
 		return this->_bindParams;
 	}
@@ -3528,11 +3495,11 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Set default bind parameters
 	 */
-	public function setBindTypes(array! bindTypes, boolean merge = false) -> <Query>
+	public function setBindTypes(array! bindTypes, bool merge = false) -> <QueryInterface>
 	{
 		var currentBindTypes;
 
-		if merge {
+		if unlikely merge {
 			let currentBindTypes = this->_bindTypes;
 			if typeof currentBindTypes == "array" {
 				let this->_bindTypes = currentBindTypes + bindTypes;
@@ -3549,7 +3516,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Set SHARED LOCK clause
 	 */
-	public function setSharedLock(boolean sharedLock = false) -> <Query>
+	public function setSharedLock(bool sharedLock = false) -> <QueryInterface>
 	{
 		let this->_sharedLock = sharedLock;
 
@@ -3558,10 +3525,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Returns default bind types
-	 *
-	 * @return array
 	 */
-	public function getBindTypes()
+	public function getBindTypes() -> array
 	{
 		return this->_bindTypes;
 	}
@@ -3569,7 +3534,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Allows to set the IR to be executed
 	 */
-	public function setIntermediate(array! intermediate) -> <Query>
+	public function setIntermediate(array! intermediate) -> <QueryInterface>
 	{
 		let this->_intermediate = intermediate;
 		return this;
@@ -3577,10 +3542,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Returns the intermediate representation of the PHQL statement
-	 *
-	 * @return array
 	 */
-	public function getIntermediate()
+	public function getIntermediate() -> array
 	{
 		return this->_intermediate;
 	}
@@ -3588,7 +3551,7 @@ class Query implements QueryInterface, InjectionAwareInterface
 	/**
 	 * Sets the cache parameters of the query
 	 */
-	public function cache(cacheOptions) -> <Query>
+	public function cache(array cacheOptions) -> <QueryInterface>
 	{
 		let this->_cacheOptions = cacheOptions;
 		return this;
@@ -3596,10 +3559,8 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 	/**
 	 * Returns the current cache options
-	 *
-	 * @param array
 	 */
-	public function getCacheOptions()
+	public function getCacheOptions() -> array
 	{
 		return this->_cacheOptions;
 	}
@@ -3629,5 +3590,60 @@ class Query implements QueryInterface, InjectionAwareInterface
 	public static function clean()
 	{
 		let self::_irPhqlCache = [];
+	}
+
+	/**
+	 * Gets the read connection from the model if there is no transaction set inside the query object
+	 */
+	protected function getReadConnection(<ModelInterface> model, array intermediate = null, array bindParams = null, array bindTypes = null) -> <AdapterInterface>
+	{
+		var connection = null, transaction;
+		let transaction = this->_transaction;
+
+		if typeof transaction == "object" && transaction instanceof TransactionInterface {
+			return transaction->getConnection();
+		}
+
+		if method_exists(model, "selectReadConnection") {
+			// use selectReadConnection() if implemented in extended Model class
+			let connection = model->selectReadConnection(intermediate, bindParams, bindTypes);
+			if typeof connection != "object" {
+				throw new Exception("selectReadConnection did not return a connection");
+			}
+			return connection;
+		}
+		return model->getReadConnection();
+	}
+
+
+	/**
+	 * Gets the write connection from the model if there is no transaction inside the query object
+	 */
+	protected function getWriteConnection(<ModelInterface> model, array intermediate = null, array bindParams = null, array bindTypes = null) -> <AdapterInterface>
+	{
+		var connection = null, transaction;
+		let transaction = this->_transaction;
+
+		if typeof transaction == "object" && transaction instanceof TransactionInterface {
+			return transaction->getConnection();
+		}
+
+		if method_exists(model, "selectWriteConnection") {
+			let connection = model->selectWriteConnection(intermediate, bindParams, bindTypes);
+			if typeof connection != "object" {
+				throw new Exception("selectWriteConnection did not return a connection");
+			}
+			return connection;
+		}
+		return model->getWriteConnection();
+	}
+
+	/**
+	 * allows to wrap a transaction around all queries
+	 */
+	public function setTransaction(<TransactionInterface> transaction) -> <QueryInterface>
+	{
+		let this->_transaction = transaction;
+		return this;
 	}
 }

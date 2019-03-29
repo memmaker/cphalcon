@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Mvc\Model\ManagerInterface
  *
  * Interface for Phalcon\Mvc\Model\Manager
@@ -103,165 +111,108 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, load);
 /**
  * Setup a 1-1 relation between two models
  *
- * @param   \Phalcon\Mvc\ModelInterface $model
- * @param	mixed $fields
- * @param	string $referencedModel
- * @param	mixed $referencedFields
- * @param	array $options
- * @return  \Phalcon\Mvc\Model\RelationInterface
+ * @param	mixed  fields
+ * @param	mixed  referencedFields
+ * @param	array  options
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, addHasOne);
 
 /**
  * Setup a relation reverse 1-1  between two models
  *
- * @param 	\Phalcon\Mvc\ModelInterface $model
- * @param	mixed $fields
- * @param	string $referencedModel
- * @param	mixed $referencedFields
- * @param	array $options
- * @return 	\Phalcon\Mvc\Model\RelationInterface
+ * @param	mixed  fields
+ * @param	mixed  referencedFields
+ * @param	array  options
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, addBelongsTo);
 
 /**
  * Setup a relation 1-n between two models
  *
- * @param 	\Phalcon\Mvc\ModelInterface $model
- * @param	mixed $fields
- * @param	string $referencedModel
- * @param	mixed $referencedFields
- * @param	array $options
- * @return 	\Phalcon\Mvc\Model\RelationInterface
+ * @param	mixed  fields
+ * @param	mixed  referencedFields
+ * @param	array  options
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, addHasMany);
 
 /**
  * Checks whether a model has a belongsTo relation with another model
- *
- * @param 	string $modelName
- * @param 	string $modelRelation
- * @return 	boolean
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, existsBelongsTo);
 
 /**
  * Checks whether a model has a hasMany relation with another model
- *
- * @param 	string $modelName
- * @param 	string $modelRelation
- * @return 	boolean
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, existsHasMany);
 
 /**
  * Checks whether a model has a hasOne relation with another model
- *
- * @param 	string $modelName
- * @param 	string $modelRelation
- * @return 	boolean
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, existsHasOne);
 
 /**
  * Gets belongsTo related records from a model
  *
- * @param string $method
- * @param string $modelName
- * @param string $modelRelation
- * @param \Phalcon\Mvc\Model $record
- * @param array $parameters
- * @return \Phalcon\Mvc\Model\ResultsetInterface
+ * @param string modelRelation
+ * @param array  parameters
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getBelongsToRecords);
 
 /**
  * Gets hasMany related records from a model
  *
- * @param string $method
- * @param string $modelName
- * @param string $modelRelation
- * @param \Phalcon\Mvc\Model $record
- * @param array $parameters
- * @return \Phalcon\Mvc\Model\ResultsetInterface
+ * @param string modelRelation
+ * @param array  parameters
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getHasManyRecords);
 
 /**
  * Gets belongsTo related records from a model
  *
- * @param string $method
- * @param string $modelName
- * @param string $modelRelation
- * @param \Phalcon\Mvc\Model $record
- * @param array $parameters
- * @return \Phalcon\Mvc\Model\ResultsetInterface
+ * @param string modelRelation
+ * @param array  parameters
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getHasOneRecords);
 
 /**
  * Gets belongsTo relations defined on a model
- *
- * @param  \Phalcon\Mvc\ModelInterface $model
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getBelongsTo);
 
 /**
  * Gets hasMany relations defined on a model
- *
- * @param  \Phalcon\Mvc\ModelInterface $model
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getHasMany);
 
 /**
  * Gets hasOne relations defined on a model
- *
- * @param  \Phalcon\Mvc\ModelInterface $model
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getHasOne);
 
 /**
  * Gets hasOne relations defined on a model
- *
- * @param  \Phalcon\Mvc\ModelInterface $model
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getHasOneAndHasMany);
 
 /**
  * Query all the relationships defined on a model
- *
- * @param string $modelName
- * @return \Phalcon\Mvc\Model\RelationInterface[]
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getRelations);
 
 /**
  * Query the relations between two models
- *
- * @param string $first
- * @param string $second
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getRelationsBetween);
 
 /**
  * Creates a Phalcon\Mvc\Model\Query without execute it
- *
- * @param string $phql
- * @return \Phalcon\Mvc\Model\QueryInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, createQuery);
 
 /**
  * Creates a Phalcon\Mvc\Model\Query and execute it
  *
- * @param string $phql
  * @param array $placeholders
- * @return \Phalcon\Mvc\Model\QueryInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, executeQuery);
 
@@ -269,7 +220,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, executeQuery);
  * Creates a Phalcon\Mvc\Model\Query\Builder
  *
  * @param string $params
- * @return \Phalcon\Mvc\Model\Query\BuilderInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, createBuilder);
 
@@ -283,7 +233,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, addBehavior);
  * Notify the behaviors that are listening in the model
  *
  * @param string $eventName
- * @param \Phalcon\Mvc\ModelInterface model
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, notifyEvent);
 
@@ -292,26 +241,88 @@ ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, notifyEvent);
  * This method expects that the endpoint listeners/behaviors returns true
  * meaning that a least one is implemented
  *
- * @param \Phalcon\Mvc\ModelInterface model
- * @param string $eventName
- * @param array $data
- * @return boolean
+ * @param array data
+ * @return bool
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, missingMethod);
 
 /**
  * Returns the last query created or executed in the models manager
- *
- * @return \Phalcon\Mvc\Model\QueryInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getLastQuery);
 
 /**
  * Returns a relation by its alias
- *
- * @param string $modelName
- * @param string $alias
- * @return \Phalcon\Mvc\Model\Relation
  */
 ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getRelationByAlias);
+
+/**
+ * Check whether a model property is declared as public.
+ *
+ * <code>
+ * $isPublic = $manager->isVisibleModelProperty(
+ *     new Robots(),
+ *     "name"
+ * );
+ * </code>
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, isVisibleModelProperty);
+
+/**
+ * Sets if a model must keep snapshots
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, keepSnapshots);
+
+/**
+ * Checks if a model is keeping snapshots for the queried records
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, isKeepingSnapshots);
+
+/**
+ * Sets if a model must use dynamic update instead of the all-field update
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, useDynamicUpdate);
+
+/**
+ * Checks if a model is using dynamic update instead of all-field update
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, isUsingDynamicUpdate);
+
+/**
+ * Setups a relation n-m between two models
+ *
+ * @param	string fields
+ * @param	string intermediateFields
+ * @param	string intermediateReferencedFields
+ * @param	string referencedFields
+ * @param   array options
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, addHasManyToMany);
+
+/**
+ * Checks whether a model has a hasManyToMany relation with another model
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, existsHasManyToMany);
+
+/**
+ * Helper method to query records based on a relation definition
+ *
+ * @return \Phalcon\Mvc\Model\Resultset\Simple|Phalcon\Mvc\Model\Resultset\Simple|int|false
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getRelationRecords);
+
+/**
+ * Gets hasManyToMany relations defined on a model
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getHasManyToMany);
+
+/**
+ * Registers shorter aliases for namespaces in PHQL statements
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, registerNamespaceAlias);
+
+/**
+ * Returns a real namespace from its alias
+ */
+ZEPHIR_DOC_METHOD(Phalcon_Mvc_Model_ManagerInterface, getNamespaceAlias);
 

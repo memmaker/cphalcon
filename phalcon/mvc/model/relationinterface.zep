@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -30,7 +21,6 @@ interface RelationInterface
 	 * Sets the intermediate model dat for has-*-through relations
 	 *
 	 * @param string|array intermediateFields
-	 * @param string intermediateModel
 	 * @param string|array intermediateReferencedFields
 	 */
 	public function setIntermediateRelation(var intermediateFields, string! intermediateModel, var intermediateReferencedFields);
@@ -38,7 +28,7 @@ interface RelationInterface
 	/**
 	 * Check if records returned by getting belongs-to/has-many are implicitly cached during the current request
 	 */
-	public function isReusable() -> boolean;
+	public function isReusable() -> bool;
 
 	/**
 	 * Returns the relations type
@@ -80,7 +70,7 @@ interface RelationInterface
 	/**
 	 * Check whether the relation act as a foreign key
 	 */
-	public function isForeignKey() -> boolean;
+	public function isForeignKey() -> bool;
 
 	/**
 	 * Returns the foreign key configuration
@@ -90,9 +80,16 @@ interface RelationInterface
 	public function getForeignKey();
 
 	/**
+	 * Returns parameters that must be always used when the related records are obtained
+	 *
+	 * @return array
+	 */
+	public function getParams();
+
+	/**
 	 * Check whether the relation is a 'many-to-many' relation or not
 	 */
-	public function isThrough() -> boolean;
+	public function isThrough() -> bool;
 
 	/**
 	 * Gets the intermediate fields for has-*-through relations

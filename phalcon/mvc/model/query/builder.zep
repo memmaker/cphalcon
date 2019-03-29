@@ -1,19 +1,11 @@
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Query;
@@ -71,8 +63,6 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 
 	protected _joins;
 
-	protected _with;
-
 	protected _conditions;
 
 	protected _group;
@@ -107,7 +97,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 			singleConditionArray, limit, offset, fromClause,
 			mergedConditions, mergedParams, mergedTypes,
 			singleCondition, singleParams, singleTypes,
-			with, distinct, bind, bindTypes;
+			distinct, bind, bindTypes;
 
 		if typeof params == "array" {
 
@@ -200,13 +190,6 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 			}
 
 			/**
-			 * Check if the resultset must be eager loaded
-			 */
-			if fetch with, params["with"] {
-				let this->_with = with;
-			}
-
-			/**
 			 * Assign GROUP clause
 			 */
 			if fetch groupClause, params["group"] {
@@ -286,7 +269,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	/**
 	 * Sets the DependencyInjector container
 	 */
-	public function setDI(<DiInterface> dependencyInjector) -> <Builder>
+	public function setDI(<DiInterface> dependencyInjector) -> <BuilderInterface>
 	{
 		let this->_dependencyInjector = dependencyInjector;
 		return this;
@@ -308,7 +291,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->distinct(null);
 	 *</code>
 	 */
-	 public function distinct(var distinct) -> <Builder>
+	 public function distinct(var distinct) -> <BuilderInterface>
 	 {
 	 	let this->_distinct = distinct;
 	 	return this;
@@ -317,7 +300,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	/**
 	 * Returns SELECT DISTINCT / SELECT ALL flag
 	 */
-	public function getDistinct() -> boolean
+	public function getDistinct() -> bool
 	{
 		return this->_distinct;
 	}
@@ -343,7 +326,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * );
 	 *</code>
 	 */
-	public function columns(var columns) -> <Builder>
+	public function columns(var columns) -> <BuilderInterface>
 	{
 		let this->_columns = columns;
 		return this;
@@ -380,7 +363,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * );
 	 *</code>
 	 */
-	public function from(var models) -> <Builder>
+	public function from(var models) -> <BuilderInterface>
 	{
 		let this->_models = models;
 		return this;
@@ -395,24 +378,9 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *
 	 * // Load data from model 'Robots' using 'r' as alias in PHQL
 	 * $builder->addFrom("Robots", "r");
-	 *
-	 * // Load data from model 'Robots' using 'r' as alias in PHQL
-	 * // and eager load model 'RobotsParts'
-	 * $builder->addFrom("Robots", "r", "RobotsParts");
-	 *
-	 * // Load data from model 'Robots' using 'r' as alias in PHQL
-	 * // and eager load models 'RobotsParts' and 'Parts'
-	 * $builder->addFrom(
-	 *     "Robots",
-	 *     "r",
-	 *     [
-	 *         "RobotsParts",
-	 *         "Parts",
-	 *     ]
-	 * );
 	 *</code>
 	 */
-	public function addFrom(var model, var alias = null, var with = null) -> <Builder>
+	public function addFrom(string model, string alias = null) -> <BuilderInterface>
 	{
 		var models, currentModel;
 
@@ -462,14 +430,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * // Left Join model 'Robots' specifying conditions, alias and type of join
 	 * $builder->join("Robots", "r.id = RobotsParts.robots_id", "r", "LEFT");
 	 *</code>
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @param string type
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function join(string! model, var conditions = null, var alias = null, var type = null) -> <Builder>
+	public function join(string! model, string conditions = null, string alias = null, string type = null) -> <BuilderInterface>
 	{
 		let this->_joins[] = [model, conditions, alias, type];
 		return this;
@@ -488,14 +450,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * // Inner Join model 'Robots' specifying conditions and alias
 	 * $builder->innerJoin("Robots", "r.id = RobotsParts.robots_id", "r");
 	 *</code>
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @param string type
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function innerJoin(string! model, var conditions = null, var alias = null) -> <Builder>
+	public function innerJoin(string! model, string conditions = null, string alias = null) -> <BuilderInterface>
 	{
 		let this->_joins[] = [model, conditions, alias, "INNER"];
 		return this;
@@ -507,13 +463,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *<code>
 	 * $builder->leftJoin("Robots", "r.id = RobotsParts.robots_id", "r");
 	 *</code>
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function leftJoin(string! model, var conditions = null, var alias = null) -> <Builder>
+	public function leftJoin(string! model, string conditions = null, string alias = null) -> <BuilderInterface>
 	{
 		let this->_joins[] = [model, conditions, alias, "LEFT"];
 		return this;
@@ -525,13 +476,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *<code>
 	 * $builder->rightJoin("Robots", "r.id = RobotsParts.robots_id", "r");
 	 *</code>
-	 *
-	 * @param string model
-	 * @param string conditions
-	 * @param string alias
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function rightJoin(string! model, var conditions = null, var alias = null) -> <Builder>
+	public function rightJoin(string! model, string conditions = null, string alias = null) -> <BuilderInterface>
 	{
 		let this->_joins[] = [model, conditions, alias, "RIGHT"];
 		return this;
@@ -539,10 +485,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 
 	/**
 	 * Return join parts of the query
-	 *
-	 * @return array
 	 */
-	public function getJoins()
+	public function getJoins() -> array
 	{
 		return this->_joins;
 	}
@@ -563,13 +507,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *     ]
 	 * );
 	 *</code>
-	 *
-	 * @param mixed conditions
-	 * @param array bindParams
-	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function where(var conditions, var bindParams = null, var bindTypes = null) -> <Builder>
+	public function where(string conditions, array bindParams = [], array bindTypes = []) -> <BuilderInterface>
 	{
 		var currentBindParams, currentBindTypes;
 
@@ -578,7 +517,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 		/**
 		 * Merge the bind params to the current ones
 		 */
-		if typeof bindParams == "array" {
+		if count(bindParams) > 0 {
 			let currentBindParams = this->_bindParams;
 			if typeof currentBindParams == "array" {
 				let this->_bindParams = currentBindParams + bindParams;
@@ -590,9 +529,9 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 		/**
 		 * Merge the bind types to the current ones
 		 */
-		if typeof bindTypes == "array" {
+		if count(bindTypes) > 0 {
 			let currentBindTypes = this->_bindTypes;
-			if typeof currentBindParams == "array" {
+			if typeof currentBindTypes == "array" {
 				let this->_bindTypes = currentBindTypes + bindTypes;
 			} else {
 				let this->_bindTypes = bindTypes;
@@ -616,13 +555,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *     ]
 	 * );
 	 *</code>
-	 *
-	 * @param string conditions
-	 * @param array bindParams
-	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function andWhere(string! conditions, var bindParams = null, var bindTypes = null) -> <Builder>
+	public function andWhere(string! conditions, array bindParams = [], array bindTypes = []) -> <BuilderInterface>
 	{
 		var currentConditions;
 
@@ -652,13 +586,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *     ]
 	 * );
 	 *</code>
-	 *
-	 * @param string conditions
-	 * @param array bindParams
-	 * @param array bindTypes
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function orWhere(string! conditions, var bindParams = null, var bindTypes = null) -> <Builder>
+	public function orWhere(string! conditions, array bindParams = [], array bindTypes = []) -> <BuilderInterface>
 	{
 		var currentConditions;
 
@@ -681,7 +610,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->betweenWhere("price", 100.25, 200.50);
 	 *</code>
 	 */
-	public function betweenWhere(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function betweenWhere(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionBetween("Where", operator, expr, minimum, maximum);
 	}
@@ -693,7 +622,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->notBetweenWhere("price", 100.25, 200.50);
 	 *</code>
 	 */
-	public function notBetweenWhere(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function notBetweenWhere(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionNotBetween("Where", operator, expr, minimum, maximum);
 	}
@@ -705,7 +634,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->inWhere("id", [1, 2, 3]);
 	 *</code>
 	 */
-	public function inWhere(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function inWhere(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionIn("Where", operator, expr, values);
 	}
@@ -717,7 +646,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->notInWhere("id", [1, 2, 3]);
 	 *</code>
 	 */
-	public function notInWhere(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function notInWhere(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionNotIn("Where", operator, expr, values);
 	}
@@ -738,12 +667,12 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *<code>
 	 * $builder->orderBy("Robots.name");
 	 * $builder->orderBy(["1", "Robots.name"]);
+	 * $builder->orderBy(["Robots.name DESC"]);
 	 *</code>
 	 *
 	 * @param string|array orderBy
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function orderBy(var orderBy) -> <Builder>
+	public function orderBy(var orderBy) -> <BuilderInterface>
 	{
 		let this->_order = orderBy;
 		return this;
@@ -766,10 +695,10 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->having("SUM(Robots.price) > 0");
 	 *
 	 * $builder->having(
-	 * 		"SUM(Robots.price) > :sum:",
-	 *   	[
-	 *    		"sum" => 100,
-	 *      ]
+	 *     "SUM(Robots.price) > :sum:",
+	 *     [
+	 *         "sum" => 100,
+	 *     ]
 	 * );
 	 *</code>
 	 *
@@ -778,7 +707,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * @param array bindTypes
 	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function having(var conditions, var bindParams = null, var bindTypes = null) -> <Builder>
+	public function having(var conditions, var bindParams = null, var bindTypes = null) -> <BuilderInterface>
 	{
 		var currentBindParams, currentBindTypes;
 
@@ -801,7 +730,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 		 */
 		if typeof bindTypes == "array" {
 			let currentBindTypes = this->_bindTypes;
-			if typeof currentBindParams == "array" {
+			if typeof currentBindTypes == "array" {
 				let this->_bindTypes = currentBindTypes + bindTypes;
 			} else {
 				let this->_bindTypes = bindTypes;
@@ -818,10 +747,10 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->andHaving("SUM(Robots.price) > 0");
 	 *
 	 * $builder->andHaving(
-	 * 		"SUM(Robots.price) > :sum:",
-	 *   	[
-	 *    		"sum" => 100,
-	 *      ]
+	 *     "SUM(Robots.price) > :sum:",
+	 *     [
+	 *         "sum" => 100,
+	 *     ]
 	 * );
 	 *</code>
 	 *
@@ -830,7 +759,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * @param array bindTypes
 	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function andHaving(string! conditions, var bindParams = null, var bindTypes = null) -> <Builder>
+	public function andHaving(string! conditions, var bindParams = null, var bindTypes = null) -> <BuilderInterface>
 	{
 		var currentConditions;
 
@@ -853,10 +782,10 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->orHaving("SUM(Robots.price) > 0");
 	 *
 	 * $builder->orHaving(
-	 * 		"SUM(Robots.price) > :sum:",
-	 *   	[
-	 *    		"sum" => 100,
-	 *      ]
+	 *     "SUM(Robots.price) > :sum:",
+	 *     [
+	 *         "sum" => 100,
+	 *     ]
 	 * );
 	 *</code>
 	 *
@@ -865,7 +794,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * @param array bindTypes
 	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function orHaving(string! conditions, var bindParams = null, var bindTypes = null) -> <Builder>
+	public function orHaving(string! conditions, var bindParams = null, var bindTypes = null) -> <BuilderInterface>
 	{
 		var currentConditions;
 
@@ -888,7 +817,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->betweenHaving("SUM(Robots.price)", 100.25, 200.50);
 	 *</code>
 	 */
-	public function betweenHaving(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function betweenHaving(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionBetween("Having", operator, expr, minimum, maximum);
 	}
@@ -900,7 +829,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->notBetweenHaving("SUM(Robots.price)", 100.25, 200.50);
 	 *</code>
 	 */
-	public function notBetweenHaving(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function notBetweenHaving(string! expr, var minimum, var maximum, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionNotBetween("Having", operator, expr, minimum, maximum);
 	}
@@ -912,7 +841,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->inHaving("SUM(Robots.price)", [100, 200]);
 	 *</code>
 	 */
-	public function inHaving(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function inHaving(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionIn("Having", operator, expr, values);
 	}
@@ -924,17 +853,15 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->notInHaving("SUM(Robots.price)", [100, 200]);
 	 *</code>
 	 */
-	public function notInHaving(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <Builder>
+	public function notInHaving(string! expr, array! values, string! operator = BuilderInterface::OPERATOR_AND) -> <BuilderInterface>
 	{
 		return this->_conditionNotIn("Having", operator, expr, values);
 	}
 
 	/**
 	 * Return the current having clause
-	 *
-	 * @return string
 	 */
-	public function getHaving()
+	public function getHaving() -> string
 	{
 		return this->_having;
 	}
@@ -946,7 +873,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->forUpdate(true);
 	 *</code>
 	 */
-	public function forUpdate(boolean forUpdate) -> <Builder>
+	public function forUpdate(bool forUpdate) -> <BuilderInterface>
 	{
 		let this->_forUpdate = forUpdate;
 		return this;
@@ -961,7 +888,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->limit("100", "20");
 	 * </code>
 	 */
-	public function limit(int limit, var offset = null) -> <Builder>
+	public function limit(int limit, var offset = null) -> <BuilderInterface>
 	{
 		let limit = abs(limit);
 
@@ -995,7 +922,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 * $builder->offset(30);
 	 *</code>
 	 */
-	public function offset(int offset) -> <Builder>
+	public function offset(int offset) -> <BuilderInterface>
 	{
 		let this->_offset = offset;
 		return this;
@@ -1003,10 +930,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 
 	/**
 	 * Returns the current OFFSET clause
-	 *
-	 * @return string|array
 	 */
-	public function getOffset()
+	public function getOffset() -> int
 	{
 		return this->_offset;
 	}
@@ -1023,9 +948,8 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	 *</code>
 	 *
 	 * @param string|array group
-	 * @return \Phalcon\Mvc\Model\Query\Builder
 	 */
-	public function groupBy(var group) -> <Builder>
+	public function groupBy(var group) -> <BuilderInterface>
 	{
 		let this->_group = group;
 		return this;
@@ -1033,18 +957,14 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 
 	/**
 	 * Returns the GROUP BY clause
-	 *
-	 * @return string
 	 */
-	public function getGroupBy()
+	public function getGroupBy() -> string
 	{
 		return this->_group;
 	}
 
 	/**
 	 * Returns a PHQL statement built based on the builder parameters
-	 *
-	 * @return string
 	 */
 	public final function getPhql() -> string
 	{
@@ -1055,7 +975,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 			joins, join, joinModel, joinConditions, joinAlias, joinType, group,
 			groupItems, groupItem, having, order, orderItems, orderItem,
 			limit, number, offset, forUpdate, distinct;
-		boolean noPrimary;
+		bool noPrimary;
 
 		let dependencyInjector = this->_dependencyInjector;
 		if typeof dependencyInjector != "object" {
@@ -1133,7 +1053,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 		}
 
 		let distinct = this->_distinct;
-		if typeof distinct != "null" && typeof distinct == "bool" {
+		if typeof distinct != "null" && typeof distinct == "boolean" {
 			if distinct {
 				let phql = "SELECT DISTINCT ";
 			} else {
@@ -1311,8 +1231,26 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 			if typeof order == "array" {
 				let orderItems = [];
 				for orderItem in order {
+					/**
+					 * For case 'ORDER BY 1'
+					 */
+					if typeof orderItem == "integer" {
+						let orderItems[] = orderItem;
+
+						continue;
+					}
+
+					if memstr(orderItem, " ") !== 0 {
+						var itemExplode;
+						let itemExplode = explode(" ", orderItem);
+						let orderItems[] = this->autoescape(itemExplode[0]) . " " . itemExplode[1];
+
+						continue;
+					}
+
 					let orderItems[] = this->autoescape(orderItem);
 				}
+
 				let phql .= " ORDER BY " . join(", ", orderItems);
 			} else {
 				let phql .= " ORDER BY " . order;
@@ -1399,7 +1337,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 			query->setBindParams(bindParams);
 		}
 
-		// Set default bind params
+		// Set default bind types
 		let bindTypes = this->_bindTypes;
 		if typeof bindTypes == "array" {
 			query->setBindTypes(bindTypes);
@@ -1427,7 +1365,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	/**
 	 * Appends a BETWEEN condition
 	 */
-	protected function _conditionBetween(string! clause, string! operator, string! expr, var minimum, var maximum) -> <Builder>
+	protected function _conditionBetween(string! clause, string! operator, string! expr, var minimum, var maximum) -> <BuilderInterface>
 	{
 		var hiddenParam, nextHiddenParam, minimumKey, maximumKey, operatorMethod;
 
@@ -1466,7 +1404,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	/**
 	 * Appends a NOT BETWEEN condition
 	 */
-	protected function _conditionNotBetween(string! clause, string! operator, string! expr, var minimum, var maximum) -> <Builder>
+	protected function _conditionNotBetween(string! clause, string! operator, string! expr, var minimum, var maximum) -> <BuilderInterface>
 	{
 		var hiddenParam, nextHiddenParam, minimumKey, maximumKey, operatorMethod;
 
@@ -1504,7 +1442,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	/**
 	 * Appends an IN condition
 	 */
-	protected function _conditionIn(string! clause, string! operator, string! expr, array! values) -> <Builder>
+	protected function _conditionIn(string! clause, string! operator, string! expr, array! values) -> <BuilderInterface>
 	{
 		var key, queryKey, value, bindKeys, bindParams, operatorMethod;
 		int hiddenParam;
@@ -1549,7 +1487,7 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 	/**
 	 * Appends a NOT IN condition
 	 */
-	protected function _conditionNotIn(string! clause, string! operator, string! expr, array! values) -> <Builder>
+	protected function _conditionNotIn(string! clause, string! operator, string! expr, array! values) -> <BuilderInterface>
 	{
 		var key, queryKey, value, bindKeys, bindParams, operatorMethod;
 		int hiddenParam;
@@ -1591,4 +1529,61 @@ class Builder implements BuilderInterface, InjectionAwareInterface
 		return this;
 	}
 
+	/**
+	 * Set default bind parameters
+	 */
+	public function setBindParams(array! bindParams, bool merge = false) -> <BuilderInterface>
+	{
+		var currentBindParams;
+
+		if merge {
+			let currentBindParams = this->_bindParams;
+			if typeof currentBindParams == "array" {
+				let this->_bindParams = currentBindParams + bindParams;
+			} else {
+				let this->_bindParams = bindParams;
+			}
+		} else {
+			let this->_bindParams = bindParams;
+		}
+
+		return this;
+	}
+
+	/**
+	 * Returns default bind params
+	 */
+	public function getBindParams() -> array
+	{
+		return this->_bindParams;
+	}
+
+	/**
+	 * Set default bind types
+	 */
+	public function setBindTypes(array! bindTypes, bool merge = false) -> <BuilderInterface>
+	{
+		var currentBindTypes;
+
+		if unlikely merge {
+			let currentBindTypes = this->_bindTypes;
+			if typeof currentBindTypes == "array" {
+				let this->_bindTypes = currentBindTypes + bindTypes;
+			} else {
+				let this->_bindTypes = bindTypes;
+			}
+		} else {
+			let this->_bindTypes = bindTypes;
+		}
+
+		return this;
+	}
+
+	/**
+	 * Returns default bind types
+	 */
+	public function getBindTypes() -> array
+	{
+		return this->_bindTypes;
+	}
 }

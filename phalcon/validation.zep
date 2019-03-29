@@ -1,31 +1,23 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
 
 use Phalcon\Di\Injectable;
+use Phalcon\Messages\MessageInterface;
+use Phalcon\Messages\Messages;
 use Phalcon\ValidationInterface;
 use Phalcon\Validation\Exception;
-use Phalcon\Validation\Message\Group;
-use Phalcon\Validation\MessageInterface;
 use Phalcon\Validation\ValidatorInterface;
 use Phalcon\Validation\CombinedFieldsValidator;
+use Phalcon\Service\LocatorInterface;
 
 /**
  * Phalcon\Validation
@@ -81,9 +73,8 @@ class Validation extends Injectable implements ValidationInterface
 	 *
 	 * @param array|object data
 	 * @param object entity
-	 * @return \Phalcon\Validation\Message\Group
 	 */
-	public function validate(var data = null, var entity = null) -> <Group>
+	public function validate(var data = null, var entity = null) -> <Messages>
 	{
 		var validators, messages, scope, field, validator, status, combinedFieldsValidators;
 
@@ -100,9 +91,9 @@ class Validation extends Injectable implements ValidationInterface
 		let this->_values = null;
 
 		/**
-		 * Implicitly creates a Phalcon\Validation\Message\Group object
+		 * Implicitly creates a Phalcon\Messages\Messages object
 		 */
-		let messages = new Group();
+		let messages = new Messages();
 
 		if entity !== null {
 			this->setEntity(entity);
@@ -200,7 +191,7 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Adds a validator to a field
 	 */
-	public function add(var field, <ValidatorInterface> validator) -> <Validation>
+	public function add(var field, <ValidatorInterface> validator) -> <ValidationInterface>
 	{
 		var singleField;
 		if typeof field == "array" {
@@ -226,7 +217,7 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Alias of `add` method
 	 */
-	public function rule(var field, <ValidatorInterface> validator) -> <Validation>
+	public function rule(var field, <ValidatorInterface> validator) -> <ValidationInterface>
 	{
 		return this->add(field, validator);
 	}
@@ -234,7 +225,7 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Adds the validators to a field
 	 */
-	public function rules(var field, array! validators) -> <Validation>
+	public function rules(var field, array! validators) -> <ValidationInterface>
 	{
 		var validator;
 
@@ -252,9 +243,8 @@ class Validation extends Injectable implements ValidationInterface
 	 *
 	 * @param string field
 	 * @param array|string filters
-	 * @return \Phalcon\Validation
 	 */
-	public function setFilters(var field, filters) -> <Validation>
+	public function setFilters(var field, filters) -> <ValidationInterface>
 	{
 		var singleField;
 		if typeof field == "array" {
@@ -274,7 +264,6 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Returns all the filters or a specific one
 	 *
-	 * @param string field
 	 * @return mixed
 	 */
 	public function getFilters(string field = null)
@@ -381,7 +370,7 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Returns the registered validators
 	 */
-	public function getMessages() -> <Group>
+	public function getMessages() -> <Messages>
 	{
 		return this->_messages;
 	}
@@ -398,9 +387,8 @@ class Validation extends Injectable implements ValidationInterface
 	 * Get label for field
 	 *
 	 * @param string field
-	 * @return string
 	 */
-	public function getLabel(var field)
+	public function getLabel(var field) -> string
 	{
 		var labels, value;
 
@@ -420,13 +408,13 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Appends a message to the messages list
 	 */
-	public function appendMessage(<MessageInterface> message) -> <Validation>
+	public function appendMessage(<MessageInterface> message) -> <ValidationInterface>
 	{
 		var messages;
 
 		let messages = this->_messages;
 		if typeof messages != "object" {
-			let messages = new Group();
+			let messages = new Messages();
 		}
 
 		messages->appendMessage(message);
@@ -442,9 +430,8 @@ class Validation extends Injectable implements ValidationInterface
 	 *
 	 * @param object entity
 	 * @param array|object data
-	 * @return \Phalcon\Validation
 	 */
-	public function bind(entity, data) -> <Validation>
+	public function bind(entity, data) -> <ValidationInterface>
 	{
 		if typeof entity != "object" {
 			throw new Exception("Entity must be an object");
@@ -462,11 +449,8 @@ class Validation extends Injectable implements ValidationInterface
 
 	/**
 	 * Gets the a value to validate in the array/object data source
-	 *
-	 * @param string field
-	 * @return mixed
 	 */
-	public function getValue(string field)
+	public function getValue(string field) -> var | null
 	{
 		var entity, method, value, data, values,
 			filters, fieldFilters, dependencyInjector,
@@ -537,7 +521,8 @@ class Validation extends Injectable implements ValidationInterface
 					}
 				}
 
-				let filterService = dependencyInjector->getShared("filter");
+				let filterService = <LocatorInterface> dependencyInjector->getShared("filter");
+//				let filterService = dependencyInjector->getShared("filter");
 				if typeof filterService != "object" {
 					throw new Exception("Returned 'filter' service is invalid");
 				}
@@ -577,7 +562,7 @@ class Validation extends Injectable implements ValidationInterface
 	/**
 	 * Internal validations, if it returns true, then skip the current validator
 	 */
-	protected function preChecking(var field, <ValidatorInterface> validator) -> boolean
+	protected function preChecking(var field, <ValidatorInterface> validator) -> bool
 	{
 		var singleField, allowEmpty, emptyValue, value, result;
 		if typeof field == "array" {

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Acl;
@@ -26,22 +17,63 @@ namespace Phalcon\Acl;
  */
 interface AdapterInterface
 {
+	/**
+	 * Do a role inherit from another existing role
+	 */
+	public function addInherit(string roleName, roleToInherit) -> bool;
 
 	/**
-	 * Sets the default access level (Phalcon\Acl::ALLOW or Phalcon\Acl::DENY)
+	 * Adds a role to the ACL list. Second parameter lets to inherit access data from other existing role
 	 */
-	public function setDefaultAction(int defaultAccess);
+	public function addRole(role, accessInherits = null) -> bool;
+
+	/**
+	 * Adds a component to the ACL list
+	 *
+	 * Access names can be a particular action, by example
+	 * search, update, delete, etc or a list of them
+	 */
+	public function addComponent(componentObject, accessList) -> bool;
+
+	/**
+	 * Adds access to components
+	 */
+	public function addComponentAccess(string componentName, accessList) -> void;
+
+	/**
+	 * Allow access to a role on a component
+	 */
+	public function allow(string roleName, string componentName, access, func = null) -> void;
+
+	/**
+	 * Deny access to a role on a component
+	 */
+	public function deny(string roleName, string componentName, access, func = null) -> void;
+
+	/**
+	 * Removes an access from a component
+	 */
+	public function dropComponentAccess(string componentName, accessList) -> void;
+
+	/**
+	 * Returns the access which the list is checking if some role can access it
+	 */
+	public function getActiveAccess() -> string;
+
+	/**
+	 * Returns the role which the list is checking if it's allowed to certain component/access
+	 */
+	public function getActiveRole() -> string;
+
+	/**
+	 * Returns the component which the list is checking if some role can access it
+	 */
+	public function getActiveComponent() -> string;
 
 	/**
 	 * Returns the default ACL access level
 	 */
 	public function getDefaultAction() -> int;
-
-	/**
-	 * Sets the default access level (Phalcon\Acl::ALLOW or Phalcon\Acl::DENY)
-	 * for no arguments provided in isAllowed action if there exists func for accessKey
-	 */
-	public function setNoArgumentsDefaultAction(int defaultAccess);
 
 	/**
 	 * Returns the default ACL access level for no arguments provided in
@@ -50,80 +82,39 @@ interface AdapterInterface
 	public function getNoArgumentsDefaultAction() -> int;
 
 	/**
-	 * Adds a role to the ACL list. Second parameter lets to inherit access data from other existing role
-	 */
-	public function addRole(role, accessInherits = null) -> boolean;
-
-	/**
-	 * Do a role inherit from another existing role
-	 */
-	public function addInherit(string roleName, roleToInherit) -> boolean;
-
-	/**
-	 * Check whether role exist in the roles list
-	 */
-	public function isRole(string roleName) -> boolean;
-
-	/**
-	 * Check whether resource exist in the resources list
-	 */
-	public function isResource(string resourceName) -> boolean;
-
-	/**
-	 * Adds a resource to the ACL list
-	 *
-	 * Access names can be a particular action, by example
-	 * search, update, delete, etc or a list of them
-	 */
-	public function addResource(resourceObject, accessList) -> boolean;
-
-	/**
-	 * Adds access to resources
-	 */
-	public function addResourceAccess(string resourceName, accessList);
-
-	/**
-	 * Removes an access from a resource
-	 */
-	public function dropResourceAccess(string resourceName, accessList);
-
-	/**
-	 * Allow access to a role on a resource
-	 */
-	public function allow(string roleName, string resourceName, access, func = null);
-
-	/**
-	 * Deny access to a role on a resource
-	 */
-	public function deny(string roleName, string resourceName, access, func = null);
-
-	/**
-	 * Check whether a role is allowed to access an action from a resource
-	 */
-	public function isAllowed(roleName, resourceName, access, array parameters = null) -> boolean;
-
-	/**
-	 * Returns the role which the list is checking if it's allowed to certain resource/access
-	 */
-	public function getActiveRole() -> string;
-
-	/**
-	 * Returns the resource which the list is checking if some role can access it
-	 */
-	public function getActiveResource() -> string;
-
-	/**
-	 * Returns the access which the list is checking if some role can access it
-	 */
-	public function getActiveAccess() -> string;
-
-	/**
 	 * Return an array with every role registered in the list
 	 */
 	public function getRoles() -> <RoleInterface[]>;
 
 	/**
-	 * Return an array with every resource registered in the list
+	 * Return an array with every component registered in the list
 	 */
-	public function getResources() -> <ResourceInterface[]>;
+	public function getComponents() -> <ComponentInterface[]>;
+
+	/**
+	 * Check whether a role is allowed to access an action from a component
+	 */
+	public function isAllowed(roleName, componentName, string access, array parameters = null) -> bool;
+
+	/**
+	 * Check whether component exist in the components list
+	 */
+	public function isComponent(string componentName) -> bool;
+
+	/**
+	 * Check whether role exist in the roles list
+	 */
+	public function isRole(string roleName) -> bool;
+
+
+	/**
+	 * Sets the default access level (Phalcon\Acl::ALLOW or Phalcon\Acl::DENY)
+	 */
+	public function setDefaultAction(int defaultAccess) -> void;
+
+	/**
+	 * Sets the default access level (Phalcon\Acl::ALLOW or Phalcon\Acl::DENY)
+	 * for no arguments provided in isAllowed action if there exists func for accessKey
+	 */
+	public function setNoArgumentsDefaultAction(int defaultAccess) -> void;
 }

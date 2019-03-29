@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Translate\AdapterInterface
  *
  * Interface for Phalcon\Translate adapters
@@ -28,18 +36,14 @@ ZEPHIR_INIT_CLASS(Phalcon_Translate_AdapterInterface) {
 /**
  * Returns the translation string of the given key
  *
- * @param	string translateKey
  * @param	array placeholders
- * @return	string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Translate_AdapterInterface, t);
 
 /**
  * Returns the translation related to the given key
  *
- * @param	string index
  * @param	array placeholders
- * @return	string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Translate_AdapterInterface, query);
 

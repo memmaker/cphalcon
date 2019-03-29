@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache;
@@ -154,7 +145,7 @@ class Multiple
 	* @param string keyName
 	* @param string content
 	* @param int lifetime
-	* @param boolean stopBuffer
+	* @param bool stopBuffer
 	*/
 	public function save(var keyName = null, content = null, lifetime = null, stopBuffer = null) -> void
 	{
@@ -169,9 +160,8 @@ class Multiple
 	 * Deletes a value from each backend
 	 *
 	 * @param string|int keyName
-	 * @return boolean
 	 */
-	public function delete(var keyName) -> boolean
+	public function delete(var keyName) -> bool
 	{
 		var backend;
 
@@ -188,7 +178,7 @@ class Multiple
 	 * @param  string|int keyName
 	 * @param  int lifetime
 	 */
-	public function exists(var keyName = null, lifetime = null) -> boolean
+	public function exists(var keyName = null, lifetime = null) -> bool
 	{
 		var backend;
 
@@ -204,7 +194,7 @@ class Multiple
 	/**
 	 * Flush all backend(s)
 	 */
-	public function flush() -> boolean
+	public function flush() -> bool
 	{
 		var backend;
 

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Annotations\Adapter;
@@ -44,26 +35,20 @@ class Files extends Adapter
 
 	/**
 	 * Phalcon\Annotations\Adapter\Files constructor
-	 *
-	 * @param array options
 	 */
-	public function __construct(options = null)
+	public function __construct(array options = [])
 	{
 		var annotationsDir;
-		if typeof options == "array" {
-			if fetch annotationsDir, options["annotationsDir"] {
-				let this->_annotationsDir = annotationsDir;
-			}
+
+		if fetch annotationsDir, options["annotationsDir"] {
+			let this->_annotationsDir = annotationsDir;
 		}
 	}
 
 	/**
 	 * Reads parsed annotations from files
-	 *
-	 * @param string key
-	 * @return \Phalcon\Annotations\Reflection
 	 */
-	public function read(string key) -> <Reflection> | boolean | int
+	public function read(string key) -> <Reflection> | bool | int
 	{
 		var path;
 

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model\Behavior;
@@ -37,7 +28,7 @@ class SoftDelete extends Behavior
 	 */
 	public function notify(string! type, <ModelInterface> model)
 	{
-		var options, value, field, updateModel, message;
+		var options, value, field, updateModel, message, modelsManager, metaData;
 
 		if type == "beforeDelete" {
 
@@ -67,6 +58,8 @@ class SoftDelete extends Behavior
 			 */
 			if model->readAttribute(field) != value {
 
+				let modelsManager = model->getModelsManager();
+
 				/**
 				 * Clone the current model to make a clean new operation
 				 */
@@ -90,9 +83,15 @@ class SoftDelete extends Behavior
 				}
 
 				/**
-				 * Update the original model too
+	             * Update the original model too
 				 */
 				model->writeAttribute(field, value);
+
+				if modelsManager->isKeepingSnapshots(model) && globals_get("orm.update_snapshot_on_save") {
+					let metaData = model->getModelsMetaData();
+					model->setSnapshotData(updateModel->getSnapshotData());
+					model->setOldSnapshotData(updateModel->getOldSnapshotData());
+				}
 			}
 		}
 	}

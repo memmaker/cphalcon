@@ -1,17 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc;
@@ -47,7 +41,7 @@ use Phalcon\Mvc\Micro\CollectionInterface;
  *     }
  * );
  *
- * $app->handle();
+ * $app->handle("/say/welcome/Phalcon");
  *</code>
  */
 class Micro extends Injectable implements \ArrayAccess
@@ -76,6 +70,8 @@ class Micro extends Injectable implements \ArrayAccess
 	protected _returnedValue;
 
 	protected _modelBinder;
+
+	protected _responseHandler;
 
 	protected _afterBindingHandlers;
 
@@ -109,9 +105,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler without any HTTP method constraint
 	 *
-	 * @param string routePattern
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function map(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -141,9 +135,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is GET
 	 *
-	 * @param string routePattern
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function get(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -173,9 +165,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is POST
 	 *
-	 * @param string routePattern
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function post(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -205,9 +195,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is PUT
 	 *
-	 * @param string $routePattern
 	 * @param callable $handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function put(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -237,9 +225,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is PATCH
 	 *
-	 * @param string $routePattern
 	 * @param callable $handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function patch(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -269,9 +255,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is HEAD
 	 *
-	 * @param string routePattern
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function head(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -301,9 +285,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is DELETE
 	 *
-	 * @param string routePattern
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function delete(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -333,9 +315,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Maps a route to a handler that only matches if the HTTP method is OPTIONS
 	 *
-	 * @param string routePattern
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Router\RouteInterface
 	 */
 	public function options(string! routePattern, handler) -> <RouteInterface>
 	{
@@ -447,7 +427,6 @@ class Micro extends Injectable implements \ArrayAccess
 	 * Sets a handler that will be called when the router doesn't match any of the defined routes
 	 *
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Micro
 	 */
 	public function notFound(var handler) -> <Micro>
 	{
@@ -459,7 +438,6 @@ class Micro extends Injectable implements \ArrayAccess
 	 * Sets a handler that will be called when an exception is thrown handling the route
 	 *
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Micro
 	 */
 	public function error(var handler) -> <Micro>
 	{
@@ -500,13 +478,8 @@ class Micro extends Injectable implements \ArrayAccess
 
 	/**
 	 * Sets a service from the DI
-	 *
-	 * @param string  serviceName
-	 * @param mixed   definition
-	 * @param boolean shared
-	 * @return \Phalcon\Di\ServiceInterface
 	 */
-	public function setService(string! serviceName, var definition, boolean shared = false) -> <ServiceInterface>
+	public function setService(string! serviceName, var definition, bool shared = false) -> <ServiceInterface>
 	{
 		var dependencyInjector;
 
@@ -522,7 +495,7 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Checks if a service is registered in the DI
 	 */
-	public function hasService(string! serviceName) -> boolean
+	public function hasService(string! serviceName) -> bool
 	{
 		var dependencyInjector;
 
@@ -538,7 +511,6 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Obtains a service from the DI
 	 *
-	 * @param string serviceName
 	 * @return object
 	 */
 	public function getService(string! serviceName)
@@ -557,10 +529,9 @@ class Micro extends Injectable implements \ArrayAccess
 	/**
 	 * Obtains a shared service from the DI
 	 *
-	 * @param string serviceName
 	 * @return mixed
 	 */
-	public function getSharedService(serviceName)
+	public function getSharedService(string! serviceName)
 	{
 		var dependencyInjector;
 
@@ -579,7 +550,7 @@ class Micro extends Injectable implements \ArrayAccess
 	 * @param string uri
 	 * @return mixed
 	 */
-	public function handle(var uri = null)
+	public function handle(string! uri)
 	{
 		var dependencyInjector, eventsManager, status = null, router, matchedRoute,
 			handler, beforeHandlers, params, returnedValue, e, errorHandler,
@@ -951,7 +922,7 @@ class Micro extends Injectable implements \ArrayAccess
 				}
 			}
 
-		} catch \Exception, e {
+		} catch \Throwable, e {
 
 			/**
 			 * Calling beforeNotFound event
@@ -992,28 +963,40 @@ class Micro extends Injectable implements \ArrayAccess
 			}
 		}
 
-		/**
-		 * Check if the returned value is a string and take it as response body
-		 */
-		if typeof returnedValue == "string" {
-			let response = <ResponseInterface> dependencyInjector->getShared("response");
-			if !response->isSent() {
-				response->setContent(returnedValue);
-				response->send();
-			}
-		}
 
 		/**
-		 * Check if the returned object is already a response
+		 * Check if a response handler is defined, else use default response handler
 		 */
-		if typeof returnedValue == "object" {
-			if returnedValue instanceof ResponseInterface {
-				/**
-				 * Automatically send the response
-				 */
-				 if !returnedValue->isSent() {
-				 	returnedValue->send();
-				 }
+		if this->_responseHandler {
+
+			if !is_callable(this->_responseHandler) {
+				throw new Exception("Response handler is not callable or is not defined");
+			}
+
+			let returnedValue = call_user_func(this->_responseHandler);
+
+		} else {
+
+			/**
+			 * Check if the returned value is a string and take it as response body
+			 */
+			if typeof returnedValue == "string" {
+				let response = <ResponseInterface> dependencyInjector->getShared("response");
+				if !response->isSent() {
+					response->setContent(returnedValue);
+					response->send();
+				}
+			}
+
+			/**
+			 * Check if the returned object is already a response
+			 */
+			if typeof returnedValue == "object" {
+				if returnedValue instanceof ResponseInterface {
+					if !returnedValue->isSent() {
+						returnedValue->send();
+					}
+				}
 			}
 		}
 
@@ -1060,11 +1043,8 @@ class Micro extends Injectable implements \ArrayAccess
 
 	/**
 	 * Check if a service is registered in the internal services container using the array syntax
-	 *
-	 * @param string alias
-	 * @return boolean
 	 */
-	public function offsetExists(alias) -> boolean
+	public function offsetExists(var alias) -> bool
 	{
 		return this->hasService(alias);
 	}
@@ -1075,11 +1055,8 @@ class Micro extends Injectable implements \ArrayAccess
 	 *<code>
 	 *	$app["request"] = new \Phalcon\Http\Request();
 	 *</code>
-	 *
-	 * @param string alias
-	 * @param mixed definition
 	 */
-	public function offsetSet(alias, definition)
+	public function offsetSet(var alias, var definition) -> void
 	{
 		this->setService(alias, definition);
 	}
@@ -1093,29 +1070,33 @@ class Micro extends Injectable implements \ArrayAccess
 	 * );
 	 *</code>
 	 *
-	 * @param string alias
 	 * @return mixed
 	 */
-	public function offsetGet(alias)
+	public function offsetGet(var alias) -> var
 	{
 		return this->getService(alias);
 	}
 
 	/**
 	 * Removes a service from the internal services container using the array syntax
-	 *
-	 * @param string alias
 	 */
-	public function offsetUnset(alias)
+	public function offsetUnset(var alias) -> void
 	{
-		return alias;
+		var dependencyInjector;
+
+		let dependencyInjector = this->_dependencyInjector;
+		if typeof dependencyInjector != "object" {
+			let dependencyInjector = new FactoryDefault();
+			let this->_dependencyInjector = dependencyInjector;
+		}
+
+		dependencyInjector->remove(alias);
 	}
 
 	/**
 	 * Appends a before middleware to be called before execute the route
 	 *
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Micro
 	 */
 	public function before(handler) -> <Micro>
 	{
@@ -1139,7 +1120,6 @@ class Micro extends Injectable implements \ArrayAccess
 	 * Appends an 'after' middleware to be called after execute the route
 	 *
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Micro
 	 */
 	public function after(handler) -> <Micro>
 	{
@@ -1151,7 +1131,6 @@ class Micro extends Injectable implements \ArrayAccess
 	 * Appends a 'finish' middleware to be called when the request is finished
 	 *
 	 * @param callable handler
-	 * @return \Phalcon\Mvc\Micro
 	 */
 	public function finish(handler) -> <Micro>
 	{
@@ -1165,6 +1144,17 @@ class Micro extends Injectable implements \ArrayAccess
 	public function getHandlers() -> array
 	{
 		return this->_handlers;
+	}
+
+	/**
+	 * Appends a custom 'reponse' handler to be called insted of the default reponse handler
+	 *
+	 * @param callable handler
+	 */
+	public function setResponseHandler(handler) -> <Micro>
+	{
+		let this->_responseHandler = handler;
+		return this;
 	}
 
 	/**

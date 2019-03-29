@@ -1,28 +1,19 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
 
 use Phalcon\Di\Injectable;
+use Phalcon\Messages\MessageInterface;
+use Phalcon\Messages\Messages;
 use Phalcon\Validation\Exception;
-use Phalcon\Validation\MessageInterface;
-use Phalcon\Validation\Message\Group;
 use Phalcon\Validation\ValidatorInterface;
 
 /**
@@ -37,38 +28,34 @@ interface ValidationInterface
 	 *
 	 * @param array|object data
 	 * @param object entity
-	 * @return \Phalcon\Validation\Message\Group
 	 */
-	public function validate(var data = null, var entity = null) -> <Group>;
+	public function validate(var data = null, var entity = null) -> <Messages>;
 
 	/**
 	 * Adds a validator to a field
 	 */
-	public function add(string field, <ValidatorInterface> validator) -> <Validation>;
+	public function add(string field, <ValidatorInterface> validator) -> <ValidationInterface>;
 
 	/**
 	 * Alias of `add` method
 	 */
-	public function rule(string field, <ValidatorInterface> validator) -> <Validation>;
+	public function rule(string field, <ValidatorInterface> validator) -> <ValidationInterface>;
 
 	/**
 	 * Adds the validators to a field
 	 */
-	public function rules(string! field, array! validators) -> <Validation>;
+	public function rules(string! field, array! validators) -> <ValidationInterface>;
 
 	/**
 	 * Adds filters to the field
 	 *
-	 * @param string field
 	 * @param array|string filters
-	 * @return \Phalcon\Validation
 	 */
-	public function setFilters(string field, filters) -> <Validation>;
+	public function setFilters(string field, filters) -> <ValidationInterface>;
 
 	/**
 	 * Returns all the filters or a specific one
 	 *
-	 * @param string field
 	 * @return mixed
 	 */
 	public function getFilters(string field = null);
@@ -92,15 +79,13 @@ interface ValidationInterface
 
 	/**
 	 * Get default message for validator type
-	 *
-	 * @param string type
 	 */
 	public function getDefaultMessage(string! type);
 
 	/**
 	 * Returns the registered validators
 	 */
-	public function getMessages() -> <Group>;
+	public function getMessages() -> <Messages>;
 
 	/**
 	 * Adds labels for fields
@@ -109,11 +94,8 @@ interface ValidationInterface
 
 	/**
 	 * Get label for field
-	 *
-	 * @param string field
-	 * @return string
 	 */
-	public function getLabel(string! field);
+	public function getLabel(string! field) -> string;
 
 	/**
 	 * Appends a message to the messages list
@@ -126,15 +108,11 @@ interface ValidationInterface
 	 *
 	 * @param object entity
 	 * @param array|object data
-	 * @return \Phalcon\Validation
 	 */
-	public function bind(entity, data) -> <Validation>;
+	public function bind(entity, data) -> <ValidationInterface>;
 
 	/**
 	 * Gets the a value to validate in the array/object data source
-	 *
-	 * @param string field
-	 * @return mixed
 	 */
-	public function getValue(string field);
+	public function getValue(string field) -> var | null;
 }

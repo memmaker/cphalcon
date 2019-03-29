@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Translate\Adapter;
@@ -29,15 +20,22 @@ use Phalcon\Translate\Adapter;
  */
 class NativeArray extends Adapter implements \ArrayAccess
 {
+	/**
+	 * @var array
+	 */
+	private translate;
 
-	protected _translate;
+	/**
+	 * @var bool
+	 */
+	private triggerError = false;
 
 	/**
 	 * Phalcon\Translate\Adapter\NativeArray constructor
 	 */
 	public function __construct(array! options)
 	{
-		var data;
+		var data, error;
 
 		parent::__construct(options);
 
@@ -45,11 +43,35 @@ class NativeArray extends Adapter implements \ArrayAccess
 			throw new Exception("Translation content was not provided");
 		}
 
+		if fetch error, options["triggerError"] {
+			let this->triggerError = (bool) error;
+		}
+
 		if typeof data !== "array" {
 			throw new Exception("Translation data must be an array");
 		}
 
-		let this->_translate = data;
+		let this->translate = data;
+	}
+
+	/**
+	 * Check whether is defined a translation key in the internal array
+	 */
+	public function exists(string! index) -> bool
+	{
+		return isset this->translate[index];
+	}
+
+	/**
+	 * Whenever a key is not found this medhod will be called
+	 */
+	public function notFound(string! index) -> string
+	{
+		if (true === this->triggerError) {
+			throw new Exception("Cannot find translation key: " . index);
+		}
+
+		return index;
 	}
 
 	/**
@@ -59,18 +81,10 @@ class NativeArray extends Adapter implements \ArrayAccess
 	{
 		var translation;
 
-		if !fetch translation, this->_translate[index] {
-			let translation = index;
+		if !fetch translation, this->translate[index] {
+			return this->notFound(index);
 		}
 
 		return this->replacePlaceholders(translation, placeholders);
-	}
-
-	/**
-	 * Check whether is defined a translation key in the internal array
-	 */
-	public function exists(string! index) -> boolean
-	{
-		return isset this->_translate[index];
 	}
 }

@@ -1,28 +1,19 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Forms;
 
 use Phalcon\Forms\Form;
-use Phalcon\Validation\MessageInterface;
+use Phalcon\Messages\MessageInterface;
+use Phalcon\Messages\Messages;
 use Phalcon\Validation\ValidatorInterface;
-use Phalcon\Validation\Message\Group;
 
 /**
  * Phalcon\Forms\Element
@@ -56,7 +47,6 @@ interface ElementInterface
 	 * Sets the element's filters
 	 *
 	 * @param array|string filters
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
 	public function setFilters(filters) -> <ElementInterface>;
 
@@ -76,10 +66,8 @@ interface ElementInterface
 	 * Adds a group of validators
 	 *
 	 * @param \Phalcon\Validation\ValidatorInterface[]
-	 * @param boolean merge
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function addValidators(array! validators, boolean merge = true) -> <ElementInterface>;
+	public function addValidators(array! validators, bool merge = true) -> <ElementInterface>;
 
 	/**
 	 * Adds a validator to the element
@@ -95,25 +83,17 @@ interface ElementInterface
 	 * Returns an array of prepared attributes for Phalcon\Tag helpers
 	 * according to the element's parameters
 	 */
-	public function prepareAttributes(array attributes = null, boolean useChecked = false) -> array;
+	public function prepareAttributes(array attributes = null, bool useChecked = false) -> array;
 
 	/**
 	 * Sets a default attribute for the element
-	 *
-	 * @param string attribute
-	 * @param mixed value
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function setAttribute(string attribute, value) -> <ElementInterface>;
+	public function setAttribute(string attribute, var value) -> <ElementInterface>;
 
 	/**
 	 * Returns the value of an attribute if present
-	 *
-	 * @param string attribute
-	 * @param mixed defaultValue
-	 * @return mixed
 	 */
-	public function getAttribute(attribute, defaultValue = null);
+	public function getAttribute(string attribute, var defaultValue = null) -> var;
 
 	/**
 	 * Sets default attributes for the element
@@ -127,21 +107,13 @@ interface ElementInterface
 
 	/**
 	 * Sets an option for the element
-	 *
-	 * @param string option
-	 * @param mixed value
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function setUserOption(string option, value) -> <ElementInterface>;
+	public function setUserOption(string option, var value) -> <ElementInterface>;
 
 	/**
 	 * Returns the value of an option if present
-	 *
-	 * @param string option
-	 * @param mixed defaultValue
-	 * @return mixed
 	 */
-	public function getUserOption(string option, defaultValue = null);
+	public function getUserOption(string option, var defaultValue = null) -> var;
 
 	/**
 	 * Sets options for the element
@@ -171,43 +143,34 @@ interface ElementInterface
 	/**
 	 * Sets a default value in case the form does not use an entity
 	 * or there is no value available for the element in _POST
-	 *
-	 * @param mixed value
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function setDefault(value) -> <ElementInterface>;
+	public function setDefault(var value) -> <ElementInterface>;
 
 	/**
 	 * Returns the default value assigned to the element
-	 *
-	 * @return mixed
 	 */
-	public function getDefault();
+	public function getDefault() -> var;
 
 	/**
 	 * Returns the element's value
-	 *
-	 * @return mixed
 	 */
-	public function getValue();
+	public function getValue() -> var;
 
 	/**
 	 * Returns the messages that belongs to the element
 	 * The element needs to be attached to a form
-	 *
-	 * @return \Phalcon\Validation\Message\Group
 	 */
-	public function getMessages();
+	public function getMessages() -> <Messages>;
 
 	/**
 	 * Checks whether there are messages attached to the element
 	 */
-	public function hasMessages() -> boolean;
+	public function hasMessages() -> bool;
 
 	/**
 	 * Sets the validation messages related to the element
 	 */
-	public function setMessages(<Group> group) -> <ElementInterface>;
+	public function setMessages(<Messages> messages) -> <ElementInterface>;
 
 	/**
 	 * Appends a message to the internal message list
@@ -221,9 +184,7 @@ interface ElementInterface
 
 	/**
 	 * Renders the element widget
-	 *
-	 * @param array attributes
 	 */
-	public function render(attributes = null) -> string;
+	public function render(array attributes = []) -> string;
 
 }

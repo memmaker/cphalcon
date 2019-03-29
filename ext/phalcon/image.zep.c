@@ -14,27 +14,35 @@
 #include "kernel/main.h"
 
 
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
 ZEPHIR_INIT_CLASS(Phalcon_Image) {
 
 	ZEPHIR_REGISTER_CLASS(Phalcon, Image, phalcon, image, NULL, 0);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("NONE"), 1 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("NONE"), 1);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("WIDTH"), 2 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("WIDTH"), 2);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("HEIGHT"), 3 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("HEIGHT"), 3);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("AUTO"), 4 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("AUTO"), 4);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("INVERSE"), 5 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("INVERSE"), 5);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("PRECISE"), 6 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("PRECISE"), 6);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("TENSILE"), 7 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("TENSILE"), 7);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("HORIZONTAL"), 11 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("HORIZONTAL"), 11);
 
-	zend_declare_class_constant_long(phalcon_image_ce, SL("VERTICAL"), 12 TSRMLS_CC);
+	zephir_declare_class_constant_long(phalcon_image_ce, SL("VERTICAL"), 12);
 
 	return SUCCESS;
 

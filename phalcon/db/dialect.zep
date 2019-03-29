@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Stanislav Kiryukhin <korsar.zn@gmail.com>                     |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db;
@@ -143,19 +133,6 @@ abstract class Dialect implements DialectInterface
 	public function forUpdate(string! sqlQuery) -> string
 	{
 		return sqlQuery . " FOR UPDATE";
-	}
-
-	/**
-	 * Returns a SQL modified with a LOCK IN SHARE MODE clause
-	 *
-	 *<code>
-	 * $sql = $dialect->sharedLock("SELECT * FROM robots");
-	 * echo $sql; // SELECT * FROM robots LOCK IN SHARE MODE
-	 *</code>
-	 */
-	public function sharedLock(string! sqlQuery) -> string
-	{
-		return sqlQuery . " LOCK IN SHARE MODE";
 	}
 
 	/**
@@ -498,7 +475,7 @@ abstract class Dialect implements DialectInterface
 	/**
 	 * Checks whether the platform supports savepoints
 	 */
-	public function supportsSavepoints() -> boolean
+	public function supportsSavepoints() -> bool
 	{
 		return true;
 	}
@@ -506,7 +483,7 @@ abstract class Dialect implements DialectInterface
 	/**
 	 * Checks whether the platform supports releasing savepoints.
 	 */
-	public function supportsReleaseSavepoints() -> boolean
+	public function supportsReleaseSavepoints() -> bool
 	{
 		return this->supportsSavePoints();
 	}
@@ -533,6 +510,46 @@ abstract class Dialect implements DialectInterface
 	public function rollbackSavepoint(string! name) -> string
 	{
 		return "ROLLBACK TO SAVEPOINT " . name;
+	}
+
+	/**
+	 * Checks the column type and if not string it returns the type reference
+	 */
+	protected function checkColumnType(<ColumnInterface> column) -> string
+	{
+		if typeof column->getType() == "string" {
+			return column->getTypeReference();
+		}
+
+		return column->getType();
+	}
+
+	/**
+	 * Checks the column type and returns the updated SQL statement
+	 */
+	protected function checkColumnTypeSql(<ColumnInterface> column) -> string
+	{
+		if typeof column->getType() == "string" {
+			return column->getType();
+		}
+
+		return "";
+	}
+
+	/**
+	 * Returns the size of the column enclosed in parentheses
+	 */
+	protected function getColumnSize(<ColumnInterface> column) -> string
+	{
+		return "(" . column->getSize() . ")";
+	}
+
+	/**
+	 * Returns the column size and scale enclosed in parentheses
+	 */
+	protected function getColumnSizeAndScale(<ColumnInterface> column) -> string
+	{
+		return "(" . column->getSize() . "," . column->getScale() . ")";
 	}
 
 	/**

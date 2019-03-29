@@ -2,58 +2,67 @@
 
 namespace Helper;
 
-use Phalcon\Tag;
+use function file_exists;
+use function is_file;
+use PHPUnit\Framework\SkippedTestError;
 use ReflectionClass;
-use Codeception\Module;
-use Codeception\TestInterface;
-use Codeception\Specify\Config as SpecifyConfig;
+use function unlink;
 
-/**
- * Unit Helper
- *
- * Here you can define custom actions
- * all public methods declared in helper class will be available in $I
- *
- * @package Helper
- */
-class Unit extends Module
+// here you can define custom actions
+// all public methods declared in helper class will be available in $I
+
+class Unit extends \Codeception\Module
 {
     /**
-     * @var TestInterface
+     * Calls private or protected method.
+     *
+     * @param string|object $obj
+     * @param mixed         $method,... Method with a variable number of
+     *                                  arguments
+     *
+     * @return mixed
+     * @throws \ReflectionException
      */
-    protected $test;
+    public function callProtectedMethod($obj, $method)
+    {
+        $reflectionClass = new ReflectionClass($obj);
+
+        $reflectionMethod = $reflectionClass->getMethod($method);
+        $reflectionMethod->setAccessible(true);
+
+        if (!is_object($obj)) {
+            $obj = $reflectionClass->newInstanceWithoutConstructor();
+        }
+
+        // $obj, $method
+        $args = array_slice(func_get_args(), 2);
+        array_unshift($args, $obj);
+
+        return call_user_func_array([$reflectionMethod, 'invoke'], $args);
+    }
 
     /**
-     * Executed before each test.
+     * Checks if an extension is loaded and if not, skips the test
      *
-     * @param TestInterface $test
+     * @param string $extension The extension to check
      */
-    public function _before(TestInterface $test)
+    public function checkExtensionIsLoaded(string $extension)
     {
-        $this->test = $test;
-
-        SpecifyConfig::setDeepClone(false);
+        if (true !== extension_loaded($extension)) {
+            $this->skipTest(
+                sprintf("Extension '%s' is not loaded. Skipping test", $extension)
+            );
+        }
     }
 
-    public function getProtectedProperty($obj, $prop)
+    /**
+     * Throws the SkippedTestError exception to skip a test
+     *
+     * @param string $message The message to display
+     */
+    public function skipTest(string $message)
     {
-        $reflection = new ReflectionClass($obj);
-
-        $property = $reflection->getProperty($prop);
-        $property->setAccessible(true);
-
-        return $property->getValue($obj);
-    }
-
-    public function setProtectedProperty($obj, $prop, $value)
-    {
-        $reflection = new ReflectionClass($obj);
-
-        $property = $reflection->getProperty($prop);
-        $property->setAccessible(true);
-        $property->setValue($obj, $value);
-
-        $this->assertEquals($value, $property->getValue($obj));
+        throw new SkippedTestError($message);
     }
 
     /**
@@ -68,66 +77,53 @@ class Unit extends Module
      * @return string
      *
      */
-    public function getNewFileName($prefix = '', $suffix = 'log')
+    public function getNewFileName(string $prefix = '', string $suffix = 'log')
     {
         $prefix = ($prefix) ? $prefix . '_' : '';
-        $suffix = ($suffix) ? $suffix       : 'log';
+        $suffix = ($suffix) ? $suffix : 'log';
 
         return uniqid($prefix, true) . '.' . $suffix;
     }
 
-    /**
-     * Removes a file from the system
-     *
-     * @author Nikos Dimopoulos <nikos@phalconphp.com>
-     * @since  2014-09-13
-     *
-     * @param string $path
-     * @param string $fileName
-     */
-    public function cleanFile($path, $fileName)
+    public function safeDeleteFile(string $filename)
     {
-        $file  = (substr($path, -1, 1) != "/") ? ($path . '/') : $path;
-        $file .= $fileName;
-
-        $actual = file_exists($file);
-
-        if ($actual) {
-            unlink($file);
+        if (true === file_exists($filename) && true === is_file($filename)) {
+            unlink($filename);
         }
     }
 
     /**
-     * Runs the test for a Tag::$function with $options
+     * @param $obj
+     * @param $prop
      *
-     * @param string  $function
-     * @param mixed   $options
-     * @param string  $expected
-     * @param boolean $xhtml
-     * @param string  $set
+     * @return mixed
+     * @throws \ReflectionException
      */
-    public function testFieldParameter($function, $options, $expected, $xhtml, $set = '')
+    public function getProtectedProperty($obj, $prop)
     {
-        Tag::resetInput();
+        $reflection = new ReflectionClass($obj);
 
-        if ($xhtml) {
-            Tag::setDocType(Tag::XHTML10_STRICT);
-            $expected .= ' />';
-        } else {
-            Tag::setDocType(Tag::HTML5);
-            $expected .= '>';
-        }
+        $property = $reflection->getProperty($prop);
+        $property->setAccessible(true);
 
-        if ($set) {
-            Tag::displayTo('x_name', 'x_value');
-        }
+        return $property->getValue($obj);
+    }
 
-        $actual = Tag::$function($options);
+    /**
+     * @param $obj
+     * @param $prop
+     * @param $value
+     *
+     * @throws \ReflectionException
+     */
+    public function setProtectedProperty($obj, $prop, $value)
+    {
+        $reflection = new ReflectionClass($obj);
 
-        if ($set) {
-            Tag::$set('x_name', '');
-        }
+        $property = $reflection->getProperty($prop);
+        $property->setAccessible(true);
+        $property->setValue($obj, $value);
 
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($value, $property->getValue($obj));
     }
 }

@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Http\CookieInterface
  *
  * Interface for Phalcon\Http\Cookie
@@ -29,16 +37,11 @@ ZEPHIR_INIT_CLASS(Phalcon_Http_CookieInterface) {
  * Sets the cookie's value
  *
  * @param string value
- * @return \Phalcon\Http\CookieInterface
  */
 ZEPHIR_DOC_METHOD(Phalcon_Http_CookieInterface, setValue);
 
 /**
- * Returns the cookie's value
- *
- * @param string|array filters
- * @param string defaultValue
- * @return mixed
+ * Returns the cookie's value.
  */
 ZEPHIR_DOC_METHOD(Phalcon_Http_CookieInterface, getValue);
 

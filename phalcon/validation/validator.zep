@@ -1,19 +1,11 @@
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Validation;
@@ -40,20 +32,9 @@ abstract class Validator implements ValidatorInterface
 	}
 
 	/**
-	 * Checks if an option has been defined
-
-	 * @deprecated since 2.1.0
-	 * @see \Phalcon\Validation\Validator::hasOption()
-	 */
-	deprecated public function isSetOption(string! key) -> boolean
-	{
-		return isset this->_options[key];
-	}
-
-	/**
 	 * Checks if an option is defined
 	 */
-	public function hasOption(string! key) -> boolean
+	public function hasOption(string! key) -> bool
 	{
 		return isset this->_options[key];
 	}
@@ -96,7 +77,7 @@ abstract class Validator implements ValidatorInterface
 	/**
 	 * Executes the validation
 	 */
-	abstract public function validate(<Validation> validation, string! attribute) -> boolean;
+	abstract public function validate(<Validation> validation, var field) -> bool;
 
 	/**
 	 * Prepares a label for the field.

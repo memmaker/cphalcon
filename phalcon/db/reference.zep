@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Db;
@@ -44,7 +35,6 @@ namespace Phalcon\Db;
  */
 class Reference implements ReferenceInterface
 {
-
 	/**
 	 * Constraint name
 	 *
@@ -52,8 +42,18 @@ class Reference implements ReferenceInterface
 	 */
 	protected _name  { get };
 
+	/**
+	 * Schema name
+	 *
+	 * @var string
+	 */
 	protected _schemaName { get };
 
+	/**
+	 * Referenced Schema
+	 *
+	 * @var string
+	 */
 	protected _referencedSchema { get };
 
 	/**
@@ -80,14 +80,14 @@ class Reference implements ReferenceInterface
 	/**
 	 * ON DELETE
 	 *
-	 * @var array
+	 * @var string
 	 */
 	protected _onDelete { get };
 
 	/**
 	 * ON UPDATE
 	 *
-	 * @var array
+	 * @var string
 	 */
 	protected _onUpdate { get };
 
@@ -144,7 +144,7 @@ class Reference implements ReferenceInterface
 	/**
 	 * Restore a Phalcon\Db\Reference object from export
 	 */
-	public static function __set_state(array! data) -> <Reference>
+	public static function __set_state(array! data) -> <ReferenceInterface>
 	{
 		var referencedSchema, referencedTable, columns,
 			referencedColumns, constraintName,

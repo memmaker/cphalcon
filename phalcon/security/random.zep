@@ -1,19 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Serghei Iakovlev <serghei@phalconphp.com>                     |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Security;
@@ -178,11 +170,11 @@ class Random
 	 * It is similar to `Phalcon\Security\Random:base64` but has been modified to avoid both non-alphanumeric
 	 * characters and letters which might look ambiguous when printed.
 	 *
-	 * <code>
+	 *<code>
 	 * $random = new \Phalcon\Security\Random();
 	 *
 	 * echo $random->base58(); // 4kUgL2pdQMSCQtjE
-	 * </code>
+	 *</code>
 	 *
 	 * @see    \Phalcon\Security\Random:base64
 	 * @link   https://en.wikipedia.org/wiki/Base58
@@ -201,11 +193,11 @@ class Random
 	 * It is similar to `Phalcon\Security\Random:base58` but has been modified to provide the largest value that can
 	 * safely be used in URLs without needing to take extra characters into consideration because it is [A-Za-z0-9].
 	 *
-	 *< code>
+	 *<code>
 	 * $random = new \Phalcon\Security\Random();
 	 *
 	 * echo $random->base62(); // z0RkwHfh8ErDM1xw
-	 * </code>
+	 *</code>
 	 *
 	 * @see    \Phalcon\Security\Random:base58
 	 * @throws Exception If secure random number generator is not available or unexpected partial read
@@ -254,7 +246,7 @@ class Random
 	 * @link https://www.ietf.org/rfc/rfc3548.txt
 	 * @throws Exception If secure random number generator is not available or unexpected partial read
 	 */
-	public function base64Safe(int len = null, boolean padding = false) -> string
+	public function base64Safe(int len = null, bool padding = false) -> string
 	{
 		var s;
 

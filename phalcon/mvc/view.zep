@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc;
@@ -96,7 +87,7 @@ class View extends Injectable implements ViewInterface
 	const CACHE_MODE_NONE = 0;
 	const CACHE_MODE_INVERSE = 1;
 
-	protected _options;
+	protected _options = [];
 
 	protected _basePath = "";
 
@@ -124,10 +115,7 @@ class View extends Injectable implements ViewInterface
 
 	protected _engines = false;
 
-	/**
-	 * @var array
-	 */
-	protected _registeredEngines { get };
+	protected _registeredEngines = [] { get };
 
 	protected _mainView = "index";
 
@@ -292,7 +280,7 @@ class View extends Injectable implements ViewInterface
 	 * );
 	 * </code>
 	 */
-	public function setRenderLevel(int level) -> <View>
+	public function setRenderLevel(int level) -> <ViewInterface>
 	{
 		let this->_renderLevel = level;
 		return this;
@@ -308,7 +296,7 @@ class View extends Injectable implements ViewInterface
 	 * );
 	 *</code>
 	 */
-	public function disableLevel(var level) -> <View>
+	public function disableLevel(var level) -> <ViewInterface>
 	{
 		if typeof level == "array" {
 			let this->_disabledLevels = level;
@@ -429,7 +417,7 @@ class View extends Injectable implements ViewInterface
 	 * );
 	 *</code>
 	 */
-	public function setVars(array! params, boolean merge = true) -> <View>
+	public function setVars(array! params, bool merge = true) -> <View>
 	{
 		if merge {
 			let this->_viewParams = array_merge(this->_viewParams, params);
@@ -492,14 +480,6 @@ class View extends Injectable implements ViewInterface
 	}
 
 	/**
-	 * Gets extra parameters of the action rendered
-	 */
-	public function getParams() -> array
-	{
-		return this->_params;
-	}
-
-	/**
 	 * Starts rendering process enabling the output buffering
 	 */
 	public function start() -> <View>
@@ -514,8 +494,7 @@ class View extends Injectable implements ViewInterface
 	 */
 	protected function _loadTemplateEngines() -> array
 	{
-		var engines, dependencyInjector, registeredEngines, arguments,
-			engineService, extension;
+		var engines, di, registeredEngines, engineService, extension;
 
 		let engines = this->_engines;
 
@@ -524,23 +503,22 @@ class View extends Injectable implements ViewInterface
 		 */
 		if engines === false {
 
-			let dependencyInjector = <DiInterface> this->_dependencyInjector;
+			let di = <DiInterface> this->_dependencyInjector;
 
 			let engines = [];
 			let registeredEngines = this->_registeredEngines;
-			if typeof registeredEngines != "array" {
+			if empty registeredEngines {
 
 				/**
 				 * We use Phalcon\Mvc\View\Engine\Php as default
 				 */
-				let engines[".phtml"] = new PhpEngine(this, dependencyInjector);
+				let engines[".phtml"] = new PhpEngine(this, di);
 			} else {
 
-				if typeof dependencyInjector != "object" {
+				if typeof di != "object" {
 					throw new Exception("A dependency injector container is required to obtain the application services");
 				}
 
-				let arguments = [this, dependencyInjector];
 				for extension, engineService in registeredEngines {
 
 					if typeof engineService == "object" {
@@ -549,7 +527,8 @@ class View extends Injectable implements ViewInterface
 						 * Engine can be a closure
 						 */
 						if engineService instanceof \Closure {
-							let engines[extension] = call_user_func_array(engineService, arguments);
+							let engineService = \Closure::bind(engineService, di);
+							let engines[extension] = call_user_func(engineService, this);
 						} else {
 							let engines[extension] = engineService;
 						}
@@ -563,7 +542,7 @@ class View extends Injectable implements ViewInterface
 							throw new Exception("Invalid template engine registration for extension: " . extension);
 						}
 
-						let engines[extension] = dependencyInjector->getShared(engineService, arguments);
+						let engines[extension] = di->getShared(engineService, [this]);
 					}
 				}
 			}
@@ -576,16 +555,11 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Checks whether view exists on registered extensions and render it
-	 *
-	 * @param array engines
-	 * @param string viewPath
-	 * @param boolean silence
-	 * @param boolean mustClean
-	 * @param \Phalcon\Cache\BackendInterface $cache
 	 */
-	protected function _engineRender(engines, string viewPath, boolean silence, boolean mustClean, <BackendInterface> cache = null)
+	protected function _engineRender(array engines, string viewPath, bool silence, bool mustClean, <BackendInterface> cache = null)
 	{
-		boolean notExists, hasBeenRendered;
+		bool notExists;
+		bool hasBeenRendered;
 		int renderLevel, cacheLevel;
 		var key, lifetime, viewsDir, basePath, viewsDirPath,
 			viewOptions, cacheOptions, cachedView, viewParams, eventsManager,
@@ -713,7 +687,7 @@ class View extends Injectable implements ViewInterface
 	/**
 	 * Register templating engines
 	 *
-	 *<code>
+	 * <code>
 	 * $this->view->registerEngines(
 	 *     [
 	 *         ".phtml" => "Phalcon\\Mvc\\View\\Engine\\Php",
@@ -721,7 +695,7 @@ class View extends Injectable implements ViewInterface
 	 *         ".mhtml" => "MyCustomEngine",
 	 *     ]
 	 * );
-	 *</code>
+	 * </code>
 	 */
 	public function registerEngines(array! engines) -> <View>
 	{
@@ -732,16 +706,17 @@ class View extends Injectable implements ViewInterface
 	/**
 	 * Checks whether view exists
 	 */
-	public function exists(string! view) -> boolean
+	public function exists(string! view) -> bool
 	{
 		var basePath, viewsDir, engines, extension;
 
 		let basePath = this->_basePath,
 			engines = this->_registeredEngines;
 
-		if typeof engines != "array" {
-			let engines = [".phtml": "Phalcon\\Mvc\\View\\Engine\\Php"],
-				this->_registeredEngines = engines;
+		if empty engines {
+			let engines = [".phtml": "Phalcon\\Mvc\\View\\Engine\\Php"];
+
+			this->registerEngines(engines);
 		}
 
 		for viewsDir in this->getViewsDirs() {
@@ -762,14 +737,10 @@ class View extends Injectable implements ViewInterface
 	 * // Shows recent posts view (app/views/posts/recent.phtml)
 	 * $view->start()->render("posts", "recent")->finish();
 	 *</code>
-	 *
-	 * @param string controllerName
-	 * @param string actionName
-	 * @param array params
 	 */
-	public function render(string! controllerName, string! actionName, params = null) -> <View> | boolean
+	public function render(string! controllerName, string! actionName, array params = []) -> <View> | bool
 	{
-		boolean silence, mustClean;
+		bool silence, mustClean;
 		int renderLevel;
 		var layoutsDir, layout, pickView, layoutName,
 			engines, renderView, pickViewAction, eventsManager,
@@ -787,8 +758,11 @@ class View extends Injectable implements ViewInterface
 		}
 
 		let this->_controllerName = controllerName,
-			this->_actionName = actionName,
-			this->_params = params;
+			this->_actionName = actionName;
+
+		if typeof params == "array" {
+			this->setVars(params);
+		}
 
 		/**
 		 * Check if there is a layouts directory set
@@ -848,9 +822,7 @@ class View extends Injectable implements ViewInterface
 		 * Create a virtual symbol table.
 		 * Variables are shared across symbol tables in PHP5
 		 */
-		if PHP_MAJOR_VERSION == 5 {
-			create_symbol_table();
-		}
+		create_symbol_table();
 
 		/**
 		 * Call beforeRender if there is an events manager
@@ -1106,13 +1078,9 @@ class View extends Injectable implements ViewInterface
 	 * );
 	 * </code>
 	 *
-	 * @param string controllerName
-	 * @param string actionName
-	 * @param array params
 	 * @param mixed configCallback
-	 * @return string
 	 */
-	public function getRender(string! controllerName, string! actionName, params = null, configCallback = null) -> string
+	public function getRender(string! controllerName, string! actionName, array params = [], configCallback = null) -> string
 	{
 		var view;
 
@@ -1207,7 +1175,7 @@ class View extends Injectable implements ViewInterface
 	/**
 	 * Check if the component is currently caching the output content
 	 */
-	public function isCaching() -> boolean
+	public function isCaching() -> bool
 	{
 		return this->_cacheLevel > 0;
 	}
@@ -1396,7 +1364,7 @@ class View extends Injectable implements ViewInterface
 	/**
 	 * Whether automatic rendering is enabled
 	 */
-	public function isDisabled() -> boolean
+	public function isDisabled() -> bool
 	{
 		return this->_disabled;
 	}
@@ -1408,7 +1376,7 @@ class View extends Injectable implements ViewInterface
 	 * echo isset($this->view->products);
 	 *</code>
 	 */
-	public function __isset(string! key) -> boolean
+	public function __isset(string! key) -> bool
 	{
 		return isset this->_viewParams[key];
 	}

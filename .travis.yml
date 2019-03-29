@@ -1,144 +1,137 @@
-language: php
-
-# TODO To use `sudo: false` you have to use `precise` until this issue is fixed:
-# https://github.com/travis-ci/travis-ci/issues/5837
-dist: precise
 sudo: false
-# dist: trusty
-# sudo: required
 
+language: php
 php:
-  - 5.5
-  - 5.6
-  - 7.0
-  - 7.1
-
-matrix:
-  fast_finish: true
-  allow_failures:
-    - php: nightly
-  include:
-    - php: nightly
+  # PHP 7.4 is not ready yet
+  # - 'master'
+  - '7.3'
+  - '7.2'
 
 git:
   depth: 1
 
+branches:
+  only:
+    - master
+    - /^(4|5)\.\d+\.(\d+|x)$/
+    - /^T\d+-[a-zA-Z-]+/
+
+addons:
+  apt:
+    packages:
+      - beanstalkd
+      - gdb
+      - lcov
+  postgresql: "9.4"
+
+matrix:
+  fast_finish: true
+  # PHP 7.4 is not ready yet
+  # allow_failures:
+  #  - php: 'master'
+
 cache:
   apt: true
-  ccache: true
-  timeout: 691200
+  timeout: 604800
   directories:
-    - .temp
-    # Use ZEPHIR_PARSER_VERSION here
-    - $HOME/zephir-parser-v1.0.3
-    - $HOME/beanstalk
-    - $HOME/.ccache
-    - $HOME/.composer/cache
-    - $HOME/pear
+    - ${HOME}/.composer/cache
+    - ${HOME}/pear
+    - ${HOME}/.local/opt
 
 services:
-  # Use only for `trusty`
-  # - beanstalkd
+  - mysql
+  - beanstalkd
   - mongodb
-  - memcached
   - redis-server
   - postgresql
-  # Not needed on `precise`
-  # start: Job is already running: mysql
-  # - mysql
 
 env:
   global:
-    - TEST_BT_HOST="127.0.0.1"
-    - TEST_BT_PORT="11300"
-    - TEST_MC_HOST="127.0.0.1"
-    - TEST_MC_PORT="11211"
-    - TEST_MC_WEIGHT="1"
-    - TEST_DB_SQLITE_NAME="/tmp/phalcon_test.sqlite"
-    - TEST_DB_MYSQL_HOST="127.0.0.1"
-    - TEST_DB_MYSQL_PORT="3306"
-    - TEST_DB_MYSQL_USER="root"
-    - TEST_DB_MYSQL_PASSWD=""
-    - TEST_DB_MYSQL_NAME="phalcon_test"
-    - TEST_DB_MYSQL_CHARSET="utf8"
-    - TEST_DB_POSTGRESQL_HOST="127.0.0.1"
-    - TEST_DB_POSTGRESQL_PORT="5432"
-    - TEST_DB_POSTGRESQL_USER="postgres"
-    - TEST_DB_POSTGRESQL_PASSWD=""
-    - TEST_DB_POSTGRESQL_NAME="phalcon_test"
-    - TEST_DB_MYSQL_DSN="mysql:host=127.0.0.1;dbname=phalcon_test"
-    - TEST_DB_MONGO_HOST="127.0.0.1"
-    - TEST_DB_MONGO_PORT="27017"
-    - TEST_DB_MONGO_USER="admin"
-    - TEST_DB_MONGO_PASSWD=""
-    - TEST_DB_MONGO_NAME="phalcon_test"
-    - TEST_RS_HOST="127.0.0.1"
-    - TEST_RS_PORT="6379"
-    - TEST_RS_DB="0"
-    - CC="ccache gcc"
-    - PATH="$PATH:~/bin"
-    - BEANSTALKD_VERSION="1.10"
-    - ZEPHIR_PARSER_VERSION="v1.0.3"
-    # Uncomment for debug
-    #- ZEND_DONT_UNLOAD_MODULES=1
+    - CC="gcc"
+    - ZEPHIR_VERSION="0.11.9"
+    - ZEPHIR_PARSER_VERSION="v1.2.0"
+    - RE2C_VERSION="1.1.1"
+    - REPORT_COVERAGE=1
+    - PATH="${HOME}/.composer/vendor/bin:${PATH}"
+    - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
 
 before_install:
-  - if [[ ! -z "${GH_TOKEN}" ]]; then composer config github-oauth.github.com ${GH_TOKEN}; echo "Configured Github token"; fi;
-  - export PHP_MAJOR="$(echo $TRAVIS_PHP_VERSION | cut -d '.' -f 1)"
-  - bash tests/_ci/pear_setup.sh
-  - bash tests/_ci/setup_dbs.sh
+  - |
+    # General settings
+    set -e
+    stty cols 120
+    ulimit -c unlimited -S || true
+
+    if [ ! -z "${GITHUB_TOKEN}" ]; then
+      composer config github-oauth.github.com ${GITHUB_TOKEN}
+      printf "Add GitHub token\n"
+    fi
+
+    [ -d ~/bin ] || mkdir ~/bin
+
+    git config --global advice.detachedHead false
+
+    # Export tests environment variables
+    source tests/_ci/environment
+    export $(cut -d= -f1 tests/_ci/environment)
+
+    # Export build environment variables
+    export PHP_MAJOR="$(php -r 'echo phpversion();' | cut -d '.' -f 1)"
+    export PHP_MINOR="$(php -r 'echo phpversion();' | cut -d '.' -f 2)"
+    export PHP_VERNUM="$(php-config --vernum)"
+    export PHP_PEAR_PHP_BIN=$(phpenv which php)
 
 install:
-  - travis_retry composer install --quiet --no-interaction --no-ansi --no-progress --optimize-autoloader --dev --prefer-dist --no-suggest --ignore-platform-reqs
-  - bash tests/_ci/install_prereqs_$PHP_MAJOR.sh
-  - bash tests/_ci/install_zephir_parser.sh
-  - bash tests/_ci/install_zephir.sh
-  # Use only for `precise`
-  - bash tests/_ci/install_beanstalkd.sh
-  - zephir generate
-  - (export PRE_PHP_INCLUDES=`php-config --includes`; cd ext/; for file in `find kernel -name "*.h"`; do $CC "$file" -I. $PRE_PHP_INCLUDES -o "$file.ghc"; done)
-  - (cd ext; export CFLAGS="-g3 -O1 -std=gnu90 -Wall"; $(phpenv which phpize) &> /dev/null && ./configure --silent --with-php-config=$(phpenv which php-config) --enable-phalcon &> /dev/null && make --silent -j"$(getconf _NPROCESSORS_ONLN)" &> /dev/null && make --silent install)
-  # Uncomment for debug
-  # - (cd ext; export CFLAGS="-g3 -O0 -std=gnu90 -Wall"; $(phpenv which phpize) &> /dev/null && ./configure --silent --with-php-config=$(phpenv which php-config) --enable-phalcon &> /dev/null && make --silent -j"$(getconf _NPROCESSORS_ONLN)" &> /dev/null && make --silent install)
-  - phpenv config-add tests/_ci/phalcon.ini
-  - phpenv config-add tests/_ci/ci.ini
-  - beanstalkd -l ${TEST_BT_HOST} -p ${TEST_BT_PORT} & # start queue listener
+  - .ci/install-mysql-5.7.sh
+  - tests/_ci/setup-dbs.sh
+  - tests/_ci/pear-setup.sh
+  - .ci/install-prereqs.sh
+  - tests/_ci/install-re2c.sh
+  - travis_retry composer install $DEFAULT_COMPOSER_FLAGS
+  - wget --no-clobber -O $HOME/bin/zephir https://github.com/phalcon/zephir/releases/download/${ZEPHIR_VERSION}/zephir.phar
+  - chmod +x $HOME/bin/zephir
 
 before_script:
-  # Uncomment for debug
-  # - ulimit -c unlimited -S || true
-  # - echo '/tmp/core_%e.%p' | sudo tee /proc/sys/kernel/core_pattern &> /dev/null
+  - |
+    # Setting up Tavis' PHP
+    echo 'variables_order = EGPCS'    >> $(phpenv root)/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+    echo 'session.save_path = "/tmp"' >> $(phpenv root)/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+    echo 'opcache.enable_cli = 1'     >> $(phpenv root)/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+
+  - tests/_ci/build.sh
 
 script:
-  - vendor/bin/phpcs
-  - vendor/bin/phpunit --bootstrap tests/_ci/phpunit.php --debug unit-tests/
-  - vendor/bin/codecept build
-  - vendor/bin/codecept run -v -n tests/integration/
-  - vendor/bin/codecept run -v -n tests/unit/
-  # Legacy tests
-  - phpenv config-rm xdebug.ini
-  - if [[ "$PHP_MAJOR" == 5 ]]; then vendor/bin/codecept run -v -n tests/unit5x/; fi;
+  # Does not ready to work PHP 7.3
+  - if [ "$PHP_VERNUM" -ge "70300" ]; then phpenv config-rm xdebug.ini || true; fi
 
-# Uncomment for debug
-# after_failure:
-#  - bash tests/_ci/after_failure.sh
+  - vendor/bin/codecept build --quiet
+  - vendor/bin/codecept run --ext DotReporter tests/cli/
+  - vendor/bin/codecept run --ext DotReporter tests/integration/
+  - vendor/bin/codecept run --ext DotReporter tests/unit/
+
+  - .ci/run-volt-tests.sh
+
+jobs:
+  include:
+    - stage: Static Code Analysis
+      php: 7.2
+      env:
+        - REPORT_COVERAGE=0
+      install:
+        - travis_retry composer install $DEFAULT_COMPOSER_FLAGS --ignore-platform-reqs
+      before_script:
+        - phpenv config-rm xdebug.ini || true
+      script:
+        - vendor/bin/phpcs
+
+after_failure:
+  - tests/_ci/after-failure.sh
+
+after_success:
+  # Does not ready to work PHP 7.3
+  - if [ "$PHP_VERNUM" -ge "70300" ]; then export REPORT_COVERAGE=0; fi
+
+  - tests/_ci/after-success.sh
 
 notifications:
-    email:
-        recipients:
-            - build@phalconphp.com
-        on_success: change
-        on_failure: always
-
-addons:
-    apt:
-        packages:
-            - re2c
-            # Use only for `trusty`
-            # - beanstalkd
-            # Uncomment for debug
-            # - gdb
-            # Uncomment for `trusty`
-            # - mysql-server-5.6
-            # - mysql-server-core-5.6
-            # - mysql-client-5.6
+  email: false

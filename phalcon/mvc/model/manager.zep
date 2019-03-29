@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -67,71 +58,71 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 
 	protected _eventsManager;
 
-	protected _customEventsManager;
+	protected _customEventsManager = [];
 
-	protected _readConnectionServices;
+	protected _readConnectionServices = [];
 
-	protected _writeConnectionServices;
+	protected _writeConnectionServices = [];
 
-	protected _aliases;
+	protected _aliases = [];
 
 	protected _modelVisibility = [];
 
 	/**
 	 * Has many relations
 	 */
-	protected _hasMany;
+	protected _hasMany = [];
 
 	/**
 	 * Has many relations by model
 	 */
-	protected _hasManySingle;
+	protected _hasManySingle = [];
 
 	/**
 	 * Has one relations
 	 */
-	protected _hasOne;
+	protected _hasOne = [];
 
 	/**
 	 * Has one relations by model
 	 */
-	protected _hasOneSingle;
+	protected _hasOneSingle = [];
 
 	/**
 	 * Belongs to relations
 	 */
-	protected _belongsTo;
+	protected _belongsTo = [];
 
 	/**
 	 * All the relationships by model
 	 */
-	protected _belongsToSingle;
+	protected _belongsToSingle = [];
 
 	/**
 	 * Has many-Through relations
 	 */
-	protected _hasManyToMany;
+	protected _hasManyToMany = [];
 
 	/**
 	 * Has many-Through relations by model
 	 */
-	protected _hasManyToManySingle;
+	protected _hasManyToManySingle = [];
 
 	/**
 	 * Mark initialized models
 	 */
-	protected _initialized;
+	protected _initialized = [];
 
 	protected _prefix = "";
 
-	protected _sources;
+	protected _sources = [];
 
-	protected _schemas;
+	protected _schemas = [];
 
 	/**
 	 * Models' behaviors
 	 */
-	protected _behaviors;
+	protected _behaviors = [];
 
 	/**
 	 * Last model initialized
@@ -146,16 +137,16 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Stores a list of reusable instances
 	 */
-	protected _reusable;
+	protected _reusable = [];
 
-	protected _keepSnapshots;
+	protected _keepSnapshots = [];
 
 	/**
 	 * Does the model use dynamic update, instead of updating all rows?
 	 */
-	protected _dynamicUpdate;
+	protected _dynamicUpdate = [];
 
-	protected _namespaceAliases;
+	protected _namespaceAliases = [];
 
 	/**
 	 * Sets the DependencyInjector container
@@ -176,7 +167,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Sets a global events manager
 	 */
-	public function setEventsManager(<EventsManagerInterface> eventsManager) -> <Manager>
+	public function setEventsManager(<EventsManagerInterface> eventsManager) -> <ManagerInterface>
 	{
 		let this->_eventsManager = eventsManager;
 		return this;
@@ -201,7 +192,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Returns a custom events manager related to a model
 	 */
-	public function getCustomEventsManager(<ModelInterface> model) -> <EventsManagerInterface> | boolean
+	public function getCustomEventsManager(<ModelInterface> model) -> <EventsManagerInterface> | bool
 	{
 		var eventsManager;
 
@@ -215,7 +206,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Initializes a model in the model manager
 	 */
-	public function initialize(<ModelInterface> model) -> boolean
+	public function initialize(<ModelInterface> model) -> bool
 	{
 		var className, eventsManager;
 
@@ -231,7 +222,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		/**
 		 * Update the model as initialized, this avoid cyclic initializations
 		 */
-		let this->_initialized[className] = model;
+		let this->_initialized[className] = true;
 
 		/**
 		 * Call the 'initialize' method if it's implemented
@@ -259,7 +250,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Check whether a model is already initialized
 	 */
-	public function isInitialized(string! modelName) -> boolean
+	public function isInitialized(string! modelName) -> bool
 	{
 		return isset this->_initialized[strtolower(modelName)];
 	}
@@ -275,7 +266,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Loads a model throwing an exception if it doesn't exist
 	 */
-	public function load(string! modelName, boolean newInstance = false) -> <ModelInterface>
+	public function load(string! modelName) -> <ModelInterface>
 	{
 		var model, colonPos, namespaceName, namespaceAlias, className;
 
@@ -299,19 +290,11 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		}
 
 		/**
-		 * Check if a model with the same is already loaded
-		 */
-		if !newInstance {
-			if fetch model, this->_initialized[strtolower(modelName)] {
-				model->reset();
-				return model;
-			}
-		}
-
-		/**
 		 * Load it using an autoloader
 		 */
-		return new {modelName}(null, this->_dependencyInjector, this);
+		let model = new {modelName}(null, this->_dependencyInjector, this);
+
+		return model;
 	}
 
 	/**
@@ -376,7 +359,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 * );
 	 * </code>
 	 */
-	public final function isVisibleModelProperty(<ModelInterface> model, string property) -> boolean
+	public final function isVisibleModelProperty(<ModelInterface> model, string property) -> bool
 	{
 		var properties, className;
 
@@ -643,7 +626,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Sets if a model must keep snapshots
 	 */
-	public function keepSnapshots(<ModelInterface> model, boolean keepSnapshots) -> void
+	public function keepSnapshots(<ModelInterface> model, bool keepSnapshots) -> void
 	{
 		let this->_keepSnapshots[get_class_lower(model)] = keepSnapshots;
 	}
@@ -651,22 +634,21 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Checks if a model is keeping snapshots for the queried records
 	 */
-	public function isKeepingSnapshots(<ModelInterface> model) -> boolean
+	public function isKeepingSnapshots(<ModelInterface> model) -> bool
 	{
-		var keepSnapshots, isKeeping;
-		let keepSnapshots = this->_keepSnapshots;
-		if typeof keepSnapshots == "array" {
-			if fetch isKeeping, keepSnapshots[get_class_lower(model)] {
-				return isKeeping;
-			}
+		var isKeeping;
+
+		if !fetch isKeeping, this->_keepSnapshots[get_class_lower(model)] {
+			return false;
 		}
-		return false;
+
+		return isKeeping;
 	}
 
 	/**
 	 * Sets if a model must use dynamic update instead of the all-field update
 	 */
-	public function useDynamicUpdate(<ModelInterface> model, boolean dynamicUpdate)
+	public function useDynamicUpdate(<ModelInterface> model, bool dynamicUpdate)
 	{
 		var entityName;
 		let entityName = get_class_lower(model),
@@ -677,30 +659,24 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Checks if a model is using dynamic update instead of all-field update
 	 */
-	public function isUsingDynamicUpdate(<ModelInterface> model) -> boolean
+	public function isUsingDynamicUpdate(<ModelInterface> model) -> bool
 	{
-		var dynamicUpdate, isUsing;
-		let dynamicUpdate = this->_dynamicUpdate;
-		if typeof dynamicUpdate == "array" {
-			if fetch isUsing, dynamicUpdate[get_class_lower(model)] {
-				return isUsing;
-			}
+		var isUsing;
+
+		if !fetch isUsing, this->_dynamicUpdate[get_class_lower(model)] {
+			return false;
 		}
-		return false;
+
+		return isUsing;
 	}
 
 	/**
 	 * Setup a 1-1 relation between two models
 	 *
-	 * @param   Phalcon\Mvc\Model model
-	 * @param	mixed fields
-	 * @param	string referencedModel
-	 * @param	mixed referencedFields
 	 * @param	array options
-	 * @return  Phalcon\Mvc\Model\Relation
 	 */
 	public function addHasOne(<ModelInterface> model, var fields, string! referencedModel,
-		var referencedFields, var options = null) -> <Relation>
+		var referencedFields, var options = null) -> <RelationInterface>
 	{
 		var entityName, referencedEntity, relation,
 			keyRelation, relations, alias, lowerAlias, singleRelations;
@@ -778,15 +754,10 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Setup a relation reverse many to one between two models
 	 *
-	 * @param   Phalcon\Mvc\Model model
-	 * @param	mixed fields
-	 * @param	string referencedModel
-	 * @param	mixed referencedFields
 	 * @param	array options
-	 * @return  Phalcon\Mvc\Model\Relation
 	 */
 	public function addBelongsTo(<ModelInterface> model, var fields, string! referencedModel,
-		var referencedFields, var options = null) -> <Relation>
+		var referencedFields, var options = null) -> <RelationInterface>
 	{
 		var entityName, referencedEntity, relation, keyRelation, relations, alias, lowerAlias, singleRelations;
 
@@ -863,14 +834,11 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Setup a relation 1-n between two models
 	 *
-	 * @param 	Phalcon\Mvc\ModelInterface model
-	 * @param	mixed fields
-	 * @param	string referencedModel
 	 * @param	mixed referencedFields
 	 * @param	array options
 	 */
 	public function addHasMany(<ModelInterface> model, var fields, string! referencedModel,
-		var referencedFields, var options = null) -> <Relation>
+		var referencedFields, var options = null) -> <RelationInterface>
 	{
 		var entityName, referencedEntity, hasMany, relation,
 			keyRelation, relations, alias, lowerAlias, singleRelations;
@@ -948,18 +916,14 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Setups a relation n-m between two models
 	 *
-	 * @param 	Phalcon\Mvc\ModelInterface model
 	 * @param	string fields
-	 * @param	string intermediateModel
 	 * @param	string intermediateFields
 	 * @param	string intermediateReferencedFields
-	 * @param	string referencedModel
 	 * @param	string referencedFields
 	 * @param   array options
-	 * @return  Phalcon\Mvc\Model\Relation
 	 */
 	public function addHasManyToMany(<ModelInterface> model, var fields, string! intermediateModel,
-		var intermediateFields, var intermediateReferencedFields, string! referencedModel, var referencedFields, var options = null) -> <Relation>
+		var intermediateFields, var intermediateReferencedFields, string! referencedModel, var referencedFields, var options = null) -> <RelationInterface>
 	{
 		var entityName, referencedEntity, hasManyToMany, relation,
 			keyRelation, relations, alias, lowerAlias, singleRelations, intermediateEntity;
@@ -1058,7 +1022,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Checks whether a model has a belongsTo relation with another model
 	 */
-	public function existsBelongsTo(string! modelName, string! modelRelation) -> boolean
+	public function existsBelongsTo(string! modelName, string! modelRelation) -> bool
 	{
 		var entityName, keyRelation;
 
@@ -1082,7 +1046,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Checks whether a model has a hasMany relation with another model
 	 */
-	public function existsHasMany(string! modelName, string! modelRelation) -> boolean
+	public function existsHasMany(string! modelName, string! modelRelation) -> bool
 	{
 		var entityName, keyRelation;
 
@@ -1106,7 +1070,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Checks whether a model has a hasOne relation with another model
 	 */
-	public function existsHasOne(string! modelName, string! modelRelation) -> boolean
+	public function existsHasOne(string! modelName, string! modelRelation) -> bool
 	{
 		var entityName, keyRelation;
 
@@ -1130,7 +1094,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Checks whether a model has a hasManyToMany relation with another model
 	 */
-	public function existsHasManyToMany(string! modelName, string! modelRelation) -> boolean
+	public function existsHasManyToMany(string! modelName, string! modelRelation) -> bool
 	{
 		var entityName, keyRelation;
 
@@ -1154,7 +1118,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Returns a relation by its alias
 	 */
-	public function getRelationByAlias(string! modelName, string! alias) -> <Relation> | boolean
+	public function getRelationByAlias(string! modelName, string! alias) -> <RelationInterface> | bool
 	{
 		var relation;
 
@@ -1250,7 +1214,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 			intermediateFields, joinConditions, fields, builder, extraParameters,
 			conditions, refPosition, field, referencedFields, findParams,
 			findArguments, retrieveMethod, uniqueKey, records, arguments, rows, firstRow;
-		boolean reusable;
+		bool reusable;
 
 		/**
 		 * Re-use bound parameters
@@ -1361,7 +1325,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		let findArguments = this->_mergeFindParameters(findParams, parameters);
 
 		if typeof extraParameters == "array" {
-			let findParams = this->_mergeFindParameters(findArguments, extraParameters);
+			let findParams = this->_mergeFindParameters(extraParameters, findArguments);
 		} else {
 			let findParams = findArguments;
 		}
@@ -1393,7 +1357,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		/**
 		 * Find first results could be reusable
 		 */
-		let reusable = (boolean) relation->isReusable();
+		let reusable = (bool) relation->isReusable();
 		if reusable {
 			let uniqueKey = unique_key(referencedModel, arguments),
 				records = this->getReusableRecords(referencedModel, uniqueKey);
@@ -1443,14 +1407,14 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 */
 	public function clearReusableObjects()
 	{
-		let this->_reusable = null;
+		let this->_reusable = [];
 	}
 
 	/**
 	 * Gets belongsTo related records from a model
 	 */
 	public function getBelongsToRecords(string! method, string! modelName, var modelRelation, <ModelInterface> record, parameters = null)
-		-> <ResultsetInterface> | boolean
+		-> <ResultsetInterface> | bool
 	{
 		var keyRelation, relations;
 
@@ -1473,7 +1437,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 * Gets hasMany related records from a model
 	 */
 	public function getHasManyRecords(string! method, string! modelName, var modelRelation, <ModelInterface> record, parameters = null)
-		-> <ResultsetInterface> | boolean
+		-> <ResultsetInterface> | bool
 	{
 		var keyRelation, relations;
 
@@ -1496,7 +1460,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 * Gets belongsTo related records from a model
 	 */
 	public function getHasOneRecords(string! method, string! modelName, var modelRelation, <ModelInterface> record, parameters = null)
-		-> <ModelInterface> | boolean
+		-> <ModelInterface> | bool
 	{
 		var keyRelation, relations;
 
@@ -1628,7 +1592,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	/**
 	 * Query the first relationship defined between two models
 	 */
-	public function getRelationsBetween(string! first, string! second) -> <RelationInterface[]> | boolean
+	public function getRelationsBetween(string! first, string! second) -> <RelationInterface[]> | bool
 	{
 		var keyRelation, relations;
 

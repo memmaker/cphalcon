@@ -1,23 +1,16 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc;
+
+use Phalcon\Cache\BackendInterface;
 
 /**
  * Phalcon\Mvc\ViewInterface
@@ -35,7 +28,7 @@ interface ViewBaseInterface
 	/**
 	 * Gets views directory
 	 */
-	public function getViewsDir() -> string;
+	public function getViewsDir() -> string | array;
 
 	/**
 	 * Adds parameters to views (alias of setVar)
@@ -44,11 +37,8 @@ interface ViewBaseInterface
 
 	/**
 	 * Adds parameters to views
-	 *
-	 * @param string key
-	 * @param mixed value
 	 */
-	public function setVar(string! key, value);
+	public function setVar(string! key, var value);
 
 	/**
 	 * Returns parameters to views
@@ -58,7 +48,7 @@ interface ViewBaseInterface
 	/**
 	 * Returns the cache instance used to cache
 	 */
-	public function getCache() -> <\Phalcon\Cache\BackendInterface>;
+	public function getCache() -> <BackendInterface>;
 
 	/**
 	 * Cache the actual view render to certain level
@@ -78,5 +68,5 @@ interface ViewBaseInterface
 	/**
 	 * Renders a partial view
 	 */
-	public function partial(string! partialPath, var params = null) -> string;
+	public function partial(string! partialPath, var params = null);
 }

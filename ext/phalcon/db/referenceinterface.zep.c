@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Db\Reference
  *
  * Interface for Phalcon\Db\Reference
@@ -27,57 +35,41 @@ ZEPHIR_INIT_CLASS(Phalcon_Db_ReferenceInterface) {
 
 /**
  * Gets the index name
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getName);
 
 /**
  * Gets the schema where referenced table is
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getSchemaName);
 
 /**
  * Gets the schema where referenced table is
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getReferencedSchema);
 
 /**
  * Gets local columns which reference is based
- *
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getColumns);
 
 /**
  * Gets the referenced table
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getReferencedTable);
 
 /**
  * Gets referenced columns
- *
- * @return array
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getReferencedColumns);
 
 /**
  * Gets the referenced on delete
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getOnDelete);
 
 /**
  * Gets the referenced on update
- *
- * @return string
  */
 ZEPHIR_DOC_METHOD(Phalcon_Db_ReferenceInterface, getOnUpdate);
 

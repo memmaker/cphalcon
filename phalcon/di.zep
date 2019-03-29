@@ -1,17 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon;
@@ -20,6 +14,7 @@ use Phalcon\Config;
 use Phalcon\Di\Service;
 use Phalcon\DiInterface;
 use Phalcon\Di\Exception;
+use Phalcon\Di\Exception\ServiceResolutionException;
 use Phalcon\Config\Adapter\Php;
 use Phalcon\Config\Adapter\Yaml;
 use Phalcon\Di\ServiceInterface;
@@ -77,11 +72,6 @@ class Di implements DiInterface
 	protected _sharedInstances;
 
 	/**
-	 * To know if the latest resolved instance was shared or not
-	 */
-	protected _freshInstance = false;
-
-	/**
 	 * Events Manager
 	 *
 	 * @var \Phalcon\Events\ManagerInterface
@@ -124,10 +114,10 @@ class Di implements DiInterface
 	/**
 	 * Registers a service in the services container
 	 */
-	public function set(string! name, var definition, boolean shared = false) -> <ServiceInterface>
+	public function set(string! name, var definition, bool shared = false) -> <ServiceInterface>
 	{
 		var service;
-		let service = new Service(name, definition, shared),
+		let service = new Service(definition, shared),
 			this->_services[name] = service;
 		return service;
 	}
@@ -155,12 +145,12 @@ class Di implements DiInterface
 	 * Only is successful if a service hasn't been registered previously
 	 * with the same name
 	 */
-	public function attempt(string! name, definition, boolean shared = false) -> <ServiceInterface> | boolean
+	public function attempt(string! name, definition, bool shared = false) -> <ServiceInterface> | bool
 	{
 		var service;
 
 		if !isset this->_services[name] {
-			let service = new Service(name, definition, shared),
+			let service = new Service(definition, shared),
 				this->_services[name] = service;
 			return service;
 		}
@@ -210,28 +200,48 @@ class Di implements DiInterface
 	 */
 	public function get(string! name, parameters = null) -> var
 	{
-		var service, eventsManager, instance = null;
+		var service, eventsManager, isShared, instance = null;
+
+		// If the service is shared and it already has a cached instance then
+		// immediately return it without triggering events.
+		if fetch service, this->_services[name] {
+			let isShared = service->isShared();
+			if isShared && isset this->_sharedInstances[name] {
+				return this->_sharedInstances[name];
+			}
+		}
 
 		let eventsManager = <ManagerInterface> this->_eventsManager;
 
+		// Allows for custom creation of instances through the "di:beforeServiceResolve" event.
 		if typeof eventsManager == "object" {
 			let instance = eventsManager->fire(
 				"di:beforeServiceResolve",
 				this,
-				["name": name, "parameters": parameters]
+				[
+					"name": name,
+					"parameters": parameters
+				]
 			);
 		}
 
 		if typeof instance != "object" {
-			if fetch service, this->_services[name] {
-				/**
-				 * The service is registered in the DI
-				 */
-				let instance = service->resolve(parameters, this);
+			if service !== null {
+
+				// The service is registered in the DI.
+				try {
+					let instance = service->resolve(parameters, this);
+				} catch ServiceResolutionException {
+					throw new Exception("Service '" . name . "' cannot be resolved");
+				}
+
+				// If the service is shared then we'll cache the instance.
+				if isShared {
+					let this->_sharedInstances[name] = instance;
+				}
 			} else {
-				/**
-				 * The DI also acts as builder for any class even if it isn't defined in the DI
-				 */
+
+				// The DI also acts as builder for any class even if it isn't defined in the DI
 				if !class_exists(name) {
 					throw new Exception("Service '" . name . "' wasn't found in the dependency injection container");
 				}
@@ -244,15 +254,14 @@ class Di implements DiInterface
 			}
 		}
 
-		/**
-		 * Pass the DI itself if the instance implements \Phalcon\Di\InjectionAwareInterface
-		 */
+		// Pass the DI to the instance if it implements \Phalcon\Di\InjectionAwareInterface
 		if typeof instance == "object" {
 			if instance instanceof InjectionAwareInterface {
 				instance->setDI(this);
 			}
 		}
 
+		// Allows for post creation instance configuration through the "di:afterServiceResolve" event.
 		if typeof eventsManager == "object" {
 			eventsManager->fire(
 				"di:afterServiceResolve",
@@ -272,31 +281,20 @@ class Di implements DiInterface
 	 * Resolves a service, the resolved service is stored in the DI, subsequent
 	 * requests for this service will return the same instance
 	 *
-	 * @param string name
 	 * @param array parameters
 	 * @return mixed
 	 */
-	public function getShared(string! name, parameters = null)
+	public function getShared(string! name, parameters = null) -> var
 	{
 		var instance;
 
-		/**
-		 * This method provides a first level to shared instances allowing to use non-shared services as shared
-		 */
-		if fetch instance, this->_sharedInstances[name] {
-			let this->_freshInstance = false;
-		} else {
-
-			/**
-			 * Resolve the instance normally
-			 */
+		// Attempt to use the instance from the shared instances cache.
+		if !fetch instance, this->_sharedInstances[name] {
+			// Resolve the instance normally
 			let instance = this->get(name, parameters);
 
-			/**
-			 * Save the instance in the first level shared
-			 */
-			let this->_sharedInstances[name] = instance,
-				this->_freshInstance = true;
+			// Store the instance in the shared instances cache.
+			let this->_sharedInstances[name] = instance;
 		}
 
 		return instance;
@@ -305,23 +303,15 @@ class Di implements DiInterface
 	/**
 	 * Check whether the DI contains a service by a name
 	 */
-	public function has(string! name) -> boolean
+	public function has(string! name) -> bool
 	{
 		return isset this->_services[name];
 	}
 
 	/**
-	 * Check whether the last service obtained via getShared produced a fresh instance or an existing one
-	 */
-	public function wasFreshInstance() -> boolean
-	{
-		return this->_freshInstance;
-	}
-
-	/**
 	 * Return the services registered in the DI
 	 */
-	public function getServices() -> <Service[]>
+	public function getServices() -> <ServiceInterface[]>
 	{
 		return this->_services;
 	}
@@ -329,7 +319,7 @@ class Di implements DiInterface
 	/**
 	 * Check if a service is registered using the array syntax
 	 */
-	public function offsetExists(string! name) -> boolean
+	public function offsetExists(var name) -> bool
 	{
 		return this->has(name);
 	}
@@ -341,10 +331,9 @@ class Di implements DiInterface
 	 * $di["request"] = new \Phalcon\Http\Request();
 	 *</code>
 	 */
-	public function offsetSet(string! name, var definition) -> boolean
+	public function offsetSet(var name, var definition) -> void
 	{
 		this->setShared(name, definition);
-		return true;
 	}
 
 	/**
@@ -354,7 +343,7 @@ class Di implements DiInterface
 	 * var_dump($di["request"]);
 	 *</code>
 	 */
-	public function offsetGet(string! name) -> var
+	public function offsetGet(var name) -> var
 	{
 		return this->getShared(name);
 	}
@@ -362,15 +351,15 @@ class Di implements DiInterface
 	/**
 	 * Removes a service from the services container using the array syntax
 	 */
-	public function offsetUnset(string! name) -> boolean
+	public function offsetUnset(var name) -> void
 	{
-		return false;
+		this->remove(name);
 	}
 
 	/**
 	 * Magic method to get or set services using setters/getters
 	 */
-	public function __call(string! method, arguments = null) -> var|null
+	public function __call(string! method, array arguments = []) -> var | null
 	{
 		var instance, possibleService, services, definition;
 
@@ -380,12 +369,10 @@ class Di implements DiInterface
 		if starts_with(method, "get") {
 			let services = this->_services,
 				possibleService = lcfirst(substr(method, 3));
+
 			if isset services[possibleService] {
-				if count(arguments) {
-					let instance = this->get(possibleService, arguments);
-				} else {
-					let instance = this->get(possibleService);
-				}
+				let instance = this->get(possibleService, arguments);
+
 				return instance;
 			}
 		}
@@ -432,7 +419,7 @@ class Di implements DiInterface
 	/**
 	 * Set a default dependency injection container to be obtained into static methods
 	 */
-	public static function setDefault(<DiInterface> dependencyInjector)
+	public static function setDefault(<DiInterface> dependencyInjector) -> void
 	{
 		let self::_default = dependencyInjector;
 	}
@@ -440,7 +427,7 @@ class Di implements DiInterface
 	/**
 	 * Return the latest DI created
 	 */
-	public static function getDefault() -> <DiInterface>
+	public static function getDefault() -> <DiInterface> | null
 	{
 		return self::_default;
 	}

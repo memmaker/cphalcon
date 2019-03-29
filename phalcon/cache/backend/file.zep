@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache\Backend;
@@ -64,7 +55,7 @@ class File extends Backend
 	/**
 	 * Default to false for backwards compatibility
 	 *
-	 * @var boolean
+	 * @var bool
 	 */
 	private _useSafeKey = false;
 
@@ -81,7 +72,7 @@ class File extends Backend
 
 		if fetch safekey, options["safekey"] {
 			if typeof safekey !== "boolean" {
-				throw new Exception("safekey option should be a boolean.");
+				throw new Exception("safekey option should be a bool.");
 			}
 
 			let this->_useSafeKey = safekey;
@@ -100,9 +91,14 @@ class File extends Backend
 	/**
 	 * Returns a cached content
 	 */
-	public function get(string keyName, int lifetime = null) -> var | null
+	public function get(string keyName, var lifetime = null) -> var | null
 	{
-		var prefixedKey, cacheDir, cacheFile, frontend, lastLifetime, ttl, cachedContent, ret, modifiedTime;
+		var prefixedKey, cacheDir, cacheFile, frontend, lastLifetime, cachedContent, ret;
+		int createdTime, ttl;
+
+		if lifetime != null && lifetime < 1 {
+			throw new Exception("The lifetime must be at least 1 second");
+		}
 
 		let prefixedKey =  this->_prefix . this->getKey(keyName);
 		let this->_lastKey = prefixedKey;
@@ -117,33 +113,49 @@ class File extends Backend
 
 			let frontend = this->_frontend;
 
+			let cachedContent = json_decode(file_get_contents(cacheFile), true);
+
 			/**
 			 * Take the lifetime from the frontend or read it from the set in start()
+			 * if the cachedContent is not a valid json array
 			 */
 			if !lifetime {
 				let lastLifetime = this->_lastLifetime;
-				if !lastLifetime {
-					let ttl = (int) frontend->getLifeTime();
+				if this->isValidArray(cachedContent, "lifetime") {
+					let ttl = (int) cachedContent["lifetime"];
 				} else {
-					let ttl = (int) lastLifetime;
+					let lastLifetime = this->_lastLifetime;
+					if !lastLifetime {
+						let ttl = (int) frontend->getLifeTime();
+					} else {
+						let ttl = (int) lastLifetime;
+					}
 				}
 			} else {
 				let ttl = (int) lifetime;
 			}
 
 			clearstatcache(true, cacheFile);
-			let modifiedTime = (int) filemtime(cacheFile);
+			if !this->isValidArray(cachedContent, "created") {
+        		let createdTime = (int) filemtime(cacheFile);
+			} else {
+				let createdTime = (int) cachedContent["created"];
+			}
 
 			/**
 			 * Check if the file has expired
 			 * The content is only retrieved if the content has not expired
 			 */
-			if modifiedTime + ttl > time() {
+			if !(time() - ttl > createdTime) {
 
 				/**
 				 * Use file-get-contents to control that the openbase_dir can't be skipped
 				 */
-				let cachedContent = file_get_contents(cacheFile);
+				if !this->isValidArray(cachedContent, "content") {
+					let cachedContent = file_get_contents(cacheFile);
+				} else {
+					let cachedContent = cachedContent["content"];
+				}
 				if cachedContent === false {
 					throw new Exception("Cache file ". cacheFile. " could not be opened");
 				}
@@ -157,7 +169,15 @@ class File extends Backend
 					let ret = frontend->afterRetrieve(cachedContent);
 					return ret;
 				}
+			} else {
+				/**
+				 * As the content is expired, deleting the cache file
+				 */
+			 	this->delete(keyName);
+				return null;
 			}
+		} else {
+			return null;
 		}
 
 		return null;
@@ -169,11 +189,17 @@ class File extends Backend
 	 * @param int|string keyName
 	 * @param string content
 	 * @param int lifetime
-	 * @param boolean stopBuffer
 	 */
-	public function save(var keyName = null, var content = null, lifetime = null, boolean stopBuffer = true) -> boolean
+	public function save(var keyName = null, var content = null, var lifetime = null, bool stopBuffer = true) -> bool
 	{
-		var lastKey, frontend, cacheDir, isBuffering, cacheFile, cachedContent, preparedContent, status;
+		var lastKey, frontend, cacheDir, isBuffering, cacheFile, cachedContent, preparedContent, status,
+			finalContent, lastLifetime;
+
+		int ttl;
+
+		if lifetime != null && lifetime < 1 {
+			throw new Exception("The lifetime must be at least 1 second");
+		}
 
 		if keyName === null {
 			let lastKey = this->_lastKey;
@@ -206,10 +232,27 @@ class File extends Backend
 			let preparedContent = cachedContent;
 		}
 
+		let preparedContent = frontend->beforeStore(cachedContent);
+		if !lifetime {
+			let lastLifetime = this->_lastLifetime;
+			if !lastLifetime {
+				let ttl = (int) frontend->getLifeTime();
+			} else {
+				let ttl = (int) lastLifetime;
+			}
+		} else {
+			let ttl = (int) lifetime;
+		}
 		/**
 		 * We use file_put_contents to respect open-base-dir directive
 		 */
 		let status = file_put_contents(cacheFile, preparedContent);
+		if !is_numeric(cachedContent) {
+			let finalContent = json_encode(["created": time(), "lifetime": ttl, "content": preparedContent]);
+		} else {
+			let finalContent = json_encode(["created": time(), "lifetime": ttl, "content": cachedContent]);
+		}
+		let status = file_put_contents(cacheFile, finalContent);
 
 		if status === false {
 			throw new Exception("Cache file ". cacheFile . " could not be written");
@@ -235,7 +278,7 @@ class File extends Backend
 	 *
 	 * @param int|string keyName
 	 */
-	public function delete(var keyName) -> boolean
+	public function delete(var keyName) -> bool
 	{
 		var cacheFile, cacheDir;
 
@@ -299,9 +342,11 @@ class File extends Backend
 	 * @param string|int keyName
 	 * @param int lifetime
 	 */
-	public function exists(var keyName = null, int lifetime = null) -> boolean
+	public function exists(var keyName = null, int lifetime = null) -> bool
 	{
-		var lastKey, prefix, cacheFile, ttl, modifiedTime;
+		var lastKey, prefix, cacheFile, cachedContent;
+		int ttl;
+		bool cacheFileExists;
 
 		if !keyName {
 			let lastKey = this->_lastKey;
@@ -314,27 +359,55 @@ class File extends Backend
 
 			let cacheFile = this->_options["cacheDir"] . lastKey;
 
-			if file_exists(cacheFile) {
+			let cacheFileExists = file_exists(cacheFile);
+
+			if cacheFileExists {
 
 				/**
 				 * Check if the file has expired
 				 */
+				let cachedContent = json_decode(file_get_contents(cacheFile), true);
 				if !lifetime {
-					let ttl = (int) this->_frontend->getLifeTime();
+					if this->isValidArray(cachedContent, "lifetime") {
+						let ttl = (int) cachedContent["lifetime"];
+					} else {
+						let ttl = (int) this->_frontend->getLifeTime();
+					}
 				} else {
 					let ttl = (int) lifetime;
 				}
 
 				clearstatcache(true, cacheFile);
-				let modifiedTime = (int) filemtime(cacheFile);
-
-				if modifiedTime + ttl > time() {
+				if !this->isValidArray(cachedContent, "created") && filemtime(cacheFile) + ttl > time() {
 					return true;
+				} else {
+					if (cachedContent["created"] + ttl > time()) {
+						return true;
+					}
 				}
 			}
 		}
 
+		/**
+		 * If the cache file exists and is expired, delete it
+		 */
+		if cacheFileExists {
+			this->delete(keyName);
+		}
+
 		return false;
+	}
+
+	/**
+	 * Check if given variable is array, containing the key $cacheKey
+	 *
+	 * @param array|null cachedContent
+	 * @param string|null cacheKey
+	 * @return bool
+	 */
+	private function isValidArray(var cachedContent = null, var cacheKey = null)
+	{
+		return (is_array(cachedContent) && array_key_exists(cacheKey, cachedContent));
 	}
 
 	/**
@@ -344,8 +417,9 @@ class File extends Backend
 	 */
 	public function increment(var keyName = null, int value = 1) -> int | null
 	{
-		var prefixedKey, cacheFile, frontend, lifetime, ttl,
-			cachedContent, result, modifiedTime;
+		var prefixedKey, cacheFile, frontend,
+			cachedContent, result, lastLifetime, newValue;
+		int modifiedTime, ttl;
 
 		let prefixedKey = this->_prefix . this->getKey(keyName),
 			this->_lastKey = prefixedKey,
@@ -356,43 +430,72 @@ class File extends Backend
 			let frontend = this->_frontend;
 
 			/**
-			 * Take the lifetime from the frontend or read it from the set in start()
+			 * Check if the file has expired
 			 */
-			let lifetime = this->_lastLifetime;
-			if !lifetime {
-				let ttl = frontend->getLifeTime();
+			let cachedContent = json_decode(file_get_contents(cacheFile), true);
+
+			/**
+			 * Take the lifetime from the frontend or read it from the set in start()
+			 * if the cachedContent is not a valid array
+			 */
+			if this->isValidArray(cachedContent, "lifetime") {
+				let ttl = (int) cachedContent["lifetime"];
 			} else {
-				let ttl = lifetime;
+				let lastLifetime = this->_lastLifetime;
+				if !lastLifetime {
+					let ttl = (int) frontend->getLifeTime();
+				} else {
+					let ttl = (int) lastLifetime;
+				}
 			}
 
 			clearstatcache(true, cacheFile);
-			let modifiedTime = (int) filemtime(cacheFile);
+
+			if !this->isValidArray(cachedContent, "created") {
+				let modifiedTime = (int) filemtime(cacheFile);
+			} else {
+				let modifiedTime = (int) cachedContent["created"];
+			}
 
 			/**
 			 * Check if the file has expired
 			 * The content is only retrieved if the content has not expired
 			 */
-			if modifiedTime + ttl > time() {
+			if !(time() - ttl > modifiedTime) {
 
 				/**
 				 * Use file-get-contents to control that the openbase_dir can't be skipped
 				 */
-				let cachedContent = file_get_contents(cacheFile);
+				if !this->isValidArray(cachedContent, "content") {
+					let cachedContent = file_get_contents(cacheFile);
+				} else {
+					let cachedContent = cachedContent["content"];
+				}
 
 				if cachedContent === false {
 					throw new Exception("Cache file " . cacheFile . " could not be opened");
 				}
 
 				if is_numeric(cachedContent) {
+					let newValue = cachedContent + value;
+					let result = json_encode(["created": time(), "lifetime": ttl, "content": newValue]);
 
-					let result = cachedContent + value;
 					if file_put_contents(cacheFile, result) === false {
 						throw new Exception("Cache directory could not be written");
 					}
 
-					return result;
+					return newValue;
+				} else {
+					throw new Exception("The cache value is not numeric, therefore could not be incremented");
 				}
+			} else {
+				/**
+				 * The cache file is expired, so we're removing it
+				 */
+				this->delete(keyName);
+				return null;
 			}
+			return null;
 		}
 
 		return null;
@@ -405,7 +508,8 @@ class File extends Backend
 	 */
 	public function decrement(var keyName = null, int value = 1) -> int | null
 	{
-		var prefixedKey, cacheFile, lifetime, ttl, cachedContent, result, modifiedTime;
+		var prefixedKey, cacheFile, cachedContent, result, lastLifetime, newValue;
+		int ttl, modifiedTime, lifetime;
 
 		let prefixedKey = this->_prefix . this->getKey(keyName),
 			this->_lastKey = prefixedKey,
@@ -414,43 +518,76 @@ class File extends Backend
 		if file_exists(cacheFile) {
 
 			/**
-			 * Take the lifetime from the frontend or read it from the set in start()
+			 * Check if the file has expired
 			 */
-			let lifetime = this->_lastLifetime;
+			let cachedContent = json_decode(file_get_contents(cacheFile), true);
+
+			/**
+			 * Take the lifetime from the frontend or read it from the set in start()
+			 * if the cachedContent is not a valid array
+			 */
 			if !lifetime {
-				let ttl = this->_frontend->getLifeTime();
+				if this->isValidArray(cachedContent, "lifetime") {
+					let ttl = (int) cachedContent["lifetime"];
+				} else {
+					let lastLifetime = this->_lastLifetime;
+					if !lastLifetime {
+						let ttl = (int) this->_frontend->getLifeTime();
+					} else {
+						let ttl = (int) lastLifetime;
+					}
+				}
 			} else {
-				let ttl = lifetime;
+				let ttl = (int) lifetime;
+			}
+			
+			if !this->isValidArray(cachedContent, "created") {
+				let modifiedTime = (int) filemtime(cacheFile);
+				let ttl = (int) lifetime;
+			} else {
+				let modifiedTime = (int) cachedContent["created"];
 			}
 
 			clearstatcache(true, cacheFile);
-			let modifiedTime = (int) filemtime(cacheFile);
 
 			/**
 			 * Check if the file has expired
 			 * The content is only retrieved if the content has not expired
 			 */
-			if modifiedTime + ttl > time() {
+			if !(time() - ttl > modifiedTime) {
 
 				/**
 				 * Use file-get-contents to control that the openbase_dir can't be skipped
 				 */
-				let cachedContent = file_get_contents(cacheFile);
+				if !this->isValidArray(cachedContent, "content") {
+					let cachedContent = file_get_contents(cacheFile);
+				} else {
+					let cachedContent = cachedContent["content"];
+				}
 
 				if cachedContent === false {
 					throw new Exception("Cache file " . cacheFile . " could not be opened");
 				}
 
 				if is_numeric(cachedContent) {
-
-					let result = cachedContent - value;
+					let newValue = cachedContent - value;
+					let result = json_encode(["created": time(), "lifetime": ttl, "content": newValue]);
 					if file_put_contents(cacheFile, result) === false {
 						throw new Exception("Cache directory can't be written");
 					}
 
-					return result;
+					return newValue;
+				} else {
+					throw new Exception("The cache value is not numeric, therefore could not decrement it");
 				}
+			} else {
+				/**
+				 * The cache file is expired, so we're removing it
+				 */
+				this->delete(keyName);
+				return null;
 			}
+			return null;
 		}
 
 		return null;
@@ -459,7 +596,7 @@ class File extends Backend
 	/**
 	 * Immediately invalidates all existing items.
 	 */
-	public function flush() -> boolean
+	public function flush() -> bool
 	{
 		var prefix, cacheDir, item, key, cacheFile;
 
@@ -508,3 +645,4 @@ class File extends Backend
 		return this;
 	}
 }
+

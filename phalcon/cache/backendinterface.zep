@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cache;
@@ -37,53 +28,43 @@ interface BackendInterface
 
 	/**
 	 * Stops the frontend without store any cached content
-	 *
-	 * @param boolean stopBuffer
 	 */
-	public function stop(stopBuffer = true);
+	public function stop(bool stopBuffer = true);
 
 	/**
 	 * Returns front-end instance adapter related to the back-end
-	 *
-	 * @return mixed
 	 */
-	public function getFrontend();
+	public function getFrontend() -> <FrontendInterface>;
 
 	/**
 	 * Returns the backend options
-	 *
-	 * @return array
 	 */
-	public function getOptions();
+	public function getOptions() -> array;
 
 	/**
 	 * Checks whether the last cache is fresh or cached
 	 */
-	public function isFresh() -> boolean;
+	public function isFresh() -> bool;
 
 	/**
 	 * Checks whether the cache has starting buffering or not
 	 */
-	public function isStarted() -> boolean;
+	public function isStarted() -> bool;
 
 	/**
 	 * Sets the last key used in the cache
-	 *
-	 * @param string lastKey
 	 */
-	public function setLastKey(lastKey);
+	public function setLastKey(string lastKey);
 
 	/**
 	 * Gets the last key stored by the cache
-	 *
-	 * @return string
 	 */
-	public function getLastKey();
+	public function getLastKey() -> string;
 
 	/**
 	 * Returns a cached content
 	 */
-	public function get(string keyName, int lifetime = null) -> var | null;
+	public function get(string keyName, var lifetime = null) -> var | null;
 
 	/**
 	 * Stores cached content into the file backend and stops the frontend
@@ -91,33 +72,27 @@ interface BackendInterface
 	 * @param int|string keyName
 	 * @param string content
 	 * @param int lifetime
-	 * @param boolean stopBuffer
-	 * @return boolean true on success/false otherwise
+	 * @return bool true on success/false otherwise
 	 */
-	public function save(keyName = null, content = null, lifetime = null, stopBuffer = true) -> boolean;
+	public function save(keyName = null, content = null, lifetime = null, bool stopBuffer = true) -> bool;
 
 	/**
 	 * Deletes a value from the cache by its key
 	 *
 	 * @param int|string keyName
-	 * @return boolean
 	 */
-	public function delete(keyName);
+	public function delete(keyName) -> bool;
 
 	/**
 	 * Query the existing cached keys
-	 *
-	 * @param string prefix
-	 * @return array
 	 */
-	public function queryKeys(prefix = null);
+	public function queryKeys(string prefix = null) -> array;
 
 	/**
 	 * Checks if cache exists and it hasn't expired
 	 *
 	 * @param  string keyName
 	 * @param  int lifetime
-	 * @return boolean
 	 */
-	public function exists(keyName = null, lifetime = null);
+	public function exists(var keyName = null, int lifetime = null) -> bool;
 }

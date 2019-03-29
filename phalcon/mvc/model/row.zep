@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -36,7 +27,7 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	/**
 	 * Set the current object's state
 	 */
-	public function setDirtyState(int dirtyState) -> boolean
+	public function setDirtyState(int dirtyState) -> <ModelInterface> | bool
 	{
 		return false;
 	}
@@ -45,9 +36,8 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	 * Checks whether offset exists in the row
 	 *
 	 * @param string|int $index
-	 * @return boolean
 	 */
-	public function offsetExists(var index) -> boolean
+	public function offsetExists(var index) -> bool
 	{
 		return isset this->{index};
 	}
@@ -58,7 +48,7 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	 * @param string|int index
 	 * @return string|Phalcon\Mvc\ModelInterface
 	 */
-	public function offsetGet(var index)
+	public function offsetGet(var index) -> var
 	{
 		var value;
 		if fetch value, this->{index} {
@@ -73,7 +63,7 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	 * @param string|int index
 	 * @param \Phalcon\Mvc\ModelInterface value
 	 */
-	public function offsetSet(var index, var value)
+	public function offsetSet(var index, var value) -> void
 	{
 		throw new Exception("Row is an immutable ArrayAccess object");
 	}
@@ -83,7 +73,7 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	 *
 	 * @param string|int offset
 	 */
-	public function offsetUnset(int offset)
+	public function offsetUnset(var offset) -> void
 	{
 		throw new Exception("Row is an immutable ArrayAccess object");
 	}
@@ -95,10 +85,9 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	 * echo $robot->readAttribute("name");
 	 *</code>
 	 *
-	 * @param string attribute
 	 * @return mixed
 	 */
-	public function readAttribute(attribute)
+	public function readAttribute(string! attribute)
 	{
 		var value;
 		if fetch value, this->{attribute} {
@@ -114,7 +103,6 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 	 * $robot->writeAttribute("name", "Rosey");
 	 *</code>
 	 *
-	 * @param string attribute
 	 * @param mixed value
 	 */
 	public function writeAttribute(string! attribute, value) -> void
@@ -124,8 +112,6 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 
 	/**
 	 * Returns the instance as an array representation
-	 *
-	 * @return array
 	 */
 	public function toArray() -> array
 	{
@@ -134,8 +120,6 @@ class Row implements EntityInterface, ResultInterface, \ArrayAccess, \JsonSerial
 
     /**
     * Serializes the object for json_encode
-    *
-    * @return array
     */
 	public function jsonSerialize() -> array
 	{

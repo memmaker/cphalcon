@@ -15,10 +15,17 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Http\Cookie\Exception
  *
- * Exceptions thrown in Phalcon\Http\Cookie will use this class
- *
+ * Exceptions thrown in Phalcon\Http\Cookie will use this class.
  */
 ZEPHIR_INIT_CLASS(Phalcon_Http_Cookie_Exception) {
 

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Collection;
@@ -32,10 +23,8 @@ abstract class Behavior implements BehaviorInterface
 
 	/**
 	 * Phalcon\Mvc\Collection\Behavior
-	 *
-	 * @param array options
 	 */
-	public function __construct(options = null)
+	public function __construct(array options = [])
 	{
 		let this->_options = options;
 	}
@@ -43,7 +32,7 @@ abstract class Behavior implements BehaviorInterface
 	/**
 	 * Checks whether the behavior must take action on certain event
 	 */
-	protected function mustTakeAction(string! eventName) -> boolean
+	protected function mustTakeAction(string! eventName) -> bool
 	{
 		return isset this->_options[eventName];
 	}
@@ -51,7 +40,6 @@ abstract class Behavior implements BehaviorInterface
 	/**
 	 * Returns the behavior options related to an event
 	 *
-	 * @param string eventName
 	 * @return array
 	 */
 	protected function getOptions(string! eventName = null)
@@ -79,7 +67,7 @@ abstract class Behavior implements BehaviorInterface
 	/**
 	 * Acts as fallbacks when a missing method is called on the collection
 	 */
-	public function missingMethod(<CollectionInterface> model, string method, arguments = null)
+	public function missingMethod(<CollectionInterface> model, string method, array arguments = [])
 	{
 		return null;
 	}

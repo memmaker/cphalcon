@@ -15,6 +15,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Exception
  *
  * All framework exceptions should use or extend this exception
@@ -23,6 +31,7 @@ ZEPHIR_INIT_CLASS(Phalcon_Exception) {
 
 	ZEPHIR_REGISTER_CLASS_EX(Phalcon, Exception, phalcon, exception, zend_exception_get_default(TSRMLS_C), NULL, 0);
 
+	zend_class_implements(phalcon_exception_ce TSRMLS_CC, 1, zephir_get_internal_ce(SL("throwable")));
 	return SUCCESS;
 
 }

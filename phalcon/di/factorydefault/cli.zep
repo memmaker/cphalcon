@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Di\FactoryDefault;
@@ -41,16 +32,16 @@ class Cli extends FactoryDefault
 		parent::__construct();
 
 		let this->_services = [
-			"router":             new Service("router", "Phalcon\\Cli\\Router", true),
-			"dispatcher":         new Service("dispatcher", "Phalcon\\Cli\\Dispatcher", true),
-			"modelsManager":      new Service("modelsManager", "Phalcon\\Mvc\\Model\\Manager", true),
-			"modelsMetadata":     new Service("modelsMetadata", "Phalcon\\Mvc\\Model\\MetaData\\Memory", true),
-			"filter":             new Service("filter", "Phalcon\\Filter", true),
-			"escaper":            new Service("escaper", "Phalcon\\Escaper", true),
-			"annotations":        new Service("annotations", "Phalcon\\Annotations\\Adapter\\Memory", true),
-			"security":           new Service("security", "Phalcon\\Security", true),
-			"eventsManager":      new Service("eventsManager", "Phalcon\\Events\\Manager", true),
-			"transactionManager": new Service("transactionManager", "Phalcon\\Mvc\\Model\\Transaction\\Manager", true)
+			"annotations":        new Service("Phalcon\\Annotations\\Adapter\\Memory", true),
+			"dispatcher":         new Service("Phalcon\\Cli\\Dispatcher", true),
+			"escaper":            new Service("Phalcon\\Escaper", true),
+			"eventsManager":      new Service("Phalcon\\Events\\Manager", true),
+			"filter":             new Service("Phalcon\\Filter", true),
+			"modelsManager":      new Service("Phalcon\\Mvc\\Model\\Manager", true),
+			"modelsMetadata":     new Service("Phalcon\\Mvc\\Model\\MetaData\\Memory", true),
+			"router":             new Service("Phalcon\\Cli\\Router", true),
+			"security":           new Service("Phalcon\\Security", true),
+			"transactionManager": new Service("Phalcon\\Mvc\\Model\\Transaction\\Manager", true)
 		];
 	}
 }

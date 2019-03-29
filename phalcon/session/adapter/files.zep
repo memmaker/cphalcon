@@ -1,47 +1,132 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon.
+ *
+ * (c) Phalcon Team <team@phalcon.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Session\Adapter;
 
-use Phalcon\Session\Adapter;
+use Phalcon\Session\Exception;
 
 /**
- * Phalcon\Session\Adapter\Files
+ * Phalcon\Session\Adapter\Noop
  *
- * This adapter store sessions in plain files
+ * This is the file based adapter. It stores sessions in a file based system
  *
  * <code>
+ * <?php
+ *
+ * use Phalcon\Session\Manager;
  * use Phalcon\Session\Adapter\Files;
  *
- * $session = new Files(
+ * $session = new Manager();
+ * $files = new Files(
  *     [
- *         "uniqueId" => "my-private-app",
+ *         'savePath' => '/tmp',
  *     ]
  * );
- *
- * $session->start();
- *
- * $session->set("var", "some-value");
- *
- * echo $session->get("var");
+ * $session->setHandler(new Files());
  * </code>
  */
-class Files extends Adapter
+class Files extends Noop
 {
+    /**
+     * @var string
+     */
+	private path = "";
+
+	public function __construct(array! options = [])
+	{
+		var path, options;
+
+		parent::__construct(options);
+
+		let options = this->options;
+
+        /**
+         * Get the save_path from the passed options. If not defined
+         * get it from php.ini
+         */
+		if !fetch path, options["save_path"] {
+            let path = ini_get("session.save_path");
+		}
+
+        if true !== is_writable(path) {
+            throw new Exception("The save_path [" . path . "]is not writeable");
+        }
+
+		let this->path = path;
+	}
+
+	public function destroy(var id) -> bool
+	{
+		var name;
+
+		let name = this->path . this->getPrefixedName(id);
+
+		if (true === file_exists(name)) {
+			unlink(name);
+		}
+
+		return true;
+	}
+
+	public function gc(var maxlifetime) -> bool
+	{
+		var file, pattern;
+
+		let pattern = this->path . this->prefix . "*";
+
+		for file in glob(pattern) {
+			if (true === file_exists(file) && filemtime(file) + maxlifetime < time()) {
+				unlink(file);
+			}
+		}
+
+		return true;
+	}
+
+	public function open(var savePath, var sessionName) -> bool
+	{
+		var path;
+
+		if true !== ends_with(savePath, "/") {
+			let path = savePath . "/";
+		}
+
+		let this->path = path;
+
+		return true;
+	}
+
+	public function read(var id) -> string
+	{
+		var data, name;
+
+		let name = this->path . this->getPrefixedName(id),
+			data = "";
+
+		if true === file_exists(name) {
+			let data = file_get_contents(name);
+
+			if (false === data) {
+				return "";
+			}
+		}
+
+		return data;
+	}
+
+	public function write(var id, var data) -> bool
+	{
+		var name;
+
+		let name = this->path . this->getPrefixedName(id);
+
+		return false !== file_put_contents(name, data);
+	}
 }

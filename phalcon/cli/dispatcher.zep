@@ -1,21 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Cli;
@@ -24,6 +14,7 @@ use Phalcon\FilterInterface;
 use Phalcon\Events\ManagerInterface;
 use Phalcon\Cli\Dispatcher\Exception;
 use Phalcon\Dispatcher as CliDispatcher;
+use Phalcon\Service\LocatorInterface;
 
 /**
  * Phalcon\Cli\Dispatcher
@@ -88,6 +79,14 @@ class Dispatcher extends CliDispatcher implements DispatcherInterface
 	public function getTaskName() -> string
 	{
 		return this->_handlerName;
+	}
+
+	/**
+	 * Gets the default task suffix
+	 */
+	public function getTaskSuffix() -> string
+	{
+		return this->_handlerSuffix;
 	}
 
 	/**
@@ -179,7 +178,8 @@ class Dispatcher extends CliDispatcher implements DispatcherInterface
 				CliDispatcher::EXCEPTION_NO_DI
 			);
 		}
-		let filter = <FilterInterface> dependencyInjector->getShared("filter");
+		let filter = <LocatorInterface> dependencyInjector->getShared("filter");
+//		let filter = <FilterInterface> dependencyInjector->getShared("filter");
 
 		return filter->sanitize(optionValue, filters);
 	}
@@ -187,7 +187,7 @@ class Dispatcher extends CliDispatcher implements DispatcherInterface
 	/**
 	 * Check if an option exists
 	 */
-	public function hasOption(var option) -> boolean
+	public function hasOption(var option) -> bool
 	{
 		return isset this->_options[option];
 	}
@@ -196,11 +196,14 @@ class Dispatcher extends CliDispatcher implements DispatcherInterface
 	 * Calls the action method.
 	 */
 	public function callActionMethod(handler, string actionMethod, array! params = []) -> var
-	{
-		var options;
+	{	
+		var params;
 
-		let options = this->_options;
-		
-		return call_user_func_array([handler, actionMethod], [params, options]);
+		// This is to make sure that the paramters are zero-indexed and 
+		// their order isn't overriden by any options when we merge the array. 
+		let params = array_values(params);
+		let params = array_merge(params, this->_options);
+
+		return call_user_func_array([handler, actionMethod], params);
 	}
 }

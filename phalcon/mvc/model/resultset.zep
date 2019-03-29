@@ -1,30 +1,21 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |        Eduar Carvajal <eduar@phalconphp.com>                           |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
 
 use Phalcon\Db;
-use Phalcon\Mvc\Model;
 use Phalcon\Cache\BackendInterface;
+use Phalcon\Messages\MessageInterface;
+use Phalcon\Mvc\Model;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\Exception;
-use Phalcon\Mvc\Model\MessageInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 
 /**
@@ -109,7 +100,6 @@ abstract class Resultset
 	 * Phalcon\Mvc\Model\Resultset constructor
 	 *
 	 * @param \Phalcon\Db\ResultInterface|false result
-	 * @param \Phalcon\Cache\BackendInterface cache
 	 */
 	public function __construct(result, <BackendInterface> cache = null)
 	{
@@ -183,7 +173,7 @@ abstract class Resultset
 	/**
 	 * Check whether internal resource has rows to fetch
 	 */
-	public function valid() -> boolean
+	public function valid() -> bool
 	{
 		return this->_pointer < this->_count;
 	}
@@ -209,10 +199,10 @@ abstract class Resultset
 	}
 
 	/**
-	 * Changes internal pointer to a specific position in the resultset
-	 * Set new position if required and set this->_row
+	 * Changes the internal pointer to a specific position in the resultset.
+	 * Set the new position if required, and then set this->_row
 	 */
-	public final function seek(int position) -> void
+	public final function seek(var position) -> void
 	{
 		var result, row;
 
@@ -278,7 +268,7 @@ abstract class Resultset
 	/**
 	 * Checks whether offset exists in the resultset
 	 */
-	public function offsetExists(int index) -> boolean
+	public function offsetExists(var index) -> bool
 	{
 		return index < this->_count;
 	}
@@ -286,7 +276,7 @@ abstract class Resultset
 	/**
 	 * Gets row in a specific position of the resultset
 	 */
-	public function offsetGet(int! index) -> <ModelInterface> | boolean
+	public function offsetGet(var index) -> <ModelInterface> | bool
 	{
 		if index < this->_count {
 	   		/**
@@ -306,7 +296,7 @@ abstract class Resultset
 	 * @param int index
 	 * @param \Phalcon\Mvc\ModelInterface value
 	 */
-	public function offsetSet(var index, var value)
+	public function offsetSet(var index, var value) -> void
 	{
 		throw new Exception("Cursor is an immutable ArrayAccess object");
 	}
@@ -314,7 +304,7 @@ abstract class Resultset
 	/**
 	 * Resultsets cannot be changed. It has only been implemented to meet the definition of the ArrayAccess interface
 	 */
-	public function offsetUnset(int offset)
+	public function offsetUnset(var offset) -> void
 	{
 		throw new Exception("Cursor is an immutable ArrayAccess object");
 	}
@@ -330,7 +320,7 @@ abstract class Resultset
 	/**
 	 * Get first row in the resultset
 	 */
-	public function getFirst() -> <ModelInterface> | boolean
+	public function getFirst() -> <ModelInterface> | bool
 	{
 		if this->_count == 0 {
 			return false;
@@ -343,7 +333,7 @@ abstract class Resultset
 	/**
 	 * Get last row in the resultset
 	 */
-	public function getLast() -> <ModelInterface> | boolean
+	public function getLast() -> <ModelInterface> | bool
 	{
 		var count;
 		let count = this->_count;
@@ -358,7 +348,7 @@ abstract class Resultset
 	/**
 	 * Set if the resultset is fresh or an old one cached
 	 */
-	public function setIsFresh(boolean isFresh) -> <Resultset>
+	public function setIsFresh(bool isFresh) -> <Resultset>
 	{
 		let this->_isFresh = isFresh;
 		return this;
@@ -367,7 +357,7 @@ abstract class Resultset
 	/**
 	 * Tell if the resultset if fresh or an old one cached
 	 */
-	public function isFresh() -> boolean
+	public function isFresh() -> bool
 	{
 		return this->_isFresh;
 	}
@@ -409,12 +399,10 @@ abstract class Resultset
 	 * Updates every record in the resultset
 	 *
 	 * @param array data
-	 * @param \Closure conditionCallback
-	 * @return boolean
 	 */
-	public function update(var data, <\Closure> conditionCallback = null) -> boolean
+	public function update(var data, <\Closure> conditionCallback = null) -> bool
 	{
-		boolean transaction;
+		bool transaction;
 		var record, connection = null;
 
 		let transaction = false;
@@ -484,9 +472,9 @@ abstract class Resultset
 	/**
 	 * Deletes every record in the resultset
 	 */
-	public function delete(<\Closure> conditionCallback = null) -> boolean
+	public function delete(<\Closure> conditionCallback = null) -> bool
 	{
-		boolean result, transaction;
+		bool result, transaction;
 		var record, connection = null;
 
 		let result = true;
@@ -568,10 +556,9 @@ abstract class Resultset
 	 * );
 	 *</code>
 	 *
-	 * @param callback filter
 	 * @return \Phalcon\Mvc\Model[]
 	 */
-	public function filter(var filter) -> array
+	public function filter(callable filter) -> array
 	{
 		var records, record, parameters, processedRecord;
 
@@ -610,8 +597,6 @@ abstract class Resultset
      * $robots = Robots::find();
      * echo json_encode($robots);
      *</code>
-     *
-     * @return array
      */
     public function jsonSerialize() -> array
     {

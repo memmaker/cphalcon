@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Model;
@@ -32,9 +23,12 @@ use Phalcon\Mvc\Model\TransactionInterface;
  * all succeed as one atomic action. Phalcon\Transaction is intended to be used with Phalcon_Model_Base.
  * Phalcon Transactions should be created using Phalcon\Transaction\Manager.
  *
- *<code>
+ * <code>
+ * use Phalcon\Mvc\Model\Transaction\Failed;
+ * use Phalcon\Mvc\Model\Transaction\Manager;
+ *
  * try {
- *     $manager = new \Phalcon\Mvc\Model\Transaction\Manager();
+ *     $manager = new Manager();
  *
  *     $transaction = $manager->get();
  *
@@ -60,14 +54,13 @@ use Phalcon\Mvc\Model\TransactionInterface;
  *     }
  *
  *     $transaction->commit();
- * } catch(Phalcon\Mvc\Model\Transaction\Failed $e) {
+ * } catch(Failed $e) {
  *     echo "Failed, reason: ", $e->getMessage();
  * }
- *</code>
+ * </code>
  */
 class Transaction implements TransactionInterface
 {
-
 	protected _connection;
 
 	protected _activeTransaction = false;
@@ -84,14 +77,12 @@ class Transaction implements TransactionInterface
 
 	/**
 	 * Phalcon\Mvc\Model\Transaction constructor
-	 *
-	 * @param \Phalcon\DiInterface dependencyInjector
-	 * @param boolean autoBegin
-	 * @param string service
 	 */
-	public function __construct(<DiInterface> dependencyInjector, boolean autoBegin = false, service = null)
+	public function __construct(<DiInterface> dependencyInjector, bool autoBegin = false, string service = null)
 	{
 		var connection;
+
+		let this->_messages = [];
 
 		if service {
 			let connection = dependencyInjector->get(service);
@@ -116,7 +107,7 @@ class Transaction implements TransactionInterface
 	/**
 	 * Starts the transaction
 	 */
-	public function begin() -> boolean
+	public function begin() -> bool
 	{
 		return this->_connection->begin();
 	}
@@ -124,7 +115,7 @@ class Transaction implements TransactionInterface
 	/**
 	 * Commits the transaction
 	 */
-	public function commit() -> boolean
+	public function commit() -> bool
 	{
 		var manager;
 
@@ -138,12 +129,8 @@ class Transaction implements TransactionInterface
 
 	/**
 	 * Rollbacks the transaction
-	 *
-	 * @param  string rollbackMessage
-	 * @param  Phalcon\Mvc\ModelInterface rollbackRecord
-	 * @return boolean
 	 */
-	public function rollback(rollbackMessage = null, rollbackRecord = null) -> boolean
+	public function rollback(string rollbackMessage = null, <ModelInterface> rollbackRecord = null) -> bool
 	{
 		var manager, connection;
 
@@ -182,7 +169,7 @@ class Transaction implements TransactionInterface
 	/**
 	 * Sets if is a reused transaction or new once
 	 */
-	public function setIsNewTransaction(boolean isNew)
+	public function setIsNewTransaction(bool isNew)
 	{
 		let this->_isNewTransaction = isNew;
 	}
@@ -190,7 +177,7 @@ class Transaction implements TransactionInterface
 	/**
 	 * Sets flag to rollback on abort the HTTP connection
 	 */
-	public function setRollbackOnAbort(boolean rollbackOnAbort)
+	public function setRollbackOnAbort(bool rollbackOnAbort)
 	{
 		let this->_rollbackOnAbort = rollbackOnAbort;
 	}
@@ -198,7 +185,7 @@ class Transaction implements TransactionInterface
 	/**
 	 * Checks whether transaction is managed by a transaction manager
 	 */
-	public function isManaged() -> boolean
+	public function isManaged() -> bool
 	{
 		return typeof this->_manager == "object";
 	}
@@ -214,7 +201,7 @@ class Transaction implements TransactionInterface
 	/**
 	 * Checks whether internal connection is under an active transaction
 	 */
-	public function isValid() -> boolean
+	public function isValid() -> bool
 	{
 		return this->_connection->isUnderTransaction();
 	}

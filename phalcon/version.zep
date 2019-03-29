@@ -1,22 +1,12 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Nikolaos Dimopoulos <nikos@niden.net>                         |
- +------------------------------------------------------------------------+
-*/
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
 
 namespace Phalcon;
 
@@ -90,18 +80,16 @@ class Version
 	 * A - Major version
 	 * B - Med version (two digits)
 	 * C - Min version (two digits)
-	 * D - Special release: 1 = Alpha, 2 = Beta, 3 = RC, 4 = Stable
+	 * D - Special release: 1 = alpha, 2 = beta, 3 = RC, 4 = stable
 	 * E - Special release version i.e. RC1, Beta2 etc.
 	 */
 	protected static function _getVersion() -> array
 	{
-		return [3, 2, 1, 4, 0];
+		return [4, 0, 0, 1, 3];
 	}
 
 	/**
-	 * Translates a number to a special release
-	 *
-	 * If Special release = 1 this function will return ALPHA
+	 * Translates a number to a special release.
 	 */
 	protected final static function _getSpecial(int special) -> string
 	{
@@ -109,10 +97,10 @@ class Version
 
 		switch special {
 			case 1:
-				let suffix = "ALPHA";
+				let suffix = "alpha";
 				break;
 			case 2:
-				let suffix = "BETA";
+				let suffix = "beta";
 				break;
 			case 3:
 				let suffix = "RC";
@@ -142,14 +130,21 @@ class Version
 			special       = version[self::VERSION_SPECIAL],
 			specialNumber = version[self::VERSION_SPECIAL_NUMBER];
 
-		let result  = major . "." . medium . "." . minor . " ";
+		let result  = major . "." . medium . "." . minor;
 		let suffix  = static::_getSpecial(special);
 
 		if suffix != "" {
-			let result .= suffix . " " . specialNumber;
+			/**
+			 * A pre-release version should be denoted by appending a hyphen and a series
+			 * of dot separated identifiers immediately following the patch version.
+			 */
+			let result .= "-". suffix;
+			if specialNumber != 0 {
+				let result .= "." . specialNumber;
+			}
 		}
 
-		return trim(result);
+		return result;
 	}
 
 	/**
@@ -192,7 +187,6 @@ class Version
 		let version = static::_getVersion();
 
 		switch part {
-
 			case self::VERSION_MAJOR:
 			case self::VERSION_MEDIUM:
 			case self::VERSION_MINOR:

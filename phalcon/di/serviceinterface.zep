@@ -1,23 +1,16 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
-*/
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
 
 namespace Phalcon\Di;
+
+use Phalcon\DiInterface;
 
 /**
  * Phalcon\Di\ServiceInterface
@@ -27,21 +20,14 @@ namespace Phalcon\Di;
 interface ServiceInterface
 {
 	/**
-	 * Returns the service's name
-	 *
-	 * @param string
-	 */
-	public function getName();
-
-	/**
 	 * Sets if the service is shared or not
 	 */
-	public function setShared(boolean shared);
+	public function setShared(bool shared);
 
 	/**
 	 * Check whether the service is shared or not
 	 */
-	public function isShared() -> boolean;
+	public function isShared() -> bool;
 
 	/**
 	 * Set the service definition
@@ -61,15 +47,26 @@ interface ServiceInterface
 	 * Resolves the service
 	 *
 	 * @param array parameters
-	 * @param \Phalcon\DiInterface dependencyInjector
 	 * @return mixed
 	 */
-	public function resolve(parameters = null, <\Phalcon\DiInterface> dependencyInjector = null);
+	public function resolve(parameters = null, <DiInterface> dependencyInjector = null);
 
 	/**
 	 * Changes a parameter in the definition without resolve the service
 	 */
 	public function setParameter(int position, array! parameter) -> <ServiceInterface>;
+
+	/**
+	 * Returns a parameter in a specific position
+	 *
+	 * @return array
+	 */
+	public function getParameter(int position);
+
+	/**
+	 * Returns true if the service was resolved
+	 */
+	public function isResolved() -> bool;
 
 	/**
 	 * Restore the internal state of a service

@@ -1,32 +1,25 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Forms;
 
-use Phalcon\Validation;
-use Phalcon\ValidationInterface;
+use Phalcon\Di\Injectable;
 use Phalcon\DiInterface;
 use Phalcon\FilterInterface;
-use Phalcon\Di\Injectable;
 use Phalcon\Forms\Exception;
 use Phalcon\Forms\ElementInterface;
-use Phalcon\Validation\Message\Group;
+use Phalcon\Messages\Messages;
+use Phalcon\Tag;
+use Phalcon\Validation;
+use Phalcon\ValidationInterface;
+use Phalcon\Service\LocatorInterface;
 
 /**
  * Phalcon\Forms\Form
@@ -57,9 +50,8 @@ class Form extends Injectable implements \Countable, \Iterator
 	 * Phalcon\Forms\Form constructor
 	 *
 	 * @param object entity
-	 * @param array userOptions
 	 */
-	public function __construct(var entity = null, var userOptions = null)
+	public function __construct(var entity = null, array userOptions = [])
 	{
 		if typeof entity != "null" {
 			if typeof entity != "object" {
@@ -71,9 +63,7 @@ class Form extends Injectable implements \Countable, \Iterator
 		/**
 		 * Update the user options
 		 */
-		if typeof userOptions == "array" {
-			let this->_options = userOptions;
-		}
+		let this->_options = userOptions;
 
 		/**
 		 * Check for an 'initialize' method and call it
@@ -102,11 +92,8 @@ class Form extends Injectable implements \Countable, \Iterator
 
 	/**
 	 * Sets an option for the form
-	 *
-	 * @param string option
-	 * @param mixed value
 	 */
-	public function setUserOption(var option, var value) -> <Form>
+	public function setUserOption(string option, var value) -> <Form>
 	{
 		let this->_options[option] = value;
 		return this;
@@ -114,11 +101,8 @@ class Form extends Injectable implements \Countable, \Iterator
 
 	/**
 	 * Returns the value of an option if present
-	 *
-	 * @param string option
-	 * @param mixed defaultValue
 	 */
-	public function getUserOption(var option, var defaultValue = null) -> var
+	public function getUserOption(string option, var defaultValue = null) -> var
 	{
 		var value;
 		if fetch value, this->_options[option] {
@@ -176,7 +160,6 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Binds data to the entity
 	 *
-	 * @param array data
 	 * @param object entity
 	 * @param array whitelist
 	 */
@@ -217,7 +200,8 @@ class Form extends Injectable implements \Countable, \Iterator
 
 				if typeof filter != "object" {
 					let dependencyInjector = this->getDI(),
-						filter = <FilterInterface> dependencyInjector->getShared("filter");
+						filter = <LocatorInterface> dependencyInjector->getShared("filter");
+//						filter = <FilterInterface> dependencyInjector->getShared("filter");
 				}
 
 				/**
@@ -254,7 +238,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	 * @param array data
 	 * @param object entity
 	 */
-	public function isValid(var data = null, var entity = null) -> boolean
+	public function isValid(var data = null, var entity = null) -> bool
 	{
 		var validationStatus, messages, element,
 			validators, name, filters,
@@ -366,35 +350,76 @@ class Form extends Injectable implements \Countable, \Iterator
 	}
 
 	/**
-	 * Returns the messages generated in the validation
+	 * Returns the messages generated in the validation.
+	 *
+	 * <code>
+	 * if ($form->isValid($_POST) == false) {
+	 *     // Get messages separated by the item name
+	 *     // $messages is an array of Messages object
+	 *     $messages = $form->getMessages(true);
+	 *
+	 *     foreach ($messages as $message) {
+	 *         echo $message, "<br>";
+	 *     }
+	 *
+	 *     // Default behavior.
+	 *     // $messages is a Messages object
+	 *     $messages = $form->getMessages();
+	 *
+	 *     foreach ($messages as $message) {
+	 *         echo $message, "<br>";
+	 *     }
+	 * }
+	 * </code>
 	 */
-	public function getMessages(boolean byItemName = false) -> <Group>
+	public function getMessages(bool byItemName = false) -> <Messages> | array
 	{
-		var messages;
+		var messages, messagesByItem, elementMessage, fieldName;
 
 		let messages = this->_messages;
-		if typeof messages == "object" && messages instanceof Group {
-            return messages;
+
+		if typeof messages == "object" && messages instanceof Messages {
+			/**
+			 * @deprecated This part of code is for backward compatibility, it should be removed in next major version
+			 */
+			if unlikely byItemName {
+				let messagesByItem = [];
+				messages->rewind();
+				
+				while messages->valid() {
+					let elementMessage = messages->current(),
+						fieldName = elementMessage->getField();
+						
+						if !isset messagesByItem[fieldName] {
+							let messagesByItem[fieldName] = [];
+						}
+						
+						let messagesByItem[fieldName][] = new Messages([elementMessage]);
+						messages->next();
+				}
+				return messagesByItem;
+			}
+			return messages;
 		}
 
-		return new Group();
+		return new Messages();
 	}
 
 	/**
 	 * Returns the messages generated for a specific element
 	 */
-	public function getMessagesFor(string! name) -> <Group>
+	public function getMessagesFor(string! name) -> <Messages>
 	{
 	    if this->has(name) {
             return this->get(name)->getMessages();
 	    }
-	    return new Group();
+	    return new Messages();
 	}
 
 	/**
 	 * Check if messages were generated for a specific element
 	 */
-	public function hasMessagesFor(string! name) -> boolean
+	public function hasMessagesFor(string! name) -> bool
 	{
 		return this->getMessagesFor(name)->count() > 0;
 	}
@@ -402,7 +427,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Adds an element to the form
 	 */
-	public function add(<ElementInterface> element, string position = null, boolean type = null) -> <Form>
+	public function add(<ElementInterface> element, string position = null, bool type = null) -> <Form>
 	{
 		var name, key, value, elements;
 
@@ -453,11 +478,8 @@ class Form extends Injectable implements \Countable, \Iterator
 
 	/**
 	 * Renders a specific item in the form
-	 *
-	 * @param string name
-	 * @param array attributes
 	 */
-	public function render(string! name, var attributes = null) -> string
+	public function render(string! name, array attributes = []) -> string
 	{
 		var element;
 
@@ -524,7 +546,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	 */
 	public function getValue(string! name) -> var | null
 	{
-		var entity, method, value, data, $internal, forbidden;
+		var entity, method, value, data, $internal, forbidden, element;
 
 		let entity = this->_entity;
 		let data = this->_data;
@@ -594,6 +616,20 @@ class Form extends Injectable implements \Countable, \Iterator
 		if method_exists(this, method) {
 			return this->{method}();
 		}
+		
+		/**
+		 * Check if the tag has a default value
+		 */
+		if Tag::hasValue(name) {
+			return Tag::getValue(name);
+		}
+
+		/**
+		 * Check if element has default value
+		 */
+		if fetch element, this->_elements[name] {
+			return element->getDefault();
+		}
 
 		return null;
 	}
@@ -601,7 +637,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Check if the form contains an element
 	 */
-	public function has(string! name) -> boolean
+	public function has(string! name) -> bool
 	{
 		/**
 		 * Checks if the element is in the form
@@ -612,7 +648,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Removes an element from the form
 	 */
-	public function remove(string! name) -> boolean
+	public function remove(string! name) -> bool
 	{
 		/**
 		 * Checks if the element is in the form
@@ -633,14 +669,14 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Clears every element in the form to its default value
 	 *
-	 * @param array fields
+	 * @param array|string|null fields
 	 */
 	public function clear(var fields = null) -> <Form>
 	{
 		var elements, element, data, field;
 
 		let data = this->_data;
-		if is_null(fields) {
+		if fields === null {
 			let data = [];
 		} else {
 			if typeof fields == "array" {
@@ -659,17 +695,30 @@ class Form extends Injectable implements \Countable, \Iterator
 		let this->_data = data,
 			elements = this->_elements;
 
-		if typeof elements == "array" {
-			for element in elements {
-				if typeof fields != "array" {
-					element->clear();
-				} else {
-					if in_array(element->getName(), fields) {
-						element->clear();
-					}
-				}
-			}
-		}
+		/**
+        * If fields is string, clear just that field.
+        * If it's array, clear only fields in array.
+        * If null, clear all
+        */
+        if typeof elements == "array" {
+            if fields === null {
+                for element in elements {
+                    Tag::setDefault(element->getName(), element->getDefault());
+                }
+            } else {
+                if typeof fields == "array" {
+                    for element in elements {
+                        if in_array(element->getName(), fields) {
+                            Tag::setDefault(element->getName(), element->getDefault());
+                        }
+                    }
+                } else {
+                    if fetch element, elements[fields] {
+                        Tag::setDefault(element->getName(), element->getDefault());
+                    }
+                }
+            }
+        }
 		return this;
 	}
 
@@ -697,7 +746,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Returns the current element in the iterator
 	 */
-	public function current() -> <ElementInterface> | boolean
+	public function current() -> <ElementInterface> | bool
 	{
 		var element;
 
@@ -727,7 +776,7 @@ class Form extends Injectable implements \Countable, \Iterator
 	/**
 	 * Check if the current element in the iterator is valid
 	 */
-	public function valid() -> boolean
+	public function valid() -> bool
 	{
 		return isset this->_elementsIndexed[this->_position];
 	}

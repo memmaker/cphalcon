@@ -1,28 +1,19 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://www.phalconphp.com)      |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Validation\Validator;
 
+use Phalcon\Messages\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\CombinedFieldsValidator;
 use Phalcon\Validation\Exception;
-use Phalcon\Validation\Message;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\CollectionInterface;
 use Phalcon\Mvc\Model;
@@ -34,7 +25,10 @@ use Phalcon\Mvc\Collection;
  * Check that a field is unique in the related table
  *
  * <code>
+ * use Phalcon\Validation;
  * use Phalcon\Validation\Validator\Uniqueness as UniquenessValidator;
+ *
+ * $validator = new Validation();
  *
  * $validator->add(
  *     "username",
@@ -104,7 +98,7 @@ class Uniqueness extends CombinedFieldsValidator
 	/**
 	 * Executes the validation
 	 */
-	public function validate(<Validation> validation, var field) -> boolean
+	public function validate(<Validation> validation, var field) -> bool
 	{
 		var message, label;
 
@@ -130,7 +124,7 @@ class Uniqueness extends CombinedFieldsValidator
 		return true;
 	}
 
-	protected function isUniqueness(<Validation> validation, var field) -> boolean
+	protected function isUniqueness(<Validation> validation, var field) -> bool
 	{
 		var values, convert, record, params, className, isModel, isDocument, singleField;
 
@@ -292,7 +286,7 @@ class Uniqueness extends CombinedFieldsValidator
 
 			for primaryField in metaData->getPrimaryKeyAttributes(record) {
 				let params["conditions"][] = this->getColumnNameReal(record, primaryField) . " <> ?" . index;
-				let params["bind"][] = record->readAttribute(primaryField);
+				let params["bind"][] = record->readAttribute(this->getColumnNameReal(record, primaryField));
 				let index++;
 			}
 		}

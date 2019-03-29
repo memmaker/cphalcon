@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\View\Engine\Volt;
@@ -121,7 +112,6 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Sets a single compiler option
 	 *
-	 * @param string option
 	 * @param mixed value
 	 */
 	public function setOption(string! option, value)
@@ -132,7 +122,6 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Returns a compiler's option
 	 *
-	 * @param string option
 	 * @return string
 	 */
 	public function getOption(string! option)
@@ -155,7 +144,6 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Fires an event to registered extensions
 	 *
-	 * @param string name
 	 * @param array arguments
 	 * @return mixed
 	 */
@@ -485,8 +473,6 @@ class Compiler implements InjectionAwareInterface
 						"link_to": true,
 						"image": true,
 						"form": true,
-						"select": true,
-						"select_static": true,
 						"submit_button": true,
 						"radio_field": true,
 						"check_field": true,
@@ -509,6 +495,65 @@ class Compiler implements InjectionAwareInterface
 				}
 				return "$this->tag->" . method . "(" . arguments . ")";
 			}
+
+			/**
+			 * The code below will be activated when Html\Tag is enabled
+			 */
+			/**
+			let className = "Phalcon\\Html\\Tag";
+
+			if method_exists(className, method) {
+				let arrayHelpers = this->_arrayHelpers;
+				if typeof arrayHelpers != "array" {
+					let arrayHelpers = [
+						"button_submit"         : true.
+						"element"               : true.
+						"element_close"         : true.
+						"end_form"              : true.
+						"form"                  : true.
+						"friendly_title"        : true.
+						"get_doc_type"          : true.
+						"get_title"             : true.
+						"get_title_separator"   : true.
+						"image"                 : true.
+						"input_checkbox"        : true.
+						"input_color"           : true.
+						"input_date"            : true.
+						"input_date_time"       : true.
+						"input_date_time_local" : true.
+						"input_email"           : true.
+						"input_file"            : true.
+						"input_hidden"          : true.
+						"input_image"           : true.
+						"input_month"           : true.
+						"input_numeric"         : true.
+						"input_password"        : true.
+						"input_radio"           : true.
+						"input_range"           : true.
+						"input_search"          : true.
+						"input_tel"             : true.
+						"input_text"            : true.
+						"input_time"            : true.
+						"input_url"             : true.
+						"input_week"            : true.
+						"javascript"            : true.
+						"link"                  : true.
+						"prepend_title"         : true.
+						"render_title"          : true.
+						"select"                : true.
+						"stylesheet"            : true.
+						"submit"                : true.
+						"text_area"             : true.
+					];
+					let this->_arrayHelpers = arrayHelpers;
+				}
+
+				if isset arrayHelpers[name] {
+					return "$this->tag->" . method . "([" . arguments . "])";
+				}
+				return "$this->tag->" . method . "(" . arguments . ")";
+			}
+			*/
 
 			/**
 			 * Get a dynamic URL
@@ -1287,7 +1332,7 @@ class Compiler implements InjectionAwareInterface
 	final protected function _statementListOrExtends(var statements)
 	{
 		var statement;
-		boolean isStatementList;
+		bool isStatementList;
 
 		/**
 		 * Resolve the statement list as normal
@@ -1325,7 +1370,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Compiles a "foreach" intermediate code representation into plain PHP code
 	 */
-	public function compileForeach(array! statement, boolean extendsMode = false) -> string
+	public function compileForeach(array! statement, bool extendsMode = false) -> string
 	{
 		var compilation, prefix, level, prefixLevel, expr,
 			exprCode, bstatement, type, blockStatements, forElse, code,
@@ -1498,7 +1543,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Compiles a 'if' statement returning PHP code
 	 */
-	public function compileIf(array! statement, boolean extendsMode = false) -> string
+	public function compileIf(array! statement, bool extendsMode = false) -> string
 	{
 		var compilation, blockStatements, expr;
 
@@ -1506,7 +1551,7 @@ class Compiler implements InjectionAwareInterface
 		 * A valid expression is required
 		 */
 		if !fetch expr, statement["expr"] {
-			throw new Exception("Corrupt statement");
+			throw new Exception("Corrupt statement", statement);
 		}
 
 		/**
@@ -1531,6 +1576,86 @@ class Compiler implements InjectionAwareInterface
 	}
 
 	/**
+	 * Compiles a 'switch' statement returning PHP code
+	 */
+	public function compileSwitch(array! statement, bool extendsMode = false) -> string
+	{
+		var compilation, caseClauses, expr, lines;
+
+		/**
+		 * A valid expression is required
+		 */
+		if !fetch expr, statement["expr"] {
+			throw new Exception("Corrupt statement", statement);
+		}
+
+		/**
+		 * Process statements in the "true" block
+		 */
+		let compilation = "<?php switch (" . this->expression(expr) . "): ?>";
+
+		/**
+		 * Check for a "case"/"default" blocks
+		 */
+		if fetch caseClauses, statement["case_clauses"] {
+			let lines = this->_statementList(caseClauses, extendsMode);
+
+			/**
+			 * Any output (including whitespace) between a switch statement and the first case will result in
+			 * a syntax error. This is the responsibility of the user. However, we can clear empty lines
+			 * and whitespaces here to reduce the number of errors.
+			 *
+			 * http://php.net/control-structures.alternative-syntax
+			 */
+			 if strlen(lines) !== 0 {
+				/**
+				 * (*ANYCRLF) - specifies a newline convention: (*CR), (*LF) or (*CRLF)
+				 * \h+ - 1+ horizontal whitespace chars
+				 * $ - end of line (now, before CR or LF)
+				 * m - multiline mode on ($ matches at the end of a line).
+				 * u - unicode
+				 *
+				 * g - global search, - is implicit with preg_replace(), you don't need to include it.
+				 */
+				let lines = preg_replace("/(*ANYCRLF)^\h+|\h+$|(\h){2,}/mu", "", lines);
+			 }
+
+			let compilation .= lines;
+		}
+
+		let compilation .= "<?php endswitch ?>";
+
+		return compilation;
+	}
+
+	/**
+	 * Compiles a "case"/"default" clause returning PHP code
+	 */
+	public function compileCase(array! statement, bool caseClause = true) -> string
+	{
+		var expr;
+
+		if unlikely caseClause === false {
+			/**
+			 * "default" statement
+			 */
+			return "<?php default: ?>";
+		}
+
+		/**
+		 * A valid expression is required
+		 */
+		if !fetch expr, statement["expr"] {
+			throw new Exception("Corrupt statement", statement);
+		}
+
+		/**
+		 * "case" statement
+		 */
+		return "<?php case " . this->expression(expr) . ": ?>";
+	}
+
+	/**
 	 * Compiles a "elseif" statement returning PHP code
 	 */
 	public function compileElseIf(array! statement) -> string
@@ -1541,7 +1666,7 @@ class Compiler implements InjectionAwareInterface
 		 * A valid expression is required
 		 */
 		if !fetch expr, statement["expr"] {
-			throw new Exception("Corrupt statement");
+			throw new Exception("Corrupt statement", statement);
 		}
 
 		/**
@@ -1553,7 +1678,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Compiles a "cache" statement returning PHP code
 	 */
-	public function compileCache(array! statement, boolean extendsMode = false) -> string
+	public function compileCache(array! statement, bool extendsMode = false) -> string
 	{
 		var compilation, expr, exprCode, lifetime;
 
@@ -1561,7 +1686,7 @@ class Compiler implements InjectionAwareInterface
 		 * A valid expression is required
 		 */
 		if !fetch expr, statement["expr"] {
-			throw new Exception("Corrupt statement");
+			throw new Exception("Corrupt statement", statement);
 		}
 
 		/**
@@ -1707,7 +1832,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Compiles a "autoescape" statement returning PHP code
 	 */
-	public function compileAutoEscape(array! statement, boolean extendsMode) -> string
+	public function compileAutoEscape(array! statement, bool extendsMode) -> string
 	{
 		var autoescape, oldAutoescape, compilation;
 
@@ -1732,10 +1857,6 @@ class Compiler implements InjectionAwareInterface
 
 	/**
 	 * Compiles a '{{' '}}' statement returning PHP code
-	 *
-	 * @param array   statement
-	 * @param boolean extendsMode
-	 * @return string
 	 */
 	public function compileEcho(array! statement) -> string
 	{
@@ -1745,7 +1866,7 @@ class Compiler implements InjectionAwareInterface
 		 * A valid expression is required
 		 */
 		if !fetch expr, statement["expr"] {
-			throw new Exception("Corrupt statement");
+			throw new Exception("Corrupt statement", statement);
 		}
 
 		/**
@@ -1849,7 +1970,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Compiles macros
 	 */
-	public function compileMacro(array! statement, boolean extendsMode) -> string
+	public function compileMacro(array! statement, bool extendsMode) -> string
 	{
 		var code, name, defaultValue, macroName, parameters, position, parameter, variableName, blockStatements;
 
@@ -1875,7 +1996,6 @@ class Compiler implements InjectionAwareInterface
 		let macroName = "$this->_macros['" . name . "']";
 
 		let code = "<?php ";
-
 		if !fetch parameters, statement["parameters"] {
 			let code .= macroName . " = function() { ?>";
 		} else {
@@ -1891,7 +2011,7 @@ class Compiler implements InjectionAwareInterface
 				let code .= "if (isset($__p[" . position . "])) { ";
 				let code .= "$" . variableName . " = $__p[" . position ."];";
 				let code .= " } else { ";
-				let code .= "if (isset($__p[\"" . variableName."\"])) { ";
+				let code .= "if (array_key_exists(\"" . variableName . "\", $__p)) { ";
 				let code .= "$" . variableName . " = $__p[\"" . variableName ."\"];";
 				let code .= " } else { ";
 				if fetch defaultValue, parameter["default"] {
@@ -1928,12 +2048,8 @@ class Compiler implements InjectionAwareInterface
 
 	/**
 	 * Compiles calls to macros
-	 *
-	 * @param array    statement
-	 * @param boolean  extendsMode
-	 * @return string
 	 */
-	public function compileCall(array! statement, boolean extendsMode)
+	public function compileCall(array! statement, bool extendsMode)
 	{
 
 	}
@@ -1941,7 +2057,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Traverses a statement list compiling each of its nodes
 	 */
-	final protected function _statementList(array! statements, boolean extendsMode = false) -> string
+	final protected function _statementList(array! statements, bool extendsMode = false) -> string
 	{
 		var extended, blockMode, compilation, extensions,
 			statement, tempCompilation, type, blockName, blockStatements,
@@ -1981,7 +2097,7 @@ class Compiler implements InjectionAwareInterface
 			 * Check if the statement is valid
 			 */
 			if !isset statement["type"] {
-				throw new Exception("Invalid statement in " . statement["file"] . " on line " . statement["line"]);
+				throw new Exception("Invalid statement in " . statement["file"] . " on line " . statement["line"], statement);
 			}
 
 			/**
@@ -2019,6 +2135,18 @@ class Compiler implements InjectionAwareInterface
 
 				case PHVOLT_T_ELSEIF:
 					let compilation .= this->compileElseIf(statement);
+					break;
+
+				case PHVOLT_T_SWITCH:
+					let compilation .= this->compileSwitch(statement, extendsMode);
+					break;
+
+				case PHVOLT_T_CASE:
+					let compilation .= this->compileCase(statement);
+					break;
+
+				case PHVOLT_T_DEFAULT:
+					let compilation .= this->compileCase(statement, false);
 					break;
 
 				case PHVOLT_T_FOR:
@@ -2187,7 +2315,7 @@ class Compiler implements InjectionAwareInterface
 	/**
 	 * Compiles a Volt source code returning a PHP plain version
 	 */
-	protected function _compileSource(string! viewCode, boolean extendsMode = false) -> string
+	protected function _compileSource(string! viewCode, bool extendsMode = false) -> string
 	{
 		var currentPath, intermediate, extended,
 			finalCompilation, blocks, extendedBlocks, name, block,
@@ -2205,8 +2333,8 @@ class Compiler implements InjectionAwareInterface
 			 * Enable autoescape globally
 			 */
 			if fetch autoescape, options["autoescape"] {
-				if typeof autoescape != "bool" {
-					throw new Exception("'autoescape' must be boolean");
+				if typeof autoescape != "boolean" {
+					throw new Exception("'autoescape' must be bool");
 				}
 				let this->_autoescape = autoescape;
 			}
@@ -2303,7 +2431,7 @@ class Compiler implements InjectionAwareInterface
 	 * echo $compiler->compileString('{{ "hello world" }}');
 	 *</code>
 	 */
-	public function compileString(string! viewCode, boolean extendsMode = false) -> string
+	public function compileString(string! viewCode, bool extendsMode = false) -> string
 	{
 		let this->_currentPath = "eval code";
 		return this->_compileSource(viewCode, extendsMode);
@@ -2313,15 +2441,12 @@ class Compiler implements InjectionAwareInterface
 	 * Compiles a template into a file forcing the destination path
 	 *
 	 *<code>
-	 * $compiler->compile("views/layouts/main.volt", "views/layouts/main.volt.php");
+	 * $compiler->compileFile("views/layouts/main.volt", "views/layouts/main.volt.php");
 	 *</code>
 	 *
-	 * @param string path
-	 * @param string compiledPath
-	 * @param boolean extendsMode
 	 * @return string|array
 	 */
-	public function compileFile(string! path, string! compiledPath, boolean extendsMode = false)
+	public function compileFile(string! path, string! compiledPath, bool extendsMode = false)
 	{
 		var viewCode, compilation, finalCompilation;
 
@@ -2377,11 +2502,11 @@ class Compiler implements InjectionAwareInterface
 	 * require $compiler->getCompiledTemplatePath();
 	 *</code>
 	 */
-	public function compile(string! templatePath, boolean extendsMode = false)
+	public function compile(string! templatePath, bool extendsMode = false)
 	{
-		var stat, compileAlways, prefix, compiledPath, compiledSeparator, blocksCode,
-			compiledExtension, compilation, options, realCompiledPath,
-			compiledTemplatePath, templateSepPath;
+		var blocksCode, compilation, compileAlways, compiledExtension, compiledPath,
+			compiledSeparator, compiledTemplatePath, optionKey, options, prefix,
+			realCompiledPath, stat, templateSepPath;
 
 		/**
 		 * Re-initialize some properties already initialized when the object is cloned
@@ -2408,10 +2533,16 @@ class Compiler implements InjectionAwareInterface
 			/**
 			 * This makes that templates will be compiled always
 			 */
-			if isset options["compileAlways"] {
-				let compileAlways = options["compileAlways"];
+			if isset options["always"] || isset options["compileAlways"] {
+				if isset options["always"] {
+					let optionKey = "always";
+				} else {
+					let optionKey = "compileAlways";
+					trigger_error("The 'compileAlways' option is deprecated. Use 'always' instead.", E_USER_DEPRECATED);
+				}
+				let compileAlways = options[optionKey];
 				if typeof compileAlways != "boolean" {
-					throw new Exception("'compileAlways' must be a bool value");
+					throw new Exception("'" . optionKey . "' must be a bool value");
 				}
 			}
 
@@ -2428,11 +2559,17 @@ class Compiler implements InjectionAwareInterface
 			/**
 			 * Compiled path is a directory where the compiled templates will be located
 			 */
-			if isset options["compiledPath"] {
-				let compiledPath = options["compiledPath"];
+			if isset options["path"] || isset options["compiledPath"] {
+				if isset options["path"] {
+					let optionKey = "path";
+				} else {
+					let optionKey = "compiledPath";
+					trigger_error("The 'compiledPath' option is deprecated. Use 'path' instead.", E_USER_DEPRECATED);
+				}
+				let compiledPath = options[optionKey];
 				if typeof compiledPath != "string" {
 					if typeof compiledPath != "object" {
-						throw new Exception("'compiledPath' must be a string or a closure");
+						throw new Exception("'" . optionKey . "' must be a string or a closure");
 					}
 				}
 			}
@@ -2440,20 +2577,32 @@ class Compiler implements InjectionAwareInterface
 			/**
 			 * There is no compiled separator by default
 			 */
-			if isset options["compiledSeparator"] {
-				let compiledSeparator = options["compiledSeparator"];
+			if isset options["separator"] || isset options["compiledSeparator"] {
+				if isset options["separator"] {
+					let optionKey = "separator";
+				} else {
+					let optionKey = "compiledSeparator";
+					trigger_error("The 'compiledSeparator' option is deprecated. Use 'separator' instead.", E_USER_DEPRECATED);
+				}
+				let compiledPath = options[optionKey];
 				if typeof compiledSeparator != "string" {
-					throw new Exception("'compiledSeparator' must be a string");
+					throw new Exception("'" . optionKey . "' must be a string");
 				}
 			}
 
 			/**
 			 * By default the compile extension is .php
 			 */
-			if isset options["compiledExtension"] {
-				let compiledExtension = options["compiledExtension"];
+			if isset options["extension"] || isset options["compiledExtension"] {
+				if isset options["extension"] {
+					let optionKey = "extension";
+				} else {
+					let optionKey = "compiledExtension";
+					trigger_error("The 'compiledExtension' option is deprecated. Use 'extension' instead.", E_USER_DEPRECATED);
+				}
+				let compiledPath = options[optionKey];
 				if typeof compiledExtension != "string" {
-					throw new Exception("'compiledExtension' must be a string");
+					throw new Exception("'" . optionKey . "' must be a string");
 				}
 			}
 
@@ -2569,10 +2718,10 @@ class Compiler implements InjectionAwareInterface
 				 * Stat is off but the compiled file doesn't exist
 				 */
 				if !file_exists(realCompiledPath) {
-				    /**
-                     * The file doesn't exist so we compile the php version for the first time
-                     */
-				    let compilation = this->compileFile(templatePath, realCompiledPath, extendsMode);
+					/**
+					 * The file doesn't exist so we compile the php version for the first time
+					 */
+					let compilation = this->compileFile(templatePath, realCompiledPath, extendsMode);
 				}
 
 			}
@@ -2608,7 +2757,6 @@ class Compiler implements InjectionAwareInterface
 	 * );
 	 *</code>
 	 *
-	 * @param string viewCode
 	 * @return array
 	 */
 	public function parse(string! viewCode)

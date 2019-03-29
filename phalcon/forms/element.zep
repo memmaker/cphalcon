@@ -1,29 +1,19 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Forms;
 
 use Phalcon\Tag;
 use Phalcon\Forms\Exception;
-use Phalcon\Validation\Message;
-use Phalcon\Validation\MessageInterface;
-use Phalcon\Validation\Message\Group;
+use Phalcon\Messages\MessageInterface;
+use Phalcon\Messages\Messages;
 use Phalcon\Validation\ValidatorInterface;
 
 /**
@@ -54,17 +44,18 @@ abstract class Element implements ElementInterface
 
 	/**
 	 * Phalcon\Forms\Element constructor
-	 *
-	 * @param string name
-	 * @param array attributes
 	 */
-	public function __construct(string name, var attributes = null)
+	public function __construct(string name, array attributes = [])
 	{
-		let this->_name = name;
-		if typeof attributes == "array" {
-			let this->_attributes = attributes;
+		let name = trim(name);
+
+		if empty name {
+			throw new \InvalidArgumentException("Form element name is required");
 		}
-		let this->_messages = new Group();
+
+		let this->_name = name;
+		let this->_attributes = attributes;
+		let this->_messages = new Messages();
 	}
 
 	/**
@@ -105,7 +96,6 @@ abstract class Element implements ElementInterface
 	 * Sets the element filters
 	 *
 	 * @param array|string filters
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
 	public function setFilters(var filters) -> <ElementInterface>
 	{
@@ -148,10 +138,9 @@ abstract class Element implements ElementInterface
 	/**
 	 * Adds a group of validators
 	 *
-	 * @param \Phalcon\Validation\ValidatorInterface[]
-	 * @return \Phalcon\Forms\ElementInterface
+	 * @param \Phalcon\Validation\ValidatorInterface[] validators
 	 */
-	public function addValidators(array! validators, boolean merge = true) -> <ElementInterface>
+	public function addValidators(array! validators, bool merge = true) -> <ElementInterface>
 	{
 		var currentValidators, mergedValidators;
 		if merge {
@@ -188,7 +177,7 @@ abstract class Element implements ElementInterface
 	 * Returns an array of prepared attributes for Phalcon\Tag helpers
 	 * according to the element parameters
 	 */
-	public function prepareAttributes(array attributes = null, boolean useChecked = false) -> array
+	public function prepareAttributes(array attributes = null, bool useChecked = false) -> array
 	{
 		var value, name, widgetAttributes, mergedAttributes,
 			defaultAttributes, currentValue;
@@ -254,12 +243,8 @@ abstract class Element implements ElementInterface
 
 	/**
 	 * Sets a default attribute for the element
-	 *
-	 * @param string attribute
-	 * @param mixed value
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function setAttribute(string attribute, value) -> <ElementInterface>
+	public function setAttribute(string attribute, var value) -> <ElementInterface>
 	{
 		let this->_attributes[attribute] = value;
 		return this;
@@ -267,12 +252,8 @@ abstract class Element implements ElementInterface
 
 	/**
 	 * Returns the value of an attribute if present
-	 *
-	 * @param string attribute
-	 * @param mixed defaultValue
-	 * @return mixed
 	 */
-	public function getAttribute(string attribute, defaultValue = null)
+	public function getAttribute(string attribute, var defaultValue = null) -> var
 	{
 		var attributes, value;
 		let attributes = this->_attributes;
@@ -306,12 +287,8 @@ abstract class Element implements ElementInterface
 
 	/**
 	 * Sets an option for the element
-	 *
-	 * @param string option
-	 * @param mixed value
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function setUserOption(string option, value) -> <ElementInterface>
+	public function setUserOption(string option, var value) -> <ElementInterface>
 	{
 		let this->_options[option] = value;
 		return this;
@@ -319,12 +296,8 @@ abstract class Element implements ElementInterface
 
 	/**
 	 * Returns the value of an option if present
-	 *
-	 * @param string option
-	 * @param mixed defaultValue
-	 * @return mixed
 	 */
-	public function getUserOption(string option, defaultValue = null)
+	public function getUserOption(string option, var defaultValue = null) -> var
 	{
 		var value;
 		if fetch value, this->_options[option] {
@@ -369,10 +342,8 @@ abstract class Element implements ElementInterface
 
 	/**
 	 * Generate the HTML to label the element
-	 *
-	 * @param array attributes
 	 */
-	public function label(var attributes = null) -> string
+	public function label(array attributes = []) -> string
 	{
 		var internalAttributes, label, name, code;
 
@@ -411,11 +382,8 @@ abstract class Element implements ElementInterface
 	/**
 	 * Sets a default value in case the form does not use an entity
 	 * or there is no value available for the element in _POST
-	 *
-	 * @param mixed value
-	 * @return \Phalcon\Forms\ElementInterface
 	 */
-	public function setDefault(value) -> <ElementInterface>
+	public function setDefault(var value) -> <ElementInterface>
 	{
 		let this->_value = value;
 		return this;
@@ -430,36 +398,30 @@ abstract class Element implements ElementInterface
 	}
 
 	/**
-	 * Returns the element value
+	 * Returns the element's value
 	 */
 	public function getValue() -> var
 	{
-		var name, form, value;
-
-		let name = this->_name,
+		var name  = this->_name,
+		    form  = this->_form,
 			value = null;
-
+		
 		/**
-		 * Get the related form
+		 * If element belongs to the form, get value from the form
 		 */
-		let form = this->_form;
 		if typeof form == "object" {
-			/**
-			 * Gets the possible value for the widget
-			 */
-			let value = form->getValue(name);
-
-			/**
-			 * Check if the tag has a default value
-			 */
-			if typeof value == "null" && Tag::hasValue(name) {
-				let value = Tag::getValue(name);
-			}
-
+			return form->getValue(name);
+		}
+		
+		/**
+		 * Otherwise check Phalcon\Tag
+		 */
+		if Tag::hasValue(name) {
+			let value = Tag::getValue(name);
 		}
 
 		/**
-		 * Assign the default value if there is no form available
+		 * Assign the default value if there is no form available or Phalcon\Tag returns null
 		 */
 		if typeof value == "null" {
 			let value = this->_value;
@@ -472,7 +434,7 @@ abstract class Element implements ElementInterface
 	 * Returns the messages that belongs to the element
 	 * The element needs to be attached to a form
 	 */
-	public function getMessages() -> <Group>
+	public function getMessages() -> <Messages>
 	{
 		return this->_messages;
 	}
@@ -480,7 +442,7 @@ abstract class Element implements ElementInterface
 	/**
 	 * Checks whether there are messages attached to the element
 	 */
-	public function hasMessages() -> boolean
+	public function hasMessages() -> bool
 	{
 		return count(this->_messages) > 0;
 	}
@@ -488,9 +450,9 @@ abstract class Element implements ElementInterface
 	/**
 	 * Sets the validation messages related to the element
 	 */
-	public function setMessages(<Group> group) -> <ElementInterface>
+	public function setMessages(<Messages> messages) -> <ElementInterface>
 	{
-		let this->_messages = group;
+		let this->_messages = messages;
 		return this;
 	}
 
@@ -504,11 +466,20 @@ abstract class Element implements ElementInterface
 	}
 
 	/**
-	 * Clears every element in the form to its default value
+	 * Clears element to its default value
 	 */
-	public function clear() -> <Element>
+	public function clear() -> <ElementInterface>
 	{
-		Tag::setDefault(this->_name, null);
+		var form  = this->_form,
+			name  = this->_name,
+			value = this->_value;
+
+		if typeof form == "object" {
+			form->clear(name);
+		} else {
+			Tag::setDefault(name, value);
+		}
+
 		return this;
 	}
 

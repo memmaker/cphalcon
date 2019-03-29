@@ -1,22 +1,12 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- |          Rack Lin <racklin@gmail.com>                                  |
- +------------------------------------------------------------------------+
-*/
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
 
 namespace Phalcon\Cli\Router;
 
@@ -24,7 +14,6 @@ namespace Phalcon\Cli\Router;
  * Phalcon\Cli\Router\Route
  *
  * This class represents every route added to the router
- *
  */
 class Route
 {
@@ -54,7 +43,6 @@ class Route
 	/**
 	 * Phalcon\Cli\Router\Route constructor
 	 *
-	 * @param string pattern
 	 * @param array paths
 	 */
 	public function __construct(string! pattern, paths = null)
@@ -154,14 +142,13 @@ class Route
 	/**
 	 * Extracts parameters from a string
 	 *
-	 * @param string pattern
-	 * @return array|boolean
+	 * @return array|bool
 	 */
 	public function extractNamedParams(string! pattern)
 	{
 		char ch;
 		var tmp, matches;
-		boolean notValid;
+		bool notValid;
 		int cursor, cursorVar, marker, bracketCount = 0, parenthesesCount = 0, foundPattern = 0;
 		int intermediate = 0, numberMatches = 0;
 		string route, item, variable, regexp;
@@ -292,7 +279,6 @@ class Route
 	/**
 	 * Reconfigure the route adding a new pattern and a set of paths
 	 *
-	 * @param string pattern
 	 * @param array paths
 	 */
 	public function reConfigure(string! pattern, paths = null)
@@ -452,7 +438,6 @@ class Route
 	 * If the callback returns false the route is treated as not matched
 	 *
 	 * @param callback callback
-	 * @return \Phalcon\Cli\Router\Route
 	 */
 	public function beforeMatch(var callback) -> <Route>
 	{
@@ -519,9 +504,7 @@ class Route
 	/**
 	 * Adds a converter to perform an additional transformation for certain parameter
 	 *
-	 * @param string name
 	 * @param callable converter
-	 * @return \Phalcon\Cli\Router\Route
 	 */
 	public function convert(string! name, converter) -> <Route>
 	{

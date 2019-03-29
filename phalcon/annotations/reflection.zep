@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Annotations;
@@ -54,20 +45,16 @@ class Reflection
 
 	/**
 	 * Phalcon\Annotations\Reflection constructor
-	 *
-	 * @param array reflectionData
 	 */
-	public function __construct(reflectionData = null)
+	public function __construct(array reflectionData = [])
 	{
-		if typeof reflectionData == "array" {
-			let this->_reflectionData = reflectionData;
-		}
+		let this->_reflectionData = reflectionData;
 	}
 
 	/**
 	 * Returns the annotations found in the class docblock
 	 */
-	public function getClassAnnotations() -> <Collection> | boolean
+	public function getClassAnnotations() -> <Collection> | bool
 	{
 		var annotations, reflectionClass, collection;
 
@@ -87,7 +74,7 @@ class Reflection
 	/**
 	 * Returns the annotations found in the methods' docblocks
 	 */
-	public function getMethodsAnnotations() -> <Collection[]> | boolean
+	public function getMethodsAnnotations() -> <Collection[]> | bool
 	{
 		var annotations, reflectionMethods,
 			collections, methodName, reflectionMethod;
@@ -115,7 +102,7 @@ class Reflection
 	/**
 	 * Returns the annotations found in the properties' docblocks
 	 */
-	public function getPropertiesAnnotations() -> <Collection[]> | boolean
+	public function getPropertiesAnnotations() -> <Collection[]> | bool
 	{
 		var annotations, reflectionProperties,
 			collections, property, reflectionProperty;
@@ -141,30 +128,24 @@ class Reflection
 
 	/**
 	 * Returns the raw parsing intermediate definitions used to construct the reflection
-	 *
-	 * @return array
 	 */
-	public function getReflectionData()
+	public function getReflectionData() -> array
 	{
 		return this->_reflectionData;
 	}
 
 	/**
 	 * Restores the state of a Phalcon\Annotations\Reflection variable export
-	 *
-	 * @return array data
 	 */
-	public static function __set_state(data) -> <Reflection>
+	public static function __set_state(array! data) -> <Reflection>
 	{
 		var reflectionData;
 
-		if typeof data == "array" {
-			/**
-			 * Check for a '_reflectionData' in the array to build the Reflection
-			 */
-			if fetch reflectionData, data["_reflectionData"] {
-				return new self(reflectionData);
-			}
+		/**
+		 * Check for a '_reflectionData' in the array to build the Reflection
+		 */
+		if fetch reflectionData, data["_reflectionData"] {
+			return new self(reflectionData);
 		}
 
 		return new self();

@@ -1,20 +1,11 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2017 Phalcon Team (https://phalconphp.com)          |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file LICENSE.txt.                             |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
  */
 
 namespace Phalcon\Mvc\Micro;
@@ -28,53 +19,16 @@ use Phalcon\Mvc\Model\BinderInterface;
  */
 class LazyLoader
 {
-	protected _handler;
+	protected handler;
 
-	protected _modelBinder;
-
-	protected _definition {
-		get
-	};
+	protected definition { get };
 
 	/**
 	 * Phalcon\Mvc\Micro\LazyLoader constructor
 	 */
 	public function __construct(string! definition)
 	{
-		let this->_definition = definition;
-	}
-
-	/**
-	 * Initializes the internal handler, calling functions on it
-	 *
-	 * @param  string method
-	 * @param  array arguments
-	 * @return mixed
-	 */
-	public function __call(string! method, arguments)
-	{
- 		var handler, definition, modelBinder, bindCacheKey;
-
-		let handler = this->_handler;
-
-		let definition = this->_definition;
-
-		if typeof handler != "object" {
-			let handler = new {definition}();
-			let this->_handler = handler;
-		}
-
-		let modelBinder = this->_modelBinder;
-
-		if modelBinder != null {
-			let bindCacheKey = "_PHMB_" . definition . "_" . method;
-			let arguments = modelBinder->bindToHandler(handler, arguments, bindCacheKey, method);
-		}
-
-		/**
-		 * Call the handler
-		 */
-		return call_user_func_array([handler, method], arguments);
+		let this->definition = definition;
 	}
 
 	/**
@@ -86,8 +40,24 @@ class LazyLoader
 	 */
 	public function callMethod(string! method, arguments, <BinderInterface> modelBinder = null)
 	{
-		let this->_modelBinder = modelBinder;
+ 		var handler, definition, bindCacheKey;
 
-		return this->__call(method, arguments);
+		let handler    = this->handler,
+			definition = this->definition;
+
+		if typeof handler != "object" {
+			let handler = new {definition}();
+			let this->handler = handler;
+		}
+
+		if modelBinder != null {
+			let bindCacheKey = "_PHMB_" . definition . "_" . method;
+			let arguments = modelBinder->bindToHandler(handler, arguments, bindCacheKey, method);
+		}
+
+		/**
+		 * Call the handler
+		 */
+		return call_user_func_array([handler, method], arguments);
 	}
 }

@@ -13,6 +13,14 @@
 
 
 /**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalconphp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+/**
  * Phalcon\Annotations\AdapterInterface
  *
  * This interface must be implemented by adapters in Phalcon\Annotations
@@ -37,8 +45,6 @@ ZEPHIR_DOC_METHOD(Phalcon_Annotations_AdapterInterface, getReader);
 
 /**
  * Parses or retrieves all the annotations found in a class
- *
- * @param string|object className
  */
 ZEPHIR_DOC_METHOD(Phalcon_Annotations_AdapterInterface, get);
 
